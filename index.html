@@ -623,33 +623,38 @@
   /* PER-COLOR BRAND SELECTOR */
   .color-brand-row {
     display: flex;
-    gap: 3px;
-    margin-top: 5px;
-    flex-wrap: wrap;
+    gap: 0;
+    margin-top: 4px;
+    flex-wrap: nowrap;
   }
   .cbrand-btn {
-    padding: 2px 6px;
+    padding: 2px 7px;
     border: 1px solid var(--grid-line);
-    background: transparent;
+    border-right: none;
+    background: var(--cream);
     font-family: 'Crimson Pro', serif;
     font-size: 10px;
     color: var(--warm-gray);
     cursor: pointer;
-    border-radius: 2px;
     transition: all 0.12s;
-    line-height: 1.4;
+    line-height: 1.5;
+    white-space: nowrap;
   }
-  .cbrand-btn:hover { border-color: var(--charcoal); color: var(--charcoal); }
+  .cbrand-btn:first-child { border-radius: 3px 0 0 3px; }
+  .cbrand-btn:last-child  { border-radius: 0 3px 3px 0; border-right: 1px solid var(--grid-line); }
+  .cbrand-btn:hover { background: var(--linen); color: var(--charcoal); border-color: var(--warm-gray); }
   .cbrand-btn.active {
     background: var(--charcoal);
-    border-color: var(--charcoal);
+    border-color: var(--charcoal) !important;
+    border-right: 1px solid transparent !important;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
   }
-  .cbrand-btn.active.dmc  { background: #8b2635; border-color: #8b2635; }
-  .cbrand-btn.active.anchor { background: #1a5276; border-color: #1a5276; }
-  .cbrand-btn.active.cosmo  { background: #196f3d; border-color: #196f3d; }
-  .cbrand-btn.active.madeira { background: #7d6608; border-color: #7d6608; }
+  .cbrand-btn.active + .cbrand-btn { border-left-color: transparent; }
+  .cbrand-btn.active.dmc     { background: #8b2635; border-color: #8b2635 !important; }
+  .cbrand-btn.active.anchor  { background: #1a5276; border-color: #1a5276 !important; }
+  .cbrand-btn.active.cosmo   { background: #196f3d; border-color: #196f3d !important; }
+  .cbrand-btn.active.madeira { background: #7d6608; border-color: #7d6608 !important; }
   .td-stitches { color: var(--warm-gray); font-size: 12px; text-align: right; }
   .td-needed { text-align: center; font-weight: 700; color: var(--charcoal); }
 
