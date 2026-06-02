@@ -1165,10 +1165,27 @@
         </div>
       </div>
 
-      <!-- Thread Brand -->
+      <!-- Format -->
       <div class="panel-section">
+        <div class="section-label" data-i18n="sec_format">Format</div>
+        <div class="mode-toggle-row">
+          <button class="mode-btn active" id="fmtCrossstitch" onclick="selectFormat('crossstitch')">
+            <span class="mode-icon">✕</span>
+            Cross-Stitch
+            <span class="mode-sub" data-i18n="fmt_cs_sub">Thread on Aida</span>
+          </button>
+          <button class="mode-btn" id="fmtMiyuki" onclick="selectFormat('miyuki')">
+            <span class="mode-icon">⬬</span>
+            Miyuki
+            <span class="mode-sub" data-i18n="fmt_my_sub">Delica DB-11 beads</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Thread Brand -->
+      <div class="panel-section" id="brandSection">
         <div class="section-label" data-i18n="sec_brand">Thread Brand</div>
-        <div class="brand-grid">
+        <div class="brand-grid" id="brandGrid">
           <button class="brand-btn active" data-brand="dmc" onclick="selectBrand(this)">
             DMC
             <span class="brand-count">454 colors</span>
@@ -1185,6 +1202,11 @@
             Madeira
             <span class="brand-count">381 colors</span>
           </button>
+        </div>
+        <!-- Miyuki brand (shown when Miyuki format selected) -->
+        <div id="miyukiBrandInfo" style="display:none;padding:10px 12px;background:var(--linen);border:1px solid var(--grid-line);font-size:13px;color:var(--warm-gray)">
+          🪡 <strong style="color:var(--charcoal)">Miyuki Delica DB-11</strong><br>
+          <span style="font-size:11px">300 colors · 11/0 size · ~1100 beads/tube</span>
         </div>
       </div>
 
@@ -1377,7 +1399,7 @@
               <thead>
                 <tr>
                   <th style="width:180px" data-i18n="th_color">Color</th>
-                  <th class="right" data-i18n="th_stitches">Stitches</th>
+                  <th class="right" id="thStitches" data-i18n="th_stitches">Stitches</th>
                   <th class="center" data-i18n="th_need">Need</th>
                   <th class="center" data-i18n="th_ihave">I have</th>
                   <th class="center" data-i18n="th_tobuy">To buy</th>
@@ -2782,6 +2804,291 @@ const COSMO = [
   {code:"906",name:"Slate Green Very Dark",hex:"#587888",dmc:"924"},
 ];
 
+
+// ============================================================
+// MIYUKI DELICA DB-11 — ~300 most-used colors
+// Source: community hex samples (beadtool, threadbare-crafter, miyuki-beads.com)
+// ============================================================
+const MIYUKI = [
+  {code:"DB-0001",name:"Silver Lined Crystal",hex:"#F0F0F8"},
+  {code:"DB-0003",name:"Gold Luster Crystal",hex:"#F5EAC0"},
+  {code:"DB-0010",name:"Black",hex:"#0A0A0A"},
+  {code:"DB-0011",name:"Transparent Crystal",hex:"#F8F8FF"},
+  {code:"DB-0020",name:"Silver Lined Gold",hex:"#D4A820"},
+  {code:"DB-0022",name:"Silver Lined Dark Gold",hex:"#A88010"},
+  {code:"DB-0030",name:"Silver Lined Lt Gold",hex:"#E8D060"},
+  {code:"DB-0031",name:"Silver Lined Pale Gold",hex:"#F0E090"},
+  {code:"DB-0035",name:"Silver Lined Bright Red",hex:"#CC1010"},
+  {code:"DB-0040",name:"Silver Lined Bright Orange",hex:"#F06000"},
+  {code:"DB-0041",name:"Silver Lined Bright Tangerine",hex:"#F08020"},
+  {code:"DB-0042",name:"Silver Lined Bright Yellow",hex:"#F8D800"},
+  {code:"DB-0043",name:"Silver Lined Lime",hex:"#A8D820"},
+  {code:"DB-0044",name:"Silver Lined Bright Chartreuse",hex:"#80C800"},
+  {code:"DB-0046",name:"Silver Lined Bright Green",hex:"#00A820"},
+  {code:"DB-0047",name:"Silver Lined Bright Teal",hex:"#009880"},
+  {code:"DB-0048",name:"Silver Lined Bright Aqua",hex:"#00B0D0"},
+  {code:"DB-0049",name:"Silver Lined Bright Blue",hex:"#0050D0"},
+  {code:"DB-0054",name:"Silver Lined Bright Purple",hex:"#7820C8"},
+  {code:"DB-0055",name:"Silver Lined Bright Violet",hex:"#9000E0"},
+  {code:"DB-0066",name:"Silver Lined Brick Red",hex:"#A82010"},
+  {code:"DB-0105",name:"Transparent Lt Topaz",hex:"#F8D880"},
+  {code:"DB-0106",name:"Transparent Topaz",hex:"#E8B840"},
+  {code:"DB-0108",name:"Transparent Dk Topaz",hex:"#C89020"},
+  {code:"DB-0110",name:"Transparent Pale Rose",hex:"#F8C8C8"},
+  {code:"DB-0111",name:"Transparent Pink",hex:"#F8A0A8"},
+  {code:"DB-0113",name:"Transparent Rose",hex:"#E87080"},
+  {code:"DB-0114",name:"Transparent Dk Rose",hex:"#C84060"},
+  {code:"DB-0115",name:"Transparent Cranberry",hex:"#B02050"},
+  {code:"DB-0116",name:"Transparent Red",hex:"#D02020"},
+  {code:"DB-0121",name:"Transparent Lt Amber",hex:"#F8D8A0"},
+  {code:"DB-0122",name:"Transparent Amber",hex:"#E8B860"},
+  {code:"DB-0123",name:"Transparent Dk Amber",hex:"#D09030"},
+  {code:"DB-0132",name:"Transparent Lt Blue",hex:"#C0D8F8"},
+  {code:"DB-0133",name:"Transparent Blue",hex:"#80B0E8"},
+  {code:"DB-0134",name:"Transparent Med Blue",hex:"#5090D0"},
+  {code:"DB-0135",name:"Transparent Cobalt Blue",hex:"#2060C0"},
+  {code:"DB-0136",name:"Transparent Dk Cobalt",hex:"#1040A0"},
+  {code:"DB-0143",name:"Transparent Lt Aqua",hex:"#C0E8F0"},
+  {code:"DB-0144",name:"Transparent Aqua",hex:"#80D0E8"},
+  {code:"DB-0145",name:"Transparent Teal",hex:"#40B0C0"},
+  {code:"DB-0146",name:"Transparent Dk Teal",hex:"#208898"},
+  {code:"DB-0147",name:"Transparent Lt Green",hex:"#C0E8C0"},
+  {code:"DB-0148",name:"Transparent Green",hex:"#80C880"},
+  {code:"DB-0152",name:"Transparent Lt Peridot",hex:"#D8E8A0"},
+  {code:"DB-0160",name:"Transparent Lt Smoky Amethyst",hex:"#D0C0E0"},
+  {code:"DB-0161",name:"Transparent Smoky Amethyst",hex:"#B098C8"},
+  {code:"DB-0162",name:"Transparent Med Amethyst",hex:"#9070B0"},
+  {code:"DB-0163",name:"Transparent Amethyst",hex:"#7050A0"},
+  {code:"DB-0164",name:"Transparent Dk Amethyst",hex:"#502880"},
+  {code:"DB-0165",name:"Transparent Violet",hex:"#6030A8"},
+  {code:"DB-0166",name:"Transparent Dk Violet",hex:"#500890"},
+  {code:"DB-0200",name:"White",hex:"#FFFFFF"},
+  {code:"DB-0201",name:"Pearl White",hex:"#F8F8F0"},
+  {code:"DB-0202",name:"Opaque White",hex:"#F5F5F5"},
+  {code:"DB-0210",name:"Opaque Black",hex:"#080808"},
+  {code:"DB-0220",name:"Opaque Yellow",hex:"#F8D000"},
+  {code:"DB-0221",name:"Opaque Pale Yellow",hex:"#F8E890"},
+  {code:"DB-0231",name:"Opaque Orange",hex:"#F07010"},
+  {code:"DB-0233",name:"Opaque Pumpkin",hex:"#E06808"},
+  {code:"DB-0263",name:"Opaque Salmon",hex:"#F0A888"},
+  {code:"DB-0281",name:"Opaque Pale Peach",hex:"#F8DEC8"},
+  {code:"DB-0282",name:"Opaque Peach",hex:"#F5C8A8"},
+  {code:"DB-0290",name:"Opaque Lt Rose",hex:"#F0B0B8"},
+  {code:"DB-0291",name:"Opaque Rose",hex:"#E88898"},
+  {code:"DB-0292",name:"Opaque Med Rose",hex:"#D86878"},
+  {code:"DB-0293",name:"Opaque Dk Rose",hex:"#C04860"},
+  {code:"DB-0294",name:"Opaque Mauve",hex:"#B08090"},
+  {code:"DB-0295",name:"Opaque Dusty Rose",hex:"#D09090"},
+  {code:"DB-0296",name:"Opaque Terracotta",hex:"#C07060"},
+  {code:"DB-0297",name:"Opaque Brick",hex:"#A85040"},
+  {code:"DB-0301",name:"Opaque Coral Red",hex:"#E04040"},
+  {code:"DB-0302",name:"Opaque Red",hex:"#C82020"},
+  {code:"DB-0303",name:"Opaque Dark Red",hex:"#A01010"},
+  {code:"DB-0304",name:"Opaque Garnet",hex:"#800010"},
+  {code:"DB-0310",name:"Opaque Turquoise",hex:"#309898"},
+  {code:"DB-0312",name:"Opaque Dk Turquoise",hex:"#207070"},
+  {code:"DB-0321",name:"Opaque Teal",hex:"#187868"},
+  {code:"DB-0322",name:"Opaque Dark Teal",hex:"#106050"},
+  {code:"DB-0331",name:"Opaque Cobalt Blue",hex:"#184898"},
+  {code:"DB-0332",name:"Opaque Blue",hex:"#2060B0"},
+  {code:"DB-0333",name:"Opaque Med Blue",hex:"#3878C0"},
+  {code:"DB-0334",name:"Opaque Lt Blue",hex:"#6098D0"},
+  {code:"DB-0351",name:"Opaque Lavender",hex:"#C8A8D8"},
+  {code:"DB-0352",name:"Opaque Violet",hex:"#9070B8"},
+  {code:"DB-0353",name:"Opaque Purple",hex:"#601890"},
+  {code:"DB-0354",name:"Opaque Dark Purple",hex:"#480870"},
+  {code:"DB-0361",name:"Opaque Caramel",hex:"#C88040"},
+  {code:"DB-0362",name:"Opaque Dark Caramel",hex:"#A06020"},
+  {code:"DB-0371",name:"Opaque Khaki",hex:"#A89848"},
+  {code:"DB-0372",name:"Opaque Dark Khaki",hex:"#888030"},
+  {code:"DB-0374",name:"Opaque Olive Green",hex:"#708020"},
+  {code:"DB-0375",name:"Opaque Lt Green",hex:"#90C060"},
+  {code:"DB-0376",name:"Opaque Green",hex:"#60A030"},
+  {code:"DB-0377",name:"Opaque Dark Green",hex:"#307820"},
+  {code:"DB-0378",name:"Opaque Forest Green",hex:"#185010"},
+  {code:"DB-0379",name:"Opaque Hunter Green",hex:"#104010"},
+  {code:"DB-0381",name:"Opaque Brown",hex:"#804020"},
+  {code:"DB-0382",name:"Opaque Dk Brown",hex:"#602010"},
+  {code:"DB-0383",name:"Opaque Coffee Brown",hex:"#402010"},
+  {code:"DB-0390",name:"Opaque Light Gray",hex:"#C8C8C8"},
+  {code:"DB-0391",name:"Opaque Gray",hex:"#A0A0A0"},
+  {code:"DB-0392",name:"Opaque Dark Gray",hex:"#707070"},
+  {code:"DB-0393",name:"Opaque Charcoal",hex:"#404040"},
+  {code:"DB-0400",name:"Galvanized Silver",hex:"#C8C8C8"},
+  {code:"DB-0401",name:"Galvanized Gold",hex:"#D0A828"},
+  {code:"DB-0402",name:"Galvanized Rose Gold",hex:"#D0909070"},
+  {code:"DB-0410",name:"Galvanized Dark Gold",hex:"#B08820"},
+  {code:"DB-0411",name:"Galvanized Brass",hex:"#C09828"},
+  {code:"DB-0412",name:"Galvanized Bronze",hex:"#A07818"},
+  {code:"DB-0421",name:"Galvanized Copper",hex:"#C07830"},
+  {code:"DB-0422",name:"Galvanized Dark Copper",hex:"#A06020"},
+  {code:"DB-0431",name:"Galvanized Pewter",hex:"#909090"},
+  {code:"DB-0432",name:"Galvanized Gunmetal",hex:"#606870"},
+  {code:"DB-0433",name:"Galvanized Dark Pewter",hex:"#585858"},
+  {code:"DB-0501",name:"Matte Transparent Crystal",hex:"#ECECF0"},
+  {code:"DB-0502",name:"Matte Transparent Lt Topaz",hex:"#F0D870"},
+  {code:"DB-0504",name:"Matte Transparent Dk Topaz",hex:"#D0A030"},
+  {code:"DB-0510",name:"Matte Transparent Lt Rose",hex:"#F0C0C0"},
+  {code:"DB-0512",name:"Matte Transparent Rose",hex:"#E08090"},
+  {code:"DB-0514",name:"Matte Transparent Red",hex:"#C03030"},
+  {code:"DB-0521",name:"Matte Transparent Lt Amber",hex:"#F0D090"},
+  {code:"DB-0522",name:"Matte Transparent Amber",hex:"#E0B060"},
+  {code:"DB-0524",name:"Matte Transparent Dk Amber",hex:"#C08820"},
+  {code:"DB-0531",name:"Matte Transparent Lt Blue",hex:"#B8D0E8"},
+  {code:"DB-0533",name:"Matte Transparent Blue",hex:"#7098C8"},
+  {code:"DB-0536",name:"Matte Transparent Cobalt",hex:"#1840A0"},
+  {code:"DB-0543",name:"Matte Transparent Lt Aqua",hex:"#B8E0E8"},
+  {code:"DB-0545",name:"Matte Transparent Teal",hex:"#38A0B0"},
+  {code:"DB-0547",name:"Matte Transparent Green",hex:"#70B870"},
+  {code:"DB-0551",name:"Matte Transparent Peridot",hex:"#C8E090"},
+  {code:"DB-0560",name:"Matte Transparent Amethyst",hex:"#9878B8"},
+  {code:"DB-0562",name:"Matte Transparent Dk Amethyst",hex:"#704898"},
+  {code:"DB-0564",name:"Matte Transparent Violet",hex:"#5828A0"},
+  {code:"DB-0600",name:"Matte Opaque White",hex:"#F0F0F0"},
+  {code:"DB-0610",name:"Matte Opaque Black",hex:"#101010"},
+  {code:"DB-0621",name:"Matte Opaque Orange",hex:"#E06808"},
+  {code:"DB-0622",name:"Matte Opaque Pumpkin",hex:"#D05808"},
+  {code:"DB-0631",name:"Matte Opaque Salmon",hex:"#E8A080"},
+  {code:"DB-0641",name:"Matte Opaque Pale Rose",hex:"#F0B0B0"},
+  {code:"DB-0642",name:"Matte Opaque Rose",hex:"#D87878"},
+  {code:"DB-0643",name:"Matte Opaque Dk Rose",hex:"#C05868"},
+  {code:"DB-0651",name:"Matte Opaque Red",hex:"#B82020"},
+  {code:"DB-0653",name:"Matte Opaque Dark Red",hex:"#900010"},
+  {code:"DB-0661",name:"Matte Opaque Teal",hex:"#208870"},
+  {code:"DB-0671",name:"Matte Opaque Lt Blue",hex:"#88B0D0"},
+  {code:"DB-0672",name:"Matte Opaque Blue",hex:"#4880C0"},
+  {code:"DB-0673",name:"Matte Opaque Dk Blue",hex:"#2858A0"},
+  {code:"DB-0681",name:"Matte Opaque Lavender",hex:"#C0A0D0"},
+  {code:"DB-0682",name:"Matte Opaque Violet",hex:"#8860B0"},
+  {code:"DB-0683",name:"Matte Opaque Purple",hex:"#581890"},
+  {code:"DB-0691",name:"Matte Opaque Lt Green",hex:"#98C870"},
+  {code:"DB-0693",name:"Matte Opaque Dk Green",hex:"#389820"},
+  {code:"DB-0694",name:"Matte Opaque Forest Green",hex:"#206010"},
+  {code:"DB-0700",name:"Matte Opaque Beige",hex:"#E0D0B0"},
+  {code:"DB-0702",name:"Matte Opaque Tan",hex:"#C8A870"},
+  {code:"DB-0703",name:"Matte Opaque Dark Tan",hex:"#B08848"},
+  {code:"DB-0704",name:"Matte Opaque Brown",hex:"#906030"},
+  {code:"DB-0705",name:"Matte Opaque Dk Brown",hex:"#703820"},
+  {code:"DB-0721",name:"Matte Opaque Lt Gray",hex:"#D0D0D0"},
+  {code:"DB-0722",name:"Matte Opaque Gray",hex:"#A8A8A8"},
+  {code:"DB-0723",name:"Matte Opaque Dk Gray",hex:"#787878"},
+  {code:"DB-0724",name:"Matte Opaque Charcoal",hex:"#484848"},
+  {code:"DB-0727",name:"Matte Opaque Yellow",hex:"#F0D000"},
+  {code:"DB-0728",name:"Matte Opaque Pale Yellow",hex:"#F5E880"},
+  {code:"DB-0730",name:"Matte Opaque Copper",hex:"#B07030"},
+  {code:"DB-0731",name:"Matte Opaque Sienna",hex:"#A05828"},
+  {code:"DB-0732",name:"Matte Opaque Terracotta",hex:"#C06848"},
+  {code:"DB-0733",name:"Matte Opaque Coral",hex:"#D87860"},
+  {code:"DB-0734",name:"Matte Opaque Dusty Rose",hex:"#D09090"},
+  {code:"DB-0800",name:"Duracoat Silver",hex:"#C0C0C0"},
+  {code:"DB-0801",name:"Duracoat Galvanized Gold",hex:"#C8A020"},
+  {code:"DB-0843",name:"Duracoat Opaque Mauve",hex:"#B87888"},
+  {code:"DB-0856",name:"Duracoat Opaque Zinfandel",hex:"#901840"},
+  {code:"DB-0858",name:"Duracoat Opaque Maroon",hex:"#780820"},
+  {code:"DB-0882",name:"Duracoat Opaque Navy",hex:"#101840"},
+  {code:"DB-0883",name:"Duracoat Opaque Midnight Blue",hex:"#182050"},
+  {code:"DB-0884",name:"Duracoat Opaque Royal Blue",hex:"#1840A0"},
+  {code:"DB-0890",name:"Duracoat Opaque Clay",hex:"#C09068"},
+  {code:"DB-0900",name:"Duracoat Opaque Umber",hex:"#906040"},
+  {code:"DB-0906",name:"Duracoat Opaque Sienna",hex:"#B06030"},
+  {code:"DB-0907",name:"Duracoat Opaque Brick",hex:"#A04830"},
+  {code:"DB-0908",name:"Duracoat Opaque Rust",hex:"#C06030"},
+  {code:"DB-0916",name:"Duracoat Opaque Persimmon",hex:"#E05020"},
+  {code:"DB-0917",name:"Duracoat Opaque Burnt Orange",hex:"#D04818"},
+  {code:"DB-0918",name:"Duracoat Opaque Saffron",hex:"#E09820"},
+  {code:"DB-0919",name:"Duracoat Opaque Tangerine",hex:"#F08020"},
+  {code:"DB-0920",name:"Duracoat Opaque Pumpkin",hex:"#E06818"},
+  {code:"DB-0921",name:"Duracoat Opaque Gold",hex:"#D0A020"},
+  {code:"DB-0930",name:"Duracoat Opaque Pale Yellow",hex:"#F5E888"},
+  {code:"DB-0931",name:"Duracoat Opaque Buttercup",hex:"#F0D040"},
+  {code:"DB-0932",name:"Duracoat Opaque Canary",hex:"#F8D000"},
+  {code:"DB-0933",name:"Duracoat Opaque Chartreuse",hex:"#A8D020"},
+  {code:"DB-0934",name:"Duracoat Opaque Lime",hex:"#88C010"},
+  {code:"DB-0935",name:"Duracoat Opaque Jade",hex:"#289858"},
+  {code:"DB-0936",name:"Duracoat Opaque Emerald",hex:"#108830"},
+  {code:"DB-0937",name:"Duracoat Opaque Pine",hex:"#186020"},
+  {code:"DB-0938",name:"Duracoat Opaque Forest Green",hex:"#104810"},
+  {code:"DB-0939",name:"Duracoat Opaque Sage",hex:"#90A868"},
+  {code:"DB-0940",name:"Duracoat Opaque Olive",hex:"#789038"},
+  {code:"DB-0941",name:"Duracoat Opaque Avocado",hex:"#889820"},
+  {code:"DB-0942",name:"Duracoat Opaque Mint",hex:"#A0D8A8"},
+  {code:"DB-0943",name:"Duracoat Opaque Sea Glass",hex:"#88C8B0"},
+  {code:"DB-0944",name:"Duracoat Opaque Turquoise",hex:"#28A898"},
+  {code:"DB-0945",name:"Duracoat Opaque Teal",hex:"#187870"},
+  {code:"DB-0946",name:"Duracoat Opaque Dark Teal",hex:"#106060"},
+  {code:"DB-0947",name:"Duracoat Opaque Aqua",hex:"#48B8D0"},
+  {code:"DB-0948",name:"Duracoat Opaque Sky Blue",hex:"#78B8E0"},
+  {code:"DB-0949",name:"Duracoat Opaque Light Blue",hex:"#98C8E8"},
+  {code:"DB-0950",name:"Duracoat Opaque Powder Blue",hex:"#B8D8F0"},
+  {code:"DB-0951",name:"Duracoat Opaque Denim",hex:"#6888B0"},
+  {code:"DB-0952",name:"Duracoat Opaque Steel Blue",hex:"#5080A8"},
+  {code:"DB-0953",name:"Duracoat Opaque Cobalt",hex:"#2858A8"},
+  {code:"DB-0954",name:"Duracoat Opaque Navy",hex:"#1A3070"},
+  {code:"DB-0955",name:"Duracoat Opaque Midnight",hex:"#101838"},
+  {code:"DB-0956",name:"Duracoat Opaque Periwinkle",hex:"#8888C8"},
+  {code:"DB-0957",name:"Duracoat Opaque Violet",hex:"#6858B8"},
+  {code:"DB-0958",name:"Duracoat Opaque Purple",hex:"#5830A8"},
+  {code:"DB-0959",name:"Duracoat Opaque Dark Purple",hex:"#401880"},
+  {code:"DB-0960",name:"Duracoat Opaque Eggplant",hex:"#300850"},
+  {code:"DB-0961",name:"Duracoat Opaque Lavender",hex:"#C0A8D8"},
+  {code:"DB-0962",name:"Duracoat Opaque Lilac",hex:"#D0B8E0"},
+  {code:"DB-0963",name:"Duracoat Opaque Pale Lavender",hex:"#E0D0F0"},
+  {code:"DB-0964",name:"Duracoat Opaque Mauve",hex:"#B87888"},
+  {code:"DB-0965",name:"Duracoat Opaque Dusty Pink",hex:"#D09898"},
+  {code:"DB-0966",name:"Duracoat Opaque Blush",hex:"#E8B8B8"},
+  {code:"DB-0967",name:"Duracoat Opaque Pale Pink",hex:"#F0C8C8"},
+  {code:"DB-0968",name:"Duracoat Opaque Rose",hex:"#E08898"},
+  {code:"DB-0969",name:"Duracoat Opaque Deep Rose",hex:"#C06070"},
+  {code:"DB-0970",name:"Duracoat Opaque Raspberry",hex:"#A83050"},
+  {code:"DB-0971",name:"Duracoat Opaque Cranberry",hex:"#900830"},
+  {code:"DB-0972",name:"Duracoat Opaque Wine",hex:"#700020"},
+  {code:"DB-0975",name:"Duracoat Opaque Peach",hex:"#F5C0A0"},
+  {code:"DB-0976",name:"Duracoat Opaque Apricot",hex:"#F0B080"},
+  {code:"DB-0977",name:"Duracoat Opaque Coral",hex:"#E89080"},
+  {code:"DB-0978",name:"Duracoat Opaque Salmon",hex:"#E0A888"},
+  {code:"DB-0979",name:"Duracoat Opaque Desert",hex:"#D8A878"},
+  {code:"DB-0980",name:"Duracoat Opaque Sandstone",hex:"#C89860"},
+  {code:"DB-0981",name:"Duracoat Opaque Caramel",hex:"#C08840"},
+  {code:"DB-0982",name:"Duracoat Opaque Toast",hex:"#B87838"},
+  {code:"DB-0983",name:"Duracoat Opaque Cinnamon",hex:"#A06028"},
+  {code:"DB-0984",name:"Duracoat Opaque Chocolate",hex:"#804020"},
+  {code:"DB-0985",name:"Duracoat Opaque Dark Chocolate",hex:"#602010"},
+  {code:"DB-0986",name:"Duracoat Opaque Espresso",hex:"#401808"},
+  {code:"DB-0990",name:"Duracoat Opaque Ivory",hex:"#F5EDD8"},
+  {code:"DB-0991",name:"Duracoat Opaque Cream",hex:"#F0E8D0"},
+  {code:"DB-0992",name:"Duracoat Opaque Bone",hex:"#E8D8B8"},
+  {code:"DB-0993",name:"Duracoat Opaque Linen",hex:"#E0C8A0"},
+  {code:"DB-0994",name:"Duracoat Opaque Sand",hex:"#D8B880"},
+  {code:"DB-0995",name:"Duracoat Opaque Khaki",hex:"#C8A860"},
+  {code:"DB-0996",name:"Duracoat Opaque Silver Gray",hex:"#C0C0C0"},
+  {code:"DB-0997",name:"Duracoat Opaque Ash",hex:"#A8A8A8"},
+  {code:"DB-0998",name:"Duracoat Opaque Stone",hex:"#909090"},
+  {code:"DB-0999",name:"Duracoat Opaque Slate",hex:"#707878"},
+  {code:"DB-1010",name:"Duracoat Galvanized Sea Foam",hex:"#90C8B8"},
+  {code:"DB-1011",name:"Duracoat Galvanized Mint",hex:"#A8D8C0"},
+  {code:"DB-1012",name:"Duracoat Galvanized Pale Mint",hex:"#C0E8D0"},
+  {code:"DB-1051",name:"Luminous Crystal",hex:"#F0F0FF"},
+  {code:"DB-1052",name:"Luminous Pale Topaz",hex:"#F8F0D0"},
+  {code:"DB-1053",name:"Luminous Pale Amber",hex:"#F8E8B0"},
+  {code:"DB-1456",name:"Dyed Opaque Sienna Brown",hex:"#A86040"},
+  {code:"DB-1457",name:"Dyed Opaque Rust",hex:"#C07040"},
+  {code:"DB-1458",name:"Dyed Opaque Terracotta",hex:"#D08060"},
+  {code:"DB-1480",name:"Dyed Opaque Violet",hex:"#604898"},
+  {code:"DB-1481",name:"Dyed Opaque Purple",hex:"#481878"},
+  {code:"DB-1482",name:"Dyed Opaque Grape",hex:"#500858"},
+  {code:"DB-1483",name:"Dyed Opaque Wine",hex:"#680830"},
+  {code:"DB-1484",name:"Dyed Opaque Burgundy",hex:"#580018"},
+  {code:"DB-1490",name:"Dyed Opaque Sage",hex:"#98A870"},
+  {code:"DB-1491",name:"Dyed Opaque Olive",hex:"#808840"},
+  {code:"DB-1492",name:"Dyed Opaque Avocado",hex:"#708028"},
+  {code:"DB-1493",name:"Dyed Opaque Forest",hex:"#406020"},
+  {code:"DB-1494",name:"Dyed Opaque Pine",hex:"#205018"},
+  {code:"DB-1760",name:"Duracoat Opaque Pale Gray",hex:"#E0E0E0"},
+  {code:"DB-1761",name:"Duracoat Opaque Warm Gray",hex:"#C8C0B8"},
+  {code:"DB-1762",name:"Duracoat Opaque Cool Gray",hex:"#B8B8C0"},
+  {code:"DB-1763",name:"Duracoat Opaque Gunmetal",hex:"#606870"},
+  {code:"DB-1764",name:"Duracoat Opaque Steel",hex:"#707878"},
+];
 // ============================================================
 // BRAND CATALOG INDEX — maps brand key to its data array
 // ============================================================
@@ -2790,7 +3097,22 @@ const BRAND_CATALOG = {
   anchor: ANCHOR,
   cosmo: COSMO,
   madeira: MADEIRA,
+  miyuki: MIYUKI,
 };
+
+// Per-format geometry settings
+// Cross-stitch: square cells 1:1
+// Miyuki Delica DB-11: rectangular ~1:1.5 (w:h) — beads are taller than wide
+const FORMAT_GEOMETRY = {
+  crossstitch: { cellW: 1, cellH: 1, unitName: 'stitch', unitPlural: 'stitches', unitsPerPackage: 900 },
+  miyuki:      { cellW: 1, cellH: 1.5, unitName: 'bead',   unitPlural: 'beads',   unitsPerPackage: 1000 },
+};
+
+let currentFormat = 'crossstitch'; // 'crossstitch' | 'miyuki'
+
+function getGeometry() {
+  return FORMAT_GEOMETRY[currentFormat] || FORMAT_GEOMETRY.crossstitch;
+}
 
 // Precompute Lab for each brand catalog
 const BRAND_LAB = {};
@@ -2972,6 +3294,41 @@ uploadArea.addEventListener('drop', e => {
 
 let currentBrand = 'dmc';
 
+function selectFormat(fmt) {
+  currentFormat = fmt;
+  document.getElementById('fmtCrossstitch').classList.toggle('active', fmt === 'crossstitch');
+  document.getElementById('fmtMiyuki').classList.toggle('active', fmt === 'miyuki');
+
+  const isMiyuki = fmt === 'miyuki';
+  // Show/hide brand selector vs miyuki info
+  document.getElementById('brandGrid').style.display = isMiyuki ? 'none' : '';
+  document.getElementById('miyukiBrandInfo').style.display = isMiyuki ? '' : 'none';
+
+  if (isMiyuki) {
+    // Switch to Miyuki catalog
+    currentBrand = 'miyuki';
+    document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
+  } else {
+    // Restore previous thread brand (default DMC)
+    currentBrand = 'dmc';
+    const dmcBtn = document.querySelector('[data-brand="dmc"]');
+    if (dmcBtn) {
+      document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
+      dmcBtn.classList.add('active');
+    }
+  }
+
+  // Update width label
+  const geo = getGeometry();
+  document.querySelectorAll('[data-i18n="lbl_width"]').forEach(el => {
+    el.textContent = isMiyuki ? `Width in ${geo.unitPlural}` : t('lbl_width');
+  });
+
+  // Regenerate if pattern exists
+  if (currentPattern && sourceImage) generatePattern();
+  else if (currentPattern) drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+}
+
 function selectBrand(btn) {
   const newBrand = btn.dataset.brand;
   if (newBrand === currentBrand) return; // already selected
@@ -3022,6 +3379,11 @@ async function generatePattern() {
   offscreen.height = preH;
   const ctx = offscreen.getContext('2d');
   ctx.drawImage(sourceImage, 0, 0, preW, preH);
+
+  // Background detection & replacement
+  // Always run — detects near-solid backgrounds (white, beige, solid color)
+  // and forces them to pure white so the quantizer doesn't waste palette slots
+  detectAndReplaceBackground(offscreen);
 
   // Portrait preprocessing on higher-res canvas before downscale
   if (currentMode === 'portrait') {
@@ -3124,7 +3486,7 @@ async function generatePattern() {
   const modeTag = currentMode === 'portrait' ? ` &nbsp;·&nbsp; ${t('mode_label')}` : '';
   const brandLabel = currentBrand.toUpperCase();
   document.getElementById('canvasInfo').innerHTML =
-    `<strong>${W}×${H}</strong> stitches &nbsp;·&nbsp; <strong>${Object.keys(finalColors).length}</strong> ${brandLabel} colors &nbsp;·&nbsp; <strong>${totalStitches.toLocaleString()}</strong> total stitches${modeTag}`;
+    `<strong>${W}×${H}</strong> ${getGeometry().unitPlural} &nbsp;·&nbsp; <strong>${Object.keys(finalColors).length}</strong> ${brandLabel} colors &nbsp;·&nbsp; <strong>${totalStitches.toLocaleString()}</strong> total ${getGeometry().unitPlural}${modeTag}`;
 
   document.getElementById('showGridBtn').style.display = '';
   document.getElementById('editToggleBtn').style.display = '';
@@ -3149,9 +3511,12 @@ async function generatePattern() {
 // ============================================================
 function drawPattern(grid, W, H, colorCounts) {
   const canvas = document.getElementById('patternCanvas');
+  const geo = getGeometry();
   const cellSize = zoom;
-  canvas.width = W * cellSize + 1;
-  canvas.height = H * cellSize + 1;
+  const cellW = cellSize;
+  const cellH = Math.round(cellSize * geo.cellH);
+  canvas.width = W * cellW + 1;
+  canvas.height = H * cellH + 1;
 
   const ctx = canvas.getContext('2d');
 
@@ -3162,42 +3527,50 @@ function drawPattern(grid, W, H, colorCounts) {
       const key = `${x},${y}`;
       const dmcIdx = paintOverride[key] !== undefined ? paintOverride[key] : baseIdx;
       ctx.fillStyle = getEffectiveEntry(dmcIdx).hex;
-      ctx.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
+      ctx.fillRect(x*cellW, y*cellH, cellW, cellH);
+      // Miyuki: draw bead oval shape overlay
+      if (currentFormat === 'miyuki' && cellSize >= 6) {
+        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.ellipse(x*cellW + cellW/2, y*cellH + cellH/2, cellW*0.4, cellH*0.42, 0, 0, Math.PI*2);
+        ctx.stroke();
+      }
     }
   }
 
-  // Grid lines
-  if (showGrid && cellSize >= 3) {
+  // Grid lines (skip for Miyuki — oval shapes serve as grid)
+  if (showGrid && cellSize >= 3 && currentFormat !== 'miyuki') {
     ctx.strokeStyle = 'rgba(0,0,0,0.12)';
     ctx.lineWidth = 0.5;
     for (let x=0; x<=W; x++) {
       ctx.beginPath();
-      ctx.moveTo(x*cellSize+0.5, 0);
-      ctx.lineTo(x*cellSize+0.5, H*cellSize);
+      ctx.moveTo(x*cellW+0.5, 0);
+      ctx.lineTo(x*cellW+0.5, H*cellH);
       ctx.stroke();
     }
     for (let y=0; y<=H; y++) {
       ctx.beginPath();
-      ctx.moveTo(0, y*cellSize+0.5);
-      ctx.lineTo(W*cellSize, y*cellSize+0.5);
+      ctx.moveTo(0, y*cellH+0.5);
+      ctx.lineTo(W*cellW, y*cellH+0.5);
       ctx.stroke();
     }
   }
 
   // Every 10 cells: bold grid
-  if (cellSize >= 4) {
+  if (cellSize >= 4 && currentFormat !== 'miyuki') {
     ctx.strokeStyle = 'rgba(0,0,0,0.3)';
     ctx.lineWidth = 1;
     for (let x=0; x<=W; x+=10) {
       ctx.beginPath();
-      ctx.moveTo(x*cellSize+0.5, 0);
-      ctx.lineTo(x*cellSize+0.5, H*cellSize);
+      ctx.moveTo(x*cellW+0.5, 0);
+      ctx.lineTo(x*cellW+0.5, H*cellH);
       ctx.stroke();
     }
     for (let y=0; y<=H; y+=10) {
       ctx.beginPath();
-      ctx.moveTo(0, y*cellSize+0.5);
-      ctx.lineTo(W*cellSize, y*cellSize+0.5);
+      ctx.moveTo(0, y*cellH+0.5);
+      ctx.lineTo(W*cellW, y*cellH+0.5);
       ctx.stroke();
     }
   }
@@ -3207,7 +3580,7 @@ function drawPattern(grid, W, H, colorCounts) {
     const sortedColors = Object.keys(colorCounts).map(Number);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = `${Math.floor(cellSize*0.55)}px monospace`;
+    ctx.font = `${Math.floor(Math.min(cellW,cellH)*0.55)}px monospace`;
     for (let y=0; y<H; y++) {
       for (let x=0; x<W; x++) {
         const baseIdx2 = grid[y*W+x];
@@ -3218,7 +3591,7 @@ function drawPattern(grid, W, H, colorCounts) {
         const [r,g,b] = hexToRgb(getEffectiveEntry(dmcIdx).hex);
         const luma = 0.299*r + 0.587*g + 0.114*b;
         ctx.fillStyle = luma > 128 ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)';
-        ctx.fillText(sym, x*cellSize + cellSize/2, y*cellSize + cellSize/2);
+        ctx.fillText(sym, x*cellW + cellW/2, y*cellH + cellH/2);
       }
     }
   }
@@ -3405,7 +3778,9 @@ function redrawCell(cellX, cellY) {
   const canvas = document.getElementById('patternCanvas');
   const ctx = canvas.getContext('2d');
   const { grid, W } = currentPattern;
-  const cs = zoom;
+  const geo2 = getGeometry();
+  const cW = zoom;
+  const cH = Math.round(zoom * geo2.cellH);
   const baseIdx = grid[cellY * W + cellX];
   const dmcIdx = paintOverride[`${cellX},${cellY}`] !== undefined
     ? paintOverride[`${cellX},${cellY}`] : baseIdx;
@@ -3414,14 +3789,14 @@ function redrawCell(cellX, cellY) {
 
   // Base color
   ctx.fillStyle = entry.hex;
-  ctx.fillRect(cellX*cs, cellY*cs, cs, cs);
+  ctx.fillRect(cellX*cW, cellY*cH, cW, cH);
 
   const isDone = doneStitches.has(`${cellX},${cellY}`);
 
   if (isDone) {
     // Dim overlay
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.fillRect(cellX*cs, cellY*cs, cs, cs);
+    ctx.fillRect(cellX*cW, cellY*cH, cW, cH);
     // Check mark
     if (cs >= 6) {
       const luma = 0.299*r + 0.587*g + 0.114*b;
@@ -3431,34 +3806,34 @@ function redrawCell(cellX, cellY) {
       ctx.lineJoin = 'round';
       const pad = cs * 0.22;
       ctx.beginPath();
-      ctx.moveTo(cellX*cs + pad, cellY*cs + cs*0.52);
-      ctx.lineTo(cellX*cs + cs*0.42, cellY*cs + cs - pad);
-      ctx.lineTo(cellX*cs + cs - pad, cellY*cs + pad);
+      ctx.moveTo(cellX*cW + pad, cellY*cH + cH*0.52);
+      ctx.lineTo(cellX*cW + cW*0.42, cellY*cH + cH - pad);
+      ctx.lineTo(cellX*cW + cW - pad, cellY*cH + pad);
       ctx.stroke();
     }
   }
 
   // Redraw grid lines over cell
-  if (showGrid && cs >= 3) {
+  if (showGrid && cW >= 3 && currentFormat !== 'miyuki') {
     ctx.strokeStyle = 'rgba(0,0,0,0.12)';
     ctx.lineWidth = 0.5;
-    ctx.strokeRect(cellX*cs + 0.5, cellY*cs + 0.5, cs, cs);
+    ctx.strokeRect(cellX*cW + 0.5, cellY*cH + 0.5, cW, cH);
   }
 
   // Bold 10-grid lines if on boundary
-  if (cs >= 4) {
+  if (cW >= 4 && currentFormat !== 'miyuki') {
     ctx.strokeStyle = 'rgba(0,0,0,0.3)';
     ctx.lineWidth = 1;
     if (cellX % 10 === 0) {
       ctx.beginPath();
-      ctx.moveTo(cellX*cs + 0.5, cellY*cs);
-      ctx.lineTo(cellX*cs + 0.5, (cellY+1)*cs);
+      ctx.moveTo(cellX*cW + 0.5, cellY*cH);
+      ctx.lineTo(cellX*cW + 0.5, (cellY+1)*cH);
       ctx.stroke();
     }
     if (cellY % 10 === 0) {
       ctx.beginPath();
-      ctx.moveTo(cellX*cs, cellY*cs + 0.5);
-      ctx.lineTo((cellX+1)*cs, cellY*cs + 0.5);
+      ctx.moveTo(cellX*cW, cellY*cH + 0.5);
+      ctx.lineTo((cellX+1)*cW, cellY*cH + 0.5);
       ctx.stroke();
     }
   }
@@ -3471,13 +3846,15 @@ function redrawCell(cellX, cellY) {
 // Stock: dmcIdx -> skeins user already owns
 const userStock = {};
 
-// Skein capacity: ~850 stitches per skein (conservative estimate)
-// A standard DMC skein = 8m, cross stitch ~11ct = ~1000 stitches per skein
-// We use 900 as a safe default
-const STITCHES_PER_SKEIN = 900;
+// Units per package depends on format
+// Cross-stitch: ~900 stitches per skein
+// Miyuki: ~1000 beads per tube (2.5g tube of DB-11)
+function getUnitsPerPackage() {
+  return getGeometry().unitsPerPackage;
+}
 
 function calcSkeinsNeeded(stitchCount) {
-  return Math.ceil(stitchCount / STITCHES_PER_SKEIN);
+  return Math.ceil(stitchCount / getUnitsPerPackage());
 }
 
 let shoppingData = []; // [{dmcIdx, dmc, count, needed, sym}]
@@ -3579,7 +3956,7 @@ function renderShoppingTable() {
           </div>
         </div>
       </td>
-      <td class="td-stitches">${count.toLocaleString()}</td>
+      <td class="td-stitches">${count.toLocaleString()} <span style="font-size:10px;color:var(--warm-gray)">${getGeometry().unitPlural}</span></td>
       <td class="td-needed">${needed}</td>
       <td>
         <div class="stock-stepper">
@@ -3771,6 +4148,90 @@ function setMode(mode) {
 // PORTRAIT/PET PREPROCESSING PIPELINE
 // Runs on the full-resolution image before downscaling
 // ============================================================
+// ============================================================
+// BACKGROUND DETECTION & REPLACEMENT
+// Flood-fills from all 4 corners to find the background color.
+// If background is near-uniform (variance < threshold), replaces
+// it with pure white so it maps to White/Ecru in the catalog.
+// Tolerance: color distance in RGB space for flood-fill spread.
+// ============================================================
+function detectAndReplaceBackground(canvas) {
+  const W = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.getImageData(0, 0, W, H);
+  const d = imgData.data;
+
+  // Sample corners to find background color
+  function getPixel(x, y) {
+    const i = (y * W + x) * 4;
+    return [d[i], d[i+1], d[i+2]];
+  }
+
+  function colorDist(a, b) {
+    return Math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2 + (a[2]-b[2])**2);
+  }
+
+  // Take average of corner pixels
+  const corners = [
+    getPixel(0, 0), getPixel(W-1, 0),
+    getPixel(0, H-1), getPixel(W-1, H-1),
+    getPixel(Math.floor(W/2), 0), getPixel(0, Math.floor(H/2))
+  ];
+  const bgR = Math.round(corners.reduce((s,c) => s+c[0], 0) / corners.length);
+  const bgG = Math.round(corners.reduce((s,c) => s+c[1], 0) / corners.length);
+  const bgB = Math.round(corners.reduce((s,c) => s+c[2], 0) / corners.length);
+  const bgColor = [bgR, bgG, bgB];
+
+  // Check if background is already white or very close to white
+  const distToWhite = colorDist(bgColor, [255,255,255]);
+
+  // Only replace if background is reasonably uniform
+  // (variance among corner samples is low)
+  const variance = corners.reduce((s,c) => s + colorDist(c, bgColor), 0) / corners.length;
+  if (variance > 40) return; // Background too varied — not a solid bg, skip
+
+  // If already white, skip (no point in processing)
+  if (distToWhite < 15) return;
+
+  // Flood-fill tolerance — how far from bg color a pixel can be to still be "background"
+  const TOLERANCE = 35;
+
+  // BFS flood fill from all 4 corners simultaneously
+  const visited = new Uint8Array(W * H);
+  const queue = [];
+
+  function enqueue(x, y) {
+    if (x < 0 || x >= W || y < 0 || y >= H) return;
+    const idx = y * W + x;
+    if (visited[idx]) return;
+    const px = getPixel(x, y);
+    if (colorDist(px, bgColor) > TOLERANCE) return;
+    visited[idx] = 1;
+    queue.push(idx);
+  }
+
+  // Seed from all edges (not just corners) for robustness
+  for (let x = 0; x < W; x++) { enqueue(x, 0); enqueue(x, H-1); }
+  for (let y = 0; y < H; y++) { enqueue(0, y); enqueue(W-1, y); }
+
+  // Process queue
+  let qi = 0;
+  while (qi < queue.length) {
+    const idx = queue[qi++];
+    const x = idx % W, y = Math.floor(idx / W);
+    // Replace pixel with white
+    const pi = idx * 4;
+    d[pi] = 255; d[pi+1] = 255; d[pi+2] = 255; d[pi+3] = 255;
+    // Expand to 4 neighbors
+    if (x > 0)   enqueue(x-1, y);
+    if (x < W-1) enqueue(x+1, y);
+    if (y > 0)   enqueue(x, y-1);
+    if (y < H-1) enqueue(x, y+1);
+  }
+
+  ctx.putImageData(imgData, 0, 0);
+}
+
 function portraitPreprocess(srcCanvas, strength, smoothing, bgSimplify) {
   const W = srcCanvas.width, H = srcCanvas.height;
   const ctx = srcCanvas.getContext('2d');
@@ -3952,6 +4413,9 @@ const TRANSLATIONS = {
     mode_label: '🐾 Portrait mode',
     img_loaded: 'Image loaded',
     img_loaded: 'Image loaded',
+    sec_format: 'Format',
+    fmt_cs_sub: 'Thread on Aida',
+    fmt_my_sub: 'Delica DB-11 beads',
     // Paint editor
     btn_blank: '+ Start blank canvas',
     btn_edit: '✏️ Edit',
@@ -4049,6 +4513,9 @@ const TRANSLATIONS = {
     mode_label: '🐾 Modo retrato',
     img_loaded: 'Imagen cargada',
     img_loaded: 'Imagen cargada',
+    sec_format: 'Formato',
+    fmt_cs_sub: 'Hilo sobre tela Aida',
+    fmt_my_sub: 'Cuentas Delica DB-11',
     // Editor de pintura
     btn_blank: '+ Lienzo en blanco',
     btn_edit: '✏️ Editar',
@@ -4145,6 +4612,9 @@ const TRANSLATIONS = {
     mode_label: '🐾 Modo retrato',
     img_loaded: 'Imagem carregada',
     img_loaded: 'Imagem carregada',
+    sec_format: 'Formato',
+    fmt_cs_sub: 'Fio sobre tecido Aida',
+    fmt_my_sub: 'Contas Delica DB-11',
     // Editor de pintura
     btn_blank: '+ Tela em branco',
     btn_edit: '✏️ Editar',
@@ -4241,6 +4711,9 @@ const TRANSLATIONS = {
     mode_label: '🐾 Porträt-Modus',
     img_loaded: 'Bild geladen',
     img_loaded: 'Bild geladen',
+    sec_format: 'Format',
+    fmt_cs_sub: 'Faden auf Aida-Stoff',
+    fmt_my_sub: 'Delica DB-11 Perlen',
     // Mal-Editor
     btn_blank: '+ Leere Leinwand',
     btn_edit: '✏️ Bearbeiten',
@@ -4570,9 +5043,10 @@ function getCellFromEvent(e, canvas) {
   const scaleY = canvas.height / rect.height;
   const canvasX = (e.clientX - rect.left) * scaleX;
   const canvasY = (e.clientY - rect.top) * scaleY;
+  const cH2 = Math.round(zoom * getGeometry().cellH);
   return {
     x: Math.floor(canvasX / zoom),
-    y: Math.floor(canvasY / zoom)
+    y: Math.floor(canvasY / cH2)
   };
 }
 
@@ -4580,9 +5054,10 @@ function getCellFromTouch(touch, canvas) {
   const rect = canvas.getBoundingClientRect();
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
+  const cH2 = Math.round(zoom * getGeometry().cellH);
   return {
     x: Math.floor((touch.clientX - rect.left) * scaleX / zoom),
-    y: Math.floor((touch.clientY - rect.top) * scaleY / zoom)
+    y: Math.floor((touch.clientY - rect.top) * scaleY / cH2)
   };
 }
 
