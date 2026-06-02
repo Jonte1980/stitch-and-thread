@@ -399,6 +399,119 @@
     box-shadow: 0 4px 24px var(--shadow);
   }
 
+  /* PAINT EDITOR TOOLBAR */
+  .paint-toolbar {
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--linen);
+    display: none;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: #f0f8ff;
+    border-left: 3px solid #2a6496;
+  }
+  .paint-toolbar.visible { display: flex; }
+
+  .paint-tool-group {
+    display: flex;
+    gap: 0;
+    border: 1.5px solid var(--grid-line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .paint-tool-btn {
+    padding: 7px 12px;
+    border: none;
+    border-right: 1px solid var(--grid-line);
+    background: var(--cream);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 13px;
+    color: var(--warm-gray);
+    white-space: nowrap;
+  }
+  .paint-tool-btn:last-child { border-right: none; }
+  .paint-tool-btn:hover { background: var(--linen); color: var(--charcoal); }
+  .paint-tool-btn.active {
+    background: #2a6496;
+    color: white;
+    font-weight: 500;
+  }
+  .paint-tool-btn.active.eraser { background: #c0392b; }
+  .paint-tool-btn.active.eyedrop { background: #7d3c98; }
+
+  .active-color-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    border: 1.5px solid var(--grid-line);
+    background: var(--cream);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .active-color-display:hover { border-color: var(--gold); }
+  .active-color-swatch {
+    width: 22px;
+    height: 22px;
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .active-color-label {
+    font-family: 'Crimson Pro', serif;
+    font-size: 13px;
+    color: var(--charcoal);
+  }
+  .active-color-label small {
+    display: block;
+    font-size: 10px;
+    color: var(--warm-gray);
+    line-height: 1;
+  }
+
+  .paint-hint {
+    font-size: 12px;
+    color: #2a6496;
+    font-style: italic;
+    margin-left: auto;
+  }
+
+  .btn-edit-toggle {
+    padding: 7px 14px;
+    border: 1.5px solid #2a6496;
+    background: transparent;
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    color: #2a6496;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-edit-toggle:hover, .btn-edit-toggle.active {
+    background: #2a6496;
+    color: white;
+  }
+
+  .btn-undo {
+    padding: 5px 10px;
+    border: 1.5px solid var(--grid-line);
+    background: transparent;
+    font-family: 'Crimson Pro', serif;
+    font-size: 13px;
+    color: var(--warm-gray);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 3px;
+  }
+  .btn-undo:hover { border-color: var(--charcoal); color: var(--charcoal); }
+  .btn-undo:disabled { opacity: 0.4; cursor: not-allowed; }
+
   /* PROGRESS MODE */
   .progress-mode-bar {
     padding: 10px 20px;
@@ -1158,10 +1271,38 @@
           </div>
           <div class="toolbar-actions">
             <button class="btn-secondary" id="showGridBtn" onclick="toggleGrid()" style="display:none"><span data-i18n="btn_grid_on">Grid: ON</span></button>
+            <button class="btn-edit-toggle" id="editToggleBtn" onclick="toggleEditMode()" style="display:none">✏️ Edit</button>
             <button class="btn-secondary" id="downloadBtn" onclick="downloadPattern()" style="display:none">↓ <span data-i18n="btn_png">PNG</span></button>
             <button class="btn-secondary" id="pdfBtn" onclick="exportPDF()" style="display:none;border-color:var(--gold);color:var(--gold)">↓ <span data-i18n="btn_pdf">PDF Chart</span></button>
           </div>
         </div>
+      </div>
+
+      <!-- PAINT EDITOR TOOLBAR -->
+      <div class="paint-toolbar" id="paintToolbar">
+        <div class="paint-tool-group">
+          <button class="paint-tool-btn active" id="toolBrush" onclick="setTool('brush')" title="Brush — paint with active color">
+            🖌 Brush
+          </button>
+          <button class="paint-tool-btn eraser" id="toolEraser" onclick="setTool('eraser')" title="Eraser — restore original color">
+            ⌫ Eraser
+          </button>
+          <button class="paint-tool-btn eyedrop" id="toolEyedrop" onclick="setTool('eyedrop')" title="Eyedropper — pick color from canvas">
+            💧 Pick
+          </button>
+        </div>
+
+        <div class="active-color-display" id="activeColorDisplay" onclick="openChangeColorForBrush()" title="Click to change active color">
+          <div class="active-color-swatch" id="activeColorSwatch" style="background:#888"></div>
+          <div class="active-color-label">
+            <span id="activeColorCode">—</span>
+            <small id="activeColorName">No color selected</small>
+          </div>
+        </div>
+
+        <button class="btn-undo" id="undoBtn" onclick="undoPaint()" disabled title="Undo last paint action">↩ Undo</button>
+
+        <span class="paint-hint" id="paintHint">Click cells to paint · Drag to paint multiple</span>
       </div>
 
       <!-- PROGRESS MODE BAR -->
@@ -2927,8 +3068,11 @@ async function generatePattern() {
     finalColors[c] = (finalColors[c]||0) + 1;
   }
 
-  // Clear per-color brand overrides for new pattern
+  // Clear per-color brand overrides and paint edits for new pattern
   Object.keys(colorBrandOverride).forEach(k => delete colorBrandOverride[k]);
+  Object.keys(paintOverride).forEach(k => delete paintOverride[k]);
+  undoStack.length = 0;
+  if (editMode) toggleEditMode(); // close edit mode on regenerate
 
   // Reset progress for new pattern (different key = different pattern)
   const newKey = `${W}x${H}_${currentBrand}`;
@@ -2955,6 +3099,7 @@ async function generatePattern() {
     `<strong>${W}×${H}</strong> stitches &nbsp;·&nbsp; <strong>${Object.keys(finalColors).length}</strong> ${brandLabel} colors &nbsp;·&nbsp; <strong>${totalStitches.toLocaleString()}</strong> total stitches${modeTag}`;
 
   document.getElementById('showGridBtn').style.display = '';
+  document.getElementById('editToggleBtn').style.display = '';
   document.getElementById('downloadBtn').style.display = '';
   document.getElementById('pdfBtn').style.display = '';
   document.getElementById('progressModeBar').classList.add('visible');
@@ -2985,7 +3130,9 @@ function drawPattern(grid, W, H, colorCounts) {
   // Fill cells
   for (let y=0; y<H; y++) {
     for (let x=0; x<W; x++) {
-      const dmcIdx = grid[y*W+x];
+      const baseIdx = grid[y*W+x];
+      const key = `${x},${y}`;
+      const dmcIdx = paintOverride[key] !== undefined ? paintOverride[key] : baseIdx;
       ctx.fillStyle = getEffectiveEntry(dmcIdx).hex;
       ctx.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
     }
@@ -3035,7 +3182,9 @@ function drawPattern(grid, W, H, colorCounts) {
     ctx.font = `${Math.floor(cellSize*0.55)}px monospace`;
     for (let y=0; y<H; y++) {
       for (let x=0; x<W; x++) {
-        const dmcIdx = grid[y*W+x];
+        const baseIdx2 = grid[y*W+x];
+        const keyS = `${x},${y}`;
+        const dmcIdx = paintOverride[keyS] !== undefined ? paintOverride[keyS] : baseIdx2;
         const colorPos = sortedColors.indexOf(dmcIdx) % SYMBOLS.length;
         const sym = SYMBOLS[colorPos];
         const [r,g,b] = hexToRgb(getEffectiveEntry(dmcIdx).hex);
@@ -3141,57 +3290,86 @@ function updateProgressStats() {
   document.getElementById('pTrack').style.width = pct + '%';
 }
 
-// Canvas click handler for progress mode
-document.getElementById('patternCanvas').addEventListener('click', function(e) {
-  if (!progressMode || !currentPattern) return;
-  const rect = this.getBoundingClientRect();
-  // Account for canvas scaling (display vs actual pixels)
-  const scaleX = this.width / rect.width;
-  const scaleY = this.height / rect.height;
-  const canvasX = (e.clientX - rect.left) * scaleX;
-  const canvasY = (e.clientY - rect.top) * scaleY;
-  const cellX = Math.floor(canvasX / zoom);
-  const cellY = Math.floor(canvasY / zoom);
-  const { W, H } = currentPattern;
+// ============================================================
+// UNIFIED CANVAS INTERACTION (paint editor + progress mode)
+// ============================================================
+const _canvas = document.getElementById('patternCanvas');
+
+function handleCanvasCell(cellX, cellY) {
+  if (!currentPattern) return;
+  const { W, H, grid } = currentPattern;
   if (cellX < 0 || cellX >= W || cellY < 0 || cellY >= H) return;
 
-  const key = `${cellX},${cellY}`;
-  if (doneStitches.has(key)) {
-    doneStitches.delete(key);
-  } else {
-    doneStitches.add(key);
+  if (editMode) {
+    applyPaintAtCell(cellX, cellY);
+    return;
   }
-  saveProgress();
-  updateProgressStats();
 
-  // Redraw just the affected cell for performance
-  redrawCell(cellX, cellY);
+  if (progressMode) {
+    const key = `${cellX},${cellY}`;
+    if (doneStitches.has(key)) doneStitches.delete(key);
+    else doneStitches.add(key);
+    saveProgress();
+    updateProgressStats();
+    redrawCell(cellX, cellY);
+  }
+}
+
+// Mouse events (desktop) — support drag painting
+_canvas.addEventListener('mousedown', function(e) {
+  if (!editMode) return;
+  isPainting = true;
+  const { x, y } = getCellFromEvent(e, this);
+  handleCanvasCell(x, y);
+});
+_canvas.addEventListener('mousemove', function(e) {
+  if (!editMode || !isPainting) return;
+  if (activeTool === 'eyedrop') return; // eyedrop only on click
+  const { x, y } = getCellFromEvent(e, this);
+  handleCanvasCell(x, y);
+});
+_canvas.addEventListener('mouseup', () => { isPainting = false; });
+_canvas.addEventListener('mouseleave', () => { isPainting = false; });
+
+// Click (works for progress mode and single-cell paint)
+_canvas.addEventListener('click', function(e) {
+  if (editMode) return; // handled by mousedown/move
+  const rect = this.getBoundingClientRect();
+  const scaleX = this.width / rect.width;
+  const scaleY = this.height / rect.height;
+  const cellX = Math.floor((e.clientX - rect.left) * scaleX / zoom);
+  const cellY = Math.floor((e.clientY - rect.top) * scaleY / zoom);
+  handleCanvasCell(cellX, cellY);
 });
 
-// Touch support for mobile
-document.getElementById('patternCanvas').addEventListener('touchend', function(e) {
+// Touch events (mobile) — support drag painting
+_canvas.addEventListener('touchstart', function(e) {
+  if (!editMode) return;
+  e.preventDefault();
+  isPainting = true;
+  const { x, y } = getCellFromTouch(e.touches[0], this);
+  handleCanvasCell(x, y);
+}, { passive: false });
+
+_canvas.addEventListener('touchmove', function(e) {
+  if (!editMode || !isPainting) return;
+  if (activeTool === 'eyedrop') return;
+  e.preventDefault();
+  const { x, y } = getCellFromTouch(e.touches[0], this);
+  handleCanvasCell(x, y);
+}, { passive: false });
+
+_canvas.addEventListener('touchend', function(e) {
+  isPainting = false;
+  if (editMode) return;
+  // Progress mode touch
   if (!progressMode || !currentPattern) return;
   e.preventDefault();
   const touch = e.changedTouches[0];
   const rect = this.getBoundingClientRect();
-  const scaleX = this.width / rect.width;
-  const scaleY = this.height / rect.height;
-  const canvasX = (touch.clientX - rect.left) * scaleX;
-  const canvasY = (touch.clientY - rect.top) * scaleY;
-  const cellX = Math.floor(canvasX / zoom);
-  const cellY = Math.floor(canvasY / zoom);
-  const { W, H } = currentPattern;
-  if (cellX < 0 || cellX >= W || cellY < 0 || cellY >= H) return;
-
-  const key = `${cellX},${cellY}`;
-  if (doneStitches.has(key)) {
-    doneStitches.delete(key);
-  } else {
-    doneStitches.add(key);
-  }
-  saveProgress();
-  updateProgressStats();
-  redrawCell(cellX, cellY);
+  const cellX = Math.floor((touch.clientX - rect.left) * (this.width / rect.width) / zoom);
+  const cellY = Math.floor((touch.clientY - rect.top) * (this.height / rect.height) / zoom);
+  handleCanvasCell(cellX, cellY);
 }, { passive: false });
 
 function redrawCell(cellX, cellY) {
@@ -3199,7 +3377,9 @@ function redrawCell(cellX, cellY) {
   const ctx = canvas.getContext('2d');
   const { grid, W } = currentPattern;
   const cs = zoom;
-  const dmcIdx = grid[cellY * W + cellX];
+  const baseIdx = grid[cellY * W + cellX];
+  const dmcIdx = paintOverride[`${cellX},${cellY}`] !== undefined
+    ? paintOverride[`${cellX},${cellY}`] : baseIdx;
   const entry = getEffectiveEntry(dmcIdx);
   const [r,g,b] = hexToRgb(entry.hex);
 
@@ -3361,7 +3541,7 @@ function renderShoppingTable() {
     const rowHTML = `
       <td>
         <div class="td-color">
-          <div class="swatch-sym" style="background:${effectiveEntry.hex};color:${textColor}">${sym}</div>
+          <div class="swatch-sym" style="background:${effectiveEntry.hex};color:${textColor};cursor:pointer" title="Use as brush color" data-brush-idx="${dmcIdx}">${sym}</div>
           <div>
             <div class="td-code">${effectiveBrand.toUpperCase()} ${effectiveEntry.code}</div>
             <div class="td-name">${effectiveEntry.name}</div>
@@ -4016,8 +4196,23 @@ function initTableDelegation() {
   ['skeinTable','buyTable'].forEach(tableId => {
     const table = document.getElementById(tableId);
     if (!table) return;
-    table.addEventListener('click', function(e) {
+    // Remove old listener by cloning (simplest approach)
+    const clone = table.cloneNode(true);
+    table.parentNode.replaceChild(clone, table);
+    clone.addEventListener('click', function(e) {
       const btn = e.target.closest('button');
+      const swatch = e.target.closest('[data-brush-idx]');
+
+      // Swatch click — set as brush
+      if (swatch) {
+        const idx = Number(swatch.dataset.brushIdx);
+        if (editMode) {
+          setActivePaintColor(idx);
+          showToast('Brush color set');
+        }
+        return;
+      }
+
       if (!btn) return;
 
       // Change color button
@@ -4043,6 +4238,199 @@ function initTableDelegation() {
     });
   });
 }
+
+// ============================================================
+// PAINT EDITOR
+// ============================================================
+let editMode = false;
+let activeTool = 'brush';          // 'brush' | 'eraser' | 'eyedrop'
+let activePaintIdx = null;         // catalog index of brush color (in currentBrand)
+let activePaintEntry = null;       // the color entry
+let paintGrid = null;              // copy of grid that gets painted on
+let paintOverride = {};            // {cellKey: dmcIdx} cells that have been painted
+let undoStack = [];                // [{key, oldIdx, newIdx}] for undo
+let isPainting = false;            // mouse drag state
+
+const MAX_UNDO = 50;
+
+function toggleEditMode() {
+  editMode = !editMode;
+  const btn = document.getElementById('editToggleBtn');
+  const toolbar = document.getElementById('paintToolbar');
+  btn.classList.toggle('active', editMode);
+  btn.textContent = editMode ? '✏️ Editing' : '✏️ Edit';
+  toolbar.classList.toggle('visible', editMode);
+
+  if (editMode) {
+    // Clone grid for painting
+    paintGrid = new Int32Array(currentPattern.grid);
+    updateCursor();
+    // If no active color, pick the most-used one
+    if (!activePaintIdx && shoppingData.length > 0) {
+      const first = shoppingData[0];
+      setActivePaintColor(first.dmcIdx);
+    }
+  } else {
+    document.getElementById('patternCanvas').style.cursor = progressMode ? 'pointer' : 'crosshair';
+  }
+}
+
+function setTool(tool) {
+  activeTool = tool;
+  document.getElementById('toolBrush').classList.toggle('active', tool === 'brush');
+  document.getElementById('toolEraser').classList.toggle('active', tool === 'eraser');
+  document.getElementById('toolEyedrop').classList.toggle('active', tool === 'eyedrop');
+  updateCursor();
+  updatePaintHint();
+}
+
+function updateCursor() {
+  const canvas = document.getElementById('patternCanvas');
+  if (!editMode) { canvas.style.cursor = progressMode ? 'pointer' : 'crosshair'; return; }
+  if (activeTool === 'brush') canvas.style.cursor = 'cell';
+  else if (activeTool === 'eraser') canvas.style.cursor = 'not-allowed';
+  else if (activeTool === 'eyedrop') canvas.style.cursor = 'crosshair';
+}
+
+function updatePaintHint() {
+  const hints = {
+    brush: 'Click or drag to paint · Click active color to change',
+    eraser: 'Click or drag to erase (restore original color)',
+    eyedrop: 'Click a cell to pick its color as the active brush'
+  };
+  document.getElementById('paintHint').textContent = hints[activeTool];
+}
+
+function setActivePaintColor(dmcIdx) {
+  activePaintIdx = dmcIdx;
+  activePaintEntry = getEffectiveEntry(dmcIdx);
+  document.getElementById('activeColorSwatch').style.background = activePaintEntry.hex;
+  document.getElementById('activeColorCode').textContent =
+    getEffectiveBrand(dmcIdx).toUpperCase() + ' ' + activePaintEntry.code;
+  document.getElementById('activeColorName').textContent = activePaintEntry.name;
+  // Auto-switch to brush after picking
+  if (activeTool === 'eyedrop') setTool('brush');
+}
+
+function openChangeColorForBrush() {
+  if (!editMode) return;
+  // Open the change color modal but for brush selection
+  // We use a special mode: ccDmcIdx = -1 means "pick for brush"
+  ccDmcIdx = -999; // sentinel: brush pick mode
+  ccBrand = currentBrand;
+  ccSelectedIdx = null;
+  ccSelectedEntry = null;
+
+  // Show current brush as "current"
+  const cur = activePaintEntry || { hex: '#888', code: '—', name: 'No color' };
+  document.getElementById('ccCurrentSwatch').style.background = cur.hex;
+  document.getElementById('ccCurrentCode').textContent = 'Active brush';
+  document.getElementById('ccCurrentName').textContent = cur.name || '—';
+  document.getElementById('ccNewSwatch').style.background = 'transparent';
+  document.getElementById('ccNewCode').textContent = '—';
+  document.getElementById('ccNewName').textContent = '';
+  document.getElementById('ccApplyBtn').disabled = true;
+  document.getElementById('ccFooterHint').textContent = 'Select a color for the brush';
+
+  document.querySelectorAll('.cc-brand-tab').forEach(t =>
+    t.classList.toggle('active', t.classList.contains(ccBrand)));
+  document.getElementById('ccSearch').value = '';
+  document.getElementById('changeColorModal').classList.add('open');
+  renderCCChips();
+}
+
+// Override applyColorChange to handle brush pick mode
+const _origApplyColorChange = applyColorChange;
+function applyColorChange() {
+  if (ccDmcIdx === -999) {
+    // Brush pick mode — find or create a dmcIdx for this entry
+    // We need a stable key: use the index in the base catalog that's closest to this color
+    const [r,g,b] = hexToRgb(ccSelectedEntry.hex);
+    const baseIdx = findClosestInBrand(r,g,b, currentBrand, null);
+    // Store override so getEffectiveEntry works
+    colorBrandOverride[baseIdx] = { brand: ccBrand, idx: ccSelectedIdx, entry: ccSelectedEntry };
+    setActivePaintColor(baseIdx);
+    closeChangeColor();
+    showToast(`Brush: ${ccBrand.toUpperCase()} ${ccSelectedEntry.code}`);
+    return;
+  }
+  _origApplyColorChange();
+}
+
+// ---- CANVAS PAINT EVENTS ----
+function getCellFromEvent(e, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const canvasX = (e.clientX - rect.left) * scaleX;
+  const canvasY = (e.clientY - rect.top) * scaleY;
+  return {
+    x: Math.floor(canvasX / zoom),
+    y: Math.floor(canvasY / zoom)
+  };
+}
+
+function getCellFromTouch(touch, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: Math.floor((touch.clientX - rect.left) * scaleX / zoom),
+    y: Math.floor((touch.clientY - rect.top) * scaleY / zoom)
+  };
+}
+
+function applyPaintAtCell(cellX, cellY) {
+  if (!currentPattern) return;
+  const { W, H, grid } = currentPattern;
+  if (cellX < 0 || cellX >= W || cellY < 0 || cellY >= H) return;
+
+  const key = `${cellX},${cellY}`;
+  const currentIdx = paintOverride[key] !== undefined ? paintOverride[key] : grid[cellY * W + cellX];
+
+  if (activeTool === 'eyedrop') {
+    setActivePaintColor(currentIdx);
+    return;
+  }
+
+  if (activeTool === 'eraser') {
+    const originalIdx = grid[cellY * W + cellX];
+    if (currentIdx === originalIdx) return; // already original
+    pushUndo(key, currentIdx, originalIdx);
+    delete paintOverride[key];
+    redrawCell(cellX, cellY);
+    return;
+  }
+
+  // Brush
+  if (activePaintIdx === null) { showToast('Select a color first'); return; }
+  if (currentIdx === activePaintIdx) return; // already this color
+  pushUndo(key, currentIdx, activePaintIdx);
+  paintOverride[key] = activePaintIdx;
+  redrawCell(cellX, cellY);
+}
+
+function pushUndo(key, oldIdx, newIdx) {
+  undoStack.push({ key, oldIdx, newIdx });
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+  document.getElementById('undoBtn').disabled = false;
+}
+
+function undoPaint() {
+  if (!undoStack.length) return;
+  const { key, oldIdx } = undoStack.pop();
+  const [cx, cy] = key.split(',').map(Number);
+  if (oldIdx === currentPattern.grid[cy * currentPattern.W + cx]) {
+    delete paintOverride[key];
+  } else {
+    paintOverride[key] = oldIdx;
+  }
+  redrawCell(cx, cy);
+  document.getElementById('undoBtn').disabled = undoStack.length === 0;
+}
+
+// Show edit toggle after generation
+// (wired below in generatePattern show section)
 
 // ============================================================
 // CHANGE COLOR MODAL
