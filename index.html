@@ -791,6 +791,71 @@
   .cbrand-btn.active.cosmo   { background: #196f3d; border-color: #196f3d !important; }
   .cbrand-btn.active.madeira { background: #7d6608; border-color: #7d6608 !important; }
 
+  /* W×H SIZE INPUTS */
+  .size-wh-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .size-wh-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .size-wh-field label {
+    font-size: 10px;
+    color: var(--warm-gray);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .size-wh-input {
+    width: 100%;
+    padding: 7px 4px;
+    border: 1.5px solid var(--grid-line);
+    background: var(--cream);
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--thread-red);
+    outline: none;
+    text-align: center;
+    transition: border-color 0.15s;
+  }
+  .size-wh-input:focus { border-color: var(--thread-red); }
+  .size-wh-sep {
+    font-size: 18px;
+    color: var(--warm-gray);
+    font-weight: 300;
+    flex-shrink: 0;
+    padding-top: 16px;
+  }
+  .lock-btn {
+    width: 28px;
+    height: 28px;
+    border: 1.5px solid var(--grid-line);
+    background: var(--cream);
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    margin-top: 16px;
+    transition: all 0.15s;
+  }
+  .lock-btn:hover { border-color: var(--charcoal); }
+  .lock-btn.locked { background: var(--thread-red); border-color: var(--thread-red); color: white; }
+  .size-hint-row {
+    font-size: 11px;
+    color: var(--warm-gray);
+    text-align: center;
+    font-style: italic;
+  }
+
   /* MIYUKI OPTIONS PANEL */
   .miyuki-options {
     display: none;
@@ -1390,16 +1455,35 @@
       </div>
 
       <!-- Controls -->
-      <div class="panel-section">
+      <div class="panel-section" id="patternSizeSection">
         <div class="section-label" data-i18n="sec_size">Pattern Size</div>
+
+        <!-- W -->
         <div class="control-group">
           <div class="control-label">
             <span data-i18n="lbl_width">Width in stitches</span>
-            <span class="control-value" id="widthVal">80</span>
+            <span class="control-value" id="patternWVal">80</span>
           </div>
-          <input type="range" id="widthSlider" min="30" max="200" value="80"
-            oninput="document.getElementById('widthVal').textContent=this.value">
+          <input type="range" id="patternWSlider" min="10" max="400" value="80"
+            oninput="syncSize('w', this.value)">
         </div>
+
+        <!-- H + lock -->
+        <div class="control-group">
+          <div class="control-label">
+            <span data-i18n="lbl_height">Height in stitches</span>
+            <span class="control-value" id="patternHVal">120</span>
+            <button class="lock-btn locked" id="ratioLockBtn" onclick="toggleRatioLock()"
+              title="Lock aspect ratio" style="margin-left:6px">🔒</button>
+          </div>
+          <input type="range" id="patternHSlider" min="10" max="600" value="120"
+            oninput="syncSize('h', this.value)">
+        </div>
+
+        <!-- hidden number inputs kept for JS compatibility -->
+        <input type="hidden" id="patternW" value="80">
+        <input type="hidden" id="patternH" value="120">
+        <div class="size-hint-row" id="sizeHintRow" style="margin-top:4px">80 × 120 stitches</div>
       </div>
 
       <div class="panel-section">
@@ -3448,6 +3532,7 @@ document.getElementById('fileInput').addEventListener('change', e => {
       area.classList.add('has-image');
       document.getElementById('generateBtn').disabled = false;
       document.getElementById('canvasInfo').textContent = `${t('img_loaded')}: ${img.width}×${img.height}px`;
+      setRatioFromImage(img);
     };
     img.src = ev.target.result;
   };
@@ -3500,10 +3585,10 @@ function selectFormat(fmt) {
   }
 
   // Update width label
-  const geo = getGeometry();
-  document.querySelectorAll('[data-i18n="lbl_width"]').forEach(el => {
-    el.textContent = isMiyuki ? `Width in ${geo.unitPlural}` : t('lbl_width');
-  });
+  // Width label not needed for cross-stitch (using W×H inputs now)
+  // Show/hide size section based on format
+  const sizeSection = document.getElementById('patternSizeSection');
+  if (sizeSection) sizeSection.style.display = isMiyuki ? 'none' : '';
 
   // Regenerate if pattern exists
   if (currentPattern && sourceImage) generatePattern();
@@ -3555,14 +3640,16 @@ async function generatePattern() {
 async function _generatePatternImpl() {
   if (!sourceImage) return;
 
-  // For Miyuki, use the bead dimensions from the options panel
+  // Pattern dimensions
   let W, H_override = null;
   if (currentFormat === 'miyuki') {
     const dims = getMiyukiPatternDimensions();
     W = dims.W;
     H_override = dims.H;
   } else {
-    W = parseInt(document.getElementById('widthSlider').value);
+    W = getPatternW();
+    // H_override from patternH input (respects lock)
+    H_override = parseInt(document.getElementById('patternH').value) || null;
   }
   const numColors = parseInt(document.getElementById('colorsSlider').value);
   const antiStrength = parseInt(document.getElementById('antiSlider').value);
@@ -4578,6 +4665,9 @@ const TRANSLATIONS = {
     upload_title: 'Upload your image',
     upload_sub: 'JPG, PNG, WebP — any size',
     lbl_width: 'Width in stitches',
+    lbl_w: 'W', lbl_h: 'H',
+    lbl_width: 'Width in stitches',
+    lbl_height: 'Height in stitches',
     lbl_colors: 'Number of thread colors',
     lbl_anti: 'Anti-confetti strength',
     lbl_anti_sub: 'Higher = fewer isolated stitches',
@@ -4678,6 +4768,8 @@ const TRANSLATIONS = {
     upload_title: 'Sube tu imagen',
     upload_sub: 'JPG, PNG, WebP — cualquier tamaño',
     lbl_width: 'Ancho en puntos',
+    lbl_w: 'A', lbl_h: 'H',
+    lbl_height: 'Alto en puntos',
     lbl_colors: 'Número de colores de hilo',
     lbl_anti: 'Anti-confetti',
     lbl_anti_sub: 'Mayor = menos puntos aislados',
@@ -4777,6 +4869,8 @@ const TRANSLATIONS = {
     upload_title: 'Envie sua imagem',
     upload_sub: 'JPG, PNG, WebP — qualquer tamanho',
     lbl_width: 'Largura em pontos',
+    lbl_w: 'L', lbl_h: 'A',
+    lbl_height: 'Altura em pontos',
     lbl_colors: 'Número de cores de fio',
     lbl_anti: 'Anti-confete',
     lbl_anti_sub: 'Mais alto = menos pontos isolados',
@@ -4876,6 +4970,8 @@ const TRANSLATIONS = {
     upload_title: 'Bild hochladen',
     upload_sub: 'JPG, PNG, WebP — beliebige Größe',
     lbl_width: 'Breite in Stichen',
+    lbl_w: 'B', lbl_h: 'H',
+    lbl_height: 'H\u00f6he in Stichen',
     lbl_colors: 'Anzahl der Garnfarben',
     lbl_anti: 'Anti-Konfetti-Stärke',
     lbl_anti_sub: 'Höher = weniger einzelne Stiche',
@@ -5087,6 +5183,77 @@ function initTableDelegation() {
       }
     });
   });
+}
+
+// ============================================================
+// PATTERN SIZE — W×H with ratio lock
+// ============================================================
+let ratioLocked = true;
+let patternRatio = null; // H/W ratio, set when image loads or from current values
+
+function toggleRatioLock() {
+  ratioLocked = !ratioLocked;
+  const btn = document.getElementById('ratioLockBtn');
+  btn.classList.toggle('locked', ratioLocked);
+  btn.textContent = ratioLocked ? '🔒' : '🔓';
+  btn.title = ratioLocked ? 'Lock aspect ratio' : 'Unlock aspect ratio';
+}
+
+function syncSize(changed, val) {
+  let W = parseInt(val);
+  let H = changed === 'h' ? W : null;
+  W = changed === 'w' ? W : parseInt(document.getElementById('patternWSlider').value) || 80;
+  H = changed === 'h' ? parseInt(val) : parseInt(document.getElementById('patternHSlider').value) || 120;
+
+  if (ratioLocked && patternRatio) {
+    if (changed === 'w') {
+      H = Math.max(10, Math.min(600, Math.round(W * patternRatio)));
+      document.getElementById('patternHSlider').value = H;
+    } else {
+      W = Math.max(10, Math.min(400, Math.round(H / patternRatio)));
+      document.getElementById('patternWSlider').value = W;
+    }
+  }
+
+  document.getElementById('patternWVal').textContent = W;
+  document.getElementById('patternHVal').textContent = H;
+  document.getElementById('patternW').value = W;
+  document.getElementById('patternH').value = H;
+  updateSizeHint();
+}
+
+// Keep backward compat
+function onPatternSizeChange(changed) { syncSize(changed, changed === 'w' ?
+  document.getElementById('patternWSlider').value :
+  document.getElementById('patternHSlider').value); }
+
+function updateSizeHint() {
+  const W = parseInt(document.getElementById('patternW').value) || 80;
+  const H = parseInt(document.getElementById('patternH').value) || 120;
+  const hint = document.getElementById('sizeHintRow');
+  if (hint) hint.textContent = `${W} × ${H} stitches`;
+}
+
+// Set ratio from image when loaded
+function setRatioFromImage(img) {
+  patternRatio = img.height / img.width;
+  const W = parseInt(document.getElementById('patternW').value) || 80;
+  const H = Math.max(10, Math.min(600, Math.round(W * patternRatio)));
+  document.getElementById('patternH').value = H;
+  document.getElementById('patternHSlider').value = H;
+  document.getElementById('patternHVal').textContent = H;
+  updateSizeHint();
+}
+
+// Compatibility: widthSlider shim — generatePattern uses this
+// We replace the slider read with the input read
+function getPatternW() {
+  if (currentFormat === 'miyuki') return getMiyukiPatternDimensions().W;
+  return parseInt(document.getElementById('patternW').value) || 80;
+}
+function getPatternH(ratio) {
+  if (currentFormat === 'miyuki') return getMiyukiPatternDimensions().H;
+  return parseInt(document.getElementById('patternH').value) || Math.round(getPatternW() * ratio);
 }
 
 // ============================================================
@@ -5375,8 +5542,8 @@ function startBlankCanvas() {
     const dims = getMiyukiPatternDimensions();
     W = dims.W; H = dims.H;
   } else {
-    W = parseInt(document.getElementById('widthSlider').value);
-    H = Math.round(W * 1.2);
+    W = getPatternW();
+    H = parseInt(document.getElementById('patternH').value) || Math.round(W * 1.2);
   }
 
   // Find the White/Ecru index in current brand
