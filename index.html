@@ -335,6 +335,25 @@
     box-shadow: none;
   }
 
+  .btn-blank-canvas {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    color: var(--warm-gray);
+    border: 1.5px dashed var(--grid-line);
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .btn-blank-canvas:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    border-style: solid;
+  }
+
   /* CANVAS AREA */
   .canvas-area {
     background: var(--warm-white);
@@ -1251,6 +1270,9 @@
       <!-- Generate -->
       <button class="btn-generate" id="generateBtn" onclick="generatePattern()" disabled>
         <span data-i18n="btn_generate">Generate Pattern</span>
+      </button>
+      <button class="btn-blank-canvas" id="blankCanvasBtn" onclick="startBlankCanvas()">
+        ✦ Start blank canvas
       </button>
 
     </div>
@@ -4241,6 +4263,71 @@ function initTableDelegation() {
 }
 
 // ============================================================
+// BLANK CANVAS
+// ============================================================
+function startBlankCanvas() {
+  const W = parseInt(document.getElementById('widthSlider').value);
+  // Use a square-ish canvas — ask user for height or default to W
+  const H = Math.round(W * 1.2); // default portrait ratio
+
+  // Find the White/Ecru index in current brand
+  const catalog = BRAND_CATALOG[currentBrand];
+  let blankIdx = 0;
+  for (let i = 0; i < catalog.length; i++) {
+    const h = catalog[i].hex.toUpperCase();
+    if (h === '#FFFFFF' || h === '#FAFAF0' || h === '#F8F8F8') { blankIdx = i; break; }
+  }
+
+  // Build an empty grid filled with the white/blank color
+  const grid = new Int32Array(W * H).fill(blankIdx);
+
+  // Clear paint state
+  Object.keys(paintOverride).forEach(k => delete paintOverride[k]);
+  Object.keys(colorBrandOverride).forEach(k => delete colorBrandOverride[k]);
+  undoStack.length = 0;
+  doneStitches.clear();
+
+  // Set as current pattern (no source image needed)
+  currentPattern = { grid, W, H };
+
+  // Build a minimal currentColors with just the blank color
+  currentColors = { [blankIdx]: W * H };
+
+  // Show canvas
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('patternCanvas').style.display = '';
+  document.getElementById('progressModeBar').classList.add('visible');
+  document.getElementById('showGridBtn').style.display = '';
+  document.getElementById('editToggleBtn').style.display = '';
+  document.getElementById('downloadBtn').style.display = '';
+  document.getElementById('pdfBtn').style.display = '';
+
+  // Update info bar
+  document.getElementById('canvasInfo').innerHTML =
+    `<strong>${W}×${H}</strong> blank canvas — paint freely`;
+
+  // Draw the blank grid
+  drawPattern(grid, W, H, currentColors);
+
+  // Build minimal legend
+  shoppingData = [{
+    dmcIdx: blankIdx,
+    dmc: getBrandEntry(currentBrand, blankIdx),
+    brand: currentBrand,
+    count: W * H,
+    needed: calcSkeinsNeeded(W * H),
+    sym: SYMBOLS[0]
+  }];
+  renderShoppingTable();
+  document.getElementById('legend').classList.add('visible');
+
+  // Auto-enter edit mode
+  if (!editMode) toggleEditMode();
+
+  showToast(`Blank canvas ${W}×${H} — start painting!`);
+}
+
+// ============================================================
 // PAINT EDITOR
 // ============================================================
 let editMode = false;
@@ -4387,11 +4474,50 @@ function applyPaintAtCell(cellX, cellY) {
 
   // Brush
   if (activePaintIdx === null) { showToast('Select a color first'); return; }
-  // Skip if cell already has exactly this color (same entry hex)
   if (currentIdx === activePaintIdx && !colorBrandOverride[activePaintIdx]) return;
   pushUndo(key, currentIdx, activePaintIdx);
   paintOverride[key] = activePaintIdx;
   redrawCell(cellX, cellY);
+
+  // Update currentColors to include painted color
+  if (!currentColors[activePaintIdx]) {
+    currentColors[activePaintIdx] = 0;
+    // Rebuild shoppingData to include new color
+    rebuildShoppingFromPaint();
+  }
+}
+
+function rebuildShoppingFromPaint() {
+  // Recount all colors including paint overrides
+  if (!currentPattern) return;
+  const { grid, W, H } = currentPattern;
+  const counts = {};
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const key = `${x},${y}`;
+      const idx = paintOverride[key] !== undefined ? paintOverride[key] : grid[y * W + x];
+      counts[idx] = (counts[idx] || 0) + 1;
+    }
+  }
+  currentColors = counts;
+  // Rebuild shoppingData preserving existing sym assignments
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const existingSymMap = {};
+  shoppingData.forEach((d, i) => { existingSymMap[d.dmcIdx] = d.sym; });
+  let symIdx = 0;
+  shoppingData = sorted.map(([idx, count]) => {
+    const dmcIdx = Number(idx);
+    const sym = existingSymMap[dmcIdx] || SYMBOLS[symIdx++ % SYMBOLS.length];
+    return {
+      dmcIdx,
+      dmc: getBrandEntry(currentBrand, dmcIdx),
+      brand: currentBrand,
+      count,
+      needed: calcSkeinsNeeded(count),
+      sym
+    };
+  });
+  renderShoppingTable();
 }
 
 function pushUndo(key, oldIdx, newIdx) {
