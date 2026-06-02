@@ -2623,15 +2623,23 @@ uploadArea.addEventListener('drop', e => {
 let currentBrand = 'dmc';
 
 function selectBrand(btn) {
+  const newBrand = btn.dataset.brand;
+  if (newBrand === currentBrand) return; // already selected
   document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  currentBrand = btn.dataset.brand;
-  // Reset thread box when switching brand (thread box is brand-specific)
+  currentBrand = newBrand;
+
+  // Reset thread box when switching brand (indices are brand-specific)
   if (myThreadBox.size > 0) {
     myThreadBox.clear();
     document.getElementById('threadBoxBadge').style.display = 'none';
     document.getElementById('threadBoxToggle').classList.remove('active');
-    showToast(t('brand_changed'));
+  }
+
+  // Auto-regenerate if a pattern already exists
+  if (currentPattern && sourceImage) {
+    showToast(btn.textContent.trim().split('\n')[0] + ' — regenerating…');
+    generatePattern();
   }
 }
 
