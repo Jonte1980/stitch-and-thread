@@ -1,0 +1,3793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stitch & Thread — Cross-Stitch Pattern Generator</title>
+<!-- VERSION: Beta 0.1 — Full feature build -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --cream: #f5f0e8;
+    --linen: #ede8dc;
+    --warm-white: #faf7f2;
+    --thread-red: #8b2635;
+    --thread-red-light: #c4404f;
+    --charcoal: #2a2420;
+    --warm-gray: #7a7068;
+    --gold: #b8974a;
+    --grid-line: #d4cfc4;
+    --shadow: rgba(42,36,32,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--cream);
+    color: var(--charcoal);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* Aida cloth texture background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 11px, rgba(180,170,155,0.08) 11px, rgba(180,170,155,0.08) 12px),
+      repeating-linear-gradient(90deg, transparent, transparent 11px, rgba(180,170,155,0.08) 11px, rgba(180,170,155,0.08) 12px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+
+  /* HEADER */
+  header {
+    padding: 40px 0 32px;
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    border-bottom: 1px solid var(--grid-line);
+    margin-bottom: 40px;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--charcoal);
+    letter-spacing: -0.5px;
+  }
+
+  .logo span {
+    color: var(--thread-red);
+    font-style: italic;
+  }
+
+  .tagline {
+    font-size: 14px;
+    color: var(--warm-gray);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  .lang-selector {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .lang-btn {
+    padding: 4px 10px;
+    border: 1.5px solid var(--grid-line);
+    background: transparent;
+    font-family: 'Crimson Pro', serif;
+    font-size: 13px;
+    color: var(--warm-gray);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+  }
+  .lang-btn:hover { border-color: var(--charcoal); color: var(--charcoal); }
+  .lang-btn.active { border-color: var(--thread-red); color: var(--thread-red); background: #fdf5f5; font-weight: 500; }
+
+  /* MAIN LAYOUT */
+  .main {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  /* PANEL */
+  .panel {
+    background: var(--warm-white);
+    border: 1px solid var(--grid-line);
+    padding: 28px;
+    position: sticky;
+    top: 24px;
+  }
+
+  .panel-section {
+    margin-bottom: 28px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--linen);
+  }
+
+  .panel-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .section-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--linen);
+  }
+
+  /* UPLOAD AREA */
+  .upload-area {
+    position: relative;
+    border: 2px dashed var(--grid-line);
+    padding: 32px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--cream);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-area:hover {
+    border-color: var(--thread-red);
+    background: #fdf5f5;
+  }
+
+  .upload-area.has-image {
+    padding: 0;
+    border-style: solid;
+    border-color: var(--gold);
+  }
+
+  .upload-area img.preview {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .upload-icon {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 12px;
+    opacity: 0.4;
+  }
+
+  .upload-text {
+    font-size: 14px;
+    color: var(--warm-gray);
+  }
+
+  .upload-text strong {
+    color: var(--thread-red);
+    display: block;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  #fileInput { display: none; }
+
+  /* CONTROLS */
+  .control-group {
+    margin-bottom: 18px;
+  }
+
+  .control-group:last-child { margin-bottom: 0; }
+
+  .control-label {
+    font-size: 13px;
+    color: var(--warm-gray);
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .control-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    color: var(--thread-red);
+    font-weight: 700;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 3px;
+    background: var(--linen);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--thread-red);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  /* BRAND SELECTOR */
+  .brand-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .brand-btn {
+    padding: 10px 8px;
+    border: 1.5px solid var(--grid-line);
+    background: var(--cream);
+    cursor: pointer;
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    color: var(--charcoal);
+    text-align: center;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .brand-btn:hover {
+    border-color: var(--warm-gray);
+  }
+
+  .brand-btn.active {
+    border-color: var(--thread-red);
+    background: #fdf5f5;
+    color: var(--thread-red);
+    font-weight: 500;
+  }
+
+  .brand-btn .brand-count {
+    display: block;
+    font-size: 11px;
+    color: var(--warm-gray);
+    margin-top: 2px;
+  }
+
+  .brand-btn.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .lock-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 10px;
+    background: var(--gold);
+    color: white;
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+
+  /* GENERATE BUTTON */
+  .btn-generate {
+    width: 100%;
+    padding: 14px;
+    background: var(--thread-red);
+    color: white;
+    border: none;
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-generate:hover {
+    background: var(--thread-red-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(139,38,53,0.3);
+  }
+
+  .btn-generate:disabled {
+    background: var(--warm-gray);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* CANVAS AREA */
+  .canvas-area {
+    background: var(--warm-white);
+    border: 1px solid var(--grid-line);
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .canvas-toolbar {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--linen);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .canvas-info {
+    font-size: 13px;
+    color: var(--warm-gray);
+  }
+
+  .canvas-info strong {
+    color: var(--charcoal);
+  }
+
+  .toolbar-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-secondary {
+    padding: 7px 16px;
+    border: 1.5px solid var(--grid-line);
+    background: transparent;
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    color: var(--charcoal);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--thread-red);
+    color: var(--thread-red);
+  }
+
+  .canvas-wrapper {
+    flex: 1;
+    padding: 24px;
+    overflow: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  #patternCanvas {
+    image-rendering: pixelated;
+    cursor: crosshair;
+    box-shadow: 0 4px 24px var(--shadow);
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    text-align: center;
+  }
+
+  .empty-state .big-x {
+    font-family: 'Playfair Display', serif;
+    font-size: 120px;
+    color: var(--linen);
+    line-height: 1;
+    margin-bottom: 20px;
+    font-style: italic;
+    user-select: none;
+  }
+
+  .empty-state p {
+    font-size: 16px;
+    color: var(--warm-gray);
+    max-width: 280px;
+  }
+
+  /* SHOPPING LIST / LEGEND */
+  .legend {
+    border-top: 1px solid var(--linen);
+    display: none;
+  }
+  .legend.visible { display: block; }
+
+  .legend-header {
+    padding: 16px 24px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    border-bottom: 1px solid var(--linen);
+  }
+
+  .legend-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+  }
+
+  .legend-summary {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .summary-pill {
+    font-size: 12px;
+    color: var(--warm-gray);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .summary-pill strong { color: var(--charcoal); font-size: 15px; }
+  .summary-pill.buy strong { color: var(--thread-red); }
+  .summary-pill.owned strong { color: #3a7d44; }
+
+  .legend-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--linen);
+  }
+  .legend-tab {
+    padding: 10px 20px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    color: var(--warm-gray);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .legend-tab:hover { color: var(--charcoal); }
+  .legend-tab.active { color: var(--thread-red); border-bottom-color: var(--thread-red); }
+
+  .legend-body { padding: 16px 24px 24px; }
+
+  /* TABLE */
+  .skein-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .skein-table th {
+    text-align: left;
+    font-family: 'Playfair Display', serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--linen);
+  }
+  .skein-table th.right { text-align: right; }
+  .skein-table th.center { text-align: center; }
+
+  .skein-row {
+    border-bottom: 1px solid var(--linen);
+    transition: background 0.1s;
+  }
+  .skein-row:hover { background: var(--linen); }
+  .skein-row.complete td { opacity: 0.45; }
+  .skein-row.complete .need-badge { background: #3a7d44; }
+
+  .skein-row td { padding: 7px 8px; vertical-align: middle; }
+
+  .swatch-sym {
+    width: 26px; height: 26px;
+    border: 1px solid rgba(0,0,0,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+
+  .td-color { display: flex; align-items: center; gap: 8px; }
+  .td-code { font-weight: 500; color: var(--charcoal); }
+  .td-name { font-size: 11px; color: var(--warm-gray); }
+  .td-stitches { color: var(--warm-gray); font-size: 12px; text-align: right; }
+  .td-needed { text-align: center; font-weight: 700; color: var(--charcoal); }
+
+  /* STOCK STEPPER */
+  .stock-stepper {
+    display: flex; align-items: center; gap: 4px; justify-content: center;
+  }
+  .step-btn {
+    width: 22px; height: 22px;
+    border: 1.5px solid var(--grid-line);
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--charcoal);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 2px;
+    line-height: 1;
+    transition: all 0.12s;
+    padding: 0;
+  }
+  .step-btn:hover { border-color: var(--thread-red); color: var(--thread-red); }
+  .step-val {
+    min-width: 22px; text-align: center;
+    font-size: 14px; font-weight: 500; color: var(--charcoal);
+  }
+
+  /* NEED BADGE */
+  .need-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--thread-red);
+    color: white;
+  }
+  .need-badge.zero { background: #3a7d44; }
+  .need-badge.partial { background: var(--gold); }
+
+  .td-need { text-align: center; }
+
+  /* BUY LIST VIEW */
+  .buy-list { display: none; }
+  .buy-list.active { display: block; }
+  .all-list { display: none; }
+  .all-list.active { display: block; }
+
+  .buy-empty {
+    text-align: center; padding: 32px; color: var(--warm-gray);
+    font-style: italic; font-size: 15px;
+  }
+
+  .export-shopping-btn {
+    margin-top: 16px;
+    padding: 9px 20px;
+    border: 1.5px solid var(--gold);
+    background: transparent;
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    color: var(--gold);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .export-shopping-btn:hover { background: var(--gold); color: white; }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    height: 3px;
+    background: var(--linen);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--thread-red);
+    width: 0%;
+    transition: width 0.1s;
+  }
+
+  /* ZOOM CONTROLS */
+  .zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .zoom-btn {
+    width: 28px;
+    height: 28px;
+    border: 1.5px solid var(--grid-line);
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--charcoal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    font-family: monospace;
+  }
+
+  .zoom-btn:hover {
+    border-color: var(--thread-red);
+    color: var(--thread-red);
+  }
+
+  .zoom-level {
+    font-size: 13px;
+    color: var(--warm-gray);
+    min-width: 36px;
+    text-align: center;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--charcoal);
+    color: white;
+    padding: 12px 20px;
+    font-size: 14px;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 100;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* ANTICONFETTI INDICATOR */
+  .anti-confetti-demo {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--warm-gray);
+    font-style: italic;
+  }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+    .panel { position: static; }
+  }
+
+  .thread-box-toggle {
+    width: 100%; padding: 10px 12px; border: 1.5px dashed var(--grid-line);
+    background: transparent; font-family: "Crimson Pro", serif; font-size: 14px;
+    color: var(--warm-gray); cursor: pointer; text-align: left;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: all 0.2s; margin-top: 10px;
+  }
+  .thread-box-toggle:hover { border-color: var(--gold); color: var(--gold); }
+  .thread-box-toggle.active { border-color: var(--gold); color: var(--gold); background: #fdf8ee; border-style: solid; }
+  .tb-badge { background: var(--gold); color: white; font-size: 11px; padding: 1px 7px; border-radius: 10px; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(42,36,32,0.55); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--warm-white); width: 680px; max-width: 96vw; max-height: 86vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--linen); display: flex; align-items: baseline; justify-content: space-between; flex-shrink: 0; }
+  .modal-title { font-family: "Playfair Display", serif; font-size: 20px; font-weight: 700; }
+  .modal-title span { color: var(--gold); font-style: italic; }
+  .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--warm-gray); }
+  .modal-close:hover { color: var(--thread-red); }
+  .modal-search-bar { padding: 12px 24px; border-bottom: 1px solid var(--linen); display: flex; gap: 10px; align-items: center; flex-shrink: 0; flex-wrap: wrap; }
+  .modal-search-bar input { flex: 1; min-width: 140px; padding: 8px 12px; border: 1.5px solid var(--grid-line); background: var(--cream); font-family: "Crimson Pro", serif; font-size: 15px; color: var(--charcoal); outline: none; }
+  .modal-search-bar input:focus { border-color: var(--gold); }
+  .modal-stat { font-size: 13px; color: var(--warm-gray); white-space: nowrap; }
+  .modal-stat strong { color: var(--gold); }
+  .btn-tiny { padding: 5px 10px; border: 1.5px solid var(--grid-line); background: transparent; font-family: "Crimson Pro", serif; font-size: 13px; color: var(--warm-gray); cursor: pointer; transition: all 0.15s; }
+  .btn-tiny:hover { border-color: var(--charcoal); color: var(--charcoal); }
+  .modal-color-list { flex: 1; overflow-y: auto; padding: 12px 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; align-content: start; }
+  .color-chip { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1.5px solid transparent; cursor: pointer; transition: all 0.12s; user-select: none; background: var(--cream); }
+  .color-chip:hover { border-color: var(--grid-line); }
+  .color-chip.selected { border-color: var(--gold); background: #fdf8ee; }
+  .chip-swatch { width: 20px; height: 20px; border: 1px solid rgba(0,0,0,0.15); flex-shrink: 0; }
+  .chip-info { min-width: 0; }
+  .chip-code { font-size: 13px; font-weight: 500; color: var(--charcoal); }
+  .chip-name { font-size: 11px; color: var(--warm-gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chip-check { margin-left: auto; width: 14px; height: 14px; border: 1.5px solid var(--grid-line); border-radius: 2px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+  .color-chip.selected .chip-check { background: var(--gold); border-color: var(--gold); color: white; }
+  .modal-footer { padding: 14px 24px; border-top: 1px solid var(--linen); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 12px; }
+  .btn-confirm { padding: 10px 24px; background: var(--gold); color: white; border: none; font-family: "Playfair Display", serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-confirm:hover { background: #a8843a; }
+  .btn-confirm:disabled { background: var(--warm-gray); cursor: not-allowed; }
+
+  /* PORTRAIT MODE */
+  .mode-toggle-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 0;
+  }
+  .mode-btn {
+    padding: 12px 8px 10px;
+    border: 1.5px solid var(--grid-line);
+    background: var(--cream);
+    cursor: pointer;
+    font-family: "Crimson Pro", serif;
+    font-size: 14px;
+    color: var(--charcoal);
+    text-align: center;
+    transition: all 0.2s;
+    line-height: 1.3;
+  }
+  .mode-btn:hover { border-color: var(--warm-gray); }
+  .mode-btn.active { border-color: var(--thread-red); background: #fdf5f5; color: var(--thread-red); font-weight: 500; }
+  .mode-btn .mode-icon { font-size: 20px; display: block; margin-bottom: 3px; }
+  .mode-btn .mode-sub { font-size: 11px; color: var(--warm-gray); display: block; }
+  .mode-btn.active .mode-sub { color: var(--thread-red-light); }
+
+  .portrait-options {
+    display: none;
+    margin-top: 14px;
+  }
+  .portrait-options.visible { display: block; }
+  .portrait-hint {
+    font-size: 12px;
+    color: var(--warm-gray);
+    font-style: italic;
+    line-height: 1.5;
+    padding: 10px 12px;
+    background: var(--linen);
+    border-left: 3px solid var(--thread-red);
+    margin-bottom: 14px;
+  }
+</style>
+</head>
+<body>
+<div id="testerBanner" style="
+  background:#2a2420;color:#f5f0e8;padding:10px 20px;
+  font-family:'Crimson Pro',Georgia,serif;font-size:14px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;border-bottom:2px solid #8b2635;">
+  <span>
+    🧪 <strong>Beta 0.1 — Tester build</strong> &nbsp;·&nbsp;
+    Upload any image → pick a brand (DMC / Anchor / Cosmo / Madeira) → Generate Pattern &nbsp;·&nbsp;
+    Try portrait mode with a pet photo &nbsp;·&nbsp;
+    Export PDF + shopping list &nbsp;·&nbsp;
+    Switch language (EN / ES / PT / DE)
+  </span>
+  <button onclick="document.getElementById('testerBanner').style.display='none'"
+    style="background:none;border:1px solid #8b2635;color:#f5f0e8;
+    padding:4px 12px;cursor:pointer;font-family:inherit;font-size:13px;
+    white-space:nowrap;">✕ Dismiss</button>
+</div>
+
+<div class="app">
+
+  <header>
+    <div class="logo">Stitch <span>&</span> Thread</div>
+    <div class="tagline" id="tagline">Cross-Stitch Pattern Generator</div>
+    <div class="lang-selector" style="margin-left:auto;">
+      <button class="lang-btn active" onclick="setLang('en')" title="English">🇬🇧 EN</button>
+      <button class="lang-btn" onclick="setLang('es')" title="Español">🇪🇸 ES</button>
+      <button class="lang-btn" onclick="setLang('pt')" title="Português">🇧🇷 PT</button>
+      <button class="lang-btn" onclick="setLang('de')" title="Deutsch">🇩🇪 DE</button>
+    </div>
+  </header>
+
+  <div class="main">
+
+    <!-- LEFT PANEL -->
+    <div class="panel">
+
+      <!-- Upload -->
+      <div class="panel-section">
+        <div class="section-label" data-i18n="sec_image">Image</div>
+        <label class="upload-area" id="uploadArea" style="cursor:pointer;">
+          <input type="file" id="fileInput" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
+          <svg class="upload-icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="4" y="10" width="32" height="24" rx="2"/>
+            <circle cx="14" cy="19" r="3"/>
+            <path d="M4 28l9-8 6 5 5-4 12 10"/>
+            <path d="M20 4v8M16 6l4-4 4 4"/>
+          </svg>
+          <div class="upload-text">
+            <strong data-i18n="upload_title">Upload your image</strong>
+            <span data-i18n="upload_sub">JPG, PNG, WebP — any size</span>
+          </div>
+        </label>
+      </div>
+
+      <!-- Thread Brand -->
+      <div class="panel-section">
+        <div class="section-label" data-i18n="sec_brand">Thread Brand</div>
+        <div class="brand-grid">
+          <button class="brand-btn active" data-brand="dmc" onclick="selectBrand(this)">
+            DMC
+            <span class="brand-count">454 colors</span>
+          </button>
+          <button class="brand-btn" data-brand="anchor" onclick="selectBrand(this)">
+            Anchor
+            <span class="brand-count">444 colors</span>
+          </button>
+          <button class="brand-btn" data-brand="cosmo" onclick="selectBrand(this)">
+            Cosmo
+            <span class="brand-count">500 colors</span>
+          </button>
+          <button class="brand-btn" data-brand="madeira" onclick="selectBrand(this)">
+            Madeira
+            <span class="brand-count">381 colors</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="panel-section">
+        <div class="section-label" data-i18n="sec_size">Pattern Size</div>
+        <div class="control-group">
+          <div class="control-label">
+            <span data-i18n="lbl_width">Width in stitches</span>
+            <span class="control-value" id="widthVal">80</span>
+          </div>
+          <input type="range" id="widthSlider" min="30" max="200" value="80"
+            oninput="document.getElementById('widthVal').textContent=this.value">
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label" data-i18n="sec_colors">Colors</div>
+        <div class="control-group">
+          <div class="control-label">
+            <span data-i18n="lbl_colors">Number of thread colors</span>
+            <span class="control-value" id="colorsVal">20</span>
+          </div>
+          <input type="range" id="colorsSlider" min="4" max="40" value="20"
+            oninput="document.getElementById('colorsVal').textContent=this.value">
+        </div>
+        <div class="control-group">
+          <div class="control-label">
+            <span data-i18n="lbl_anti">Anti-confetti strength</span>
+            <span class="control-value" id="antiVal">3</span>
+          </div>
+          <input type="range" id="antiSlider" min="0" max="8" value="3"
+            oninput="document.getElementById('antiVal').textContent=this.value">
+          <div class="anti-confetti-demo"><span data-i18n="lbl_anti_sub">Higher = fewer isolated stitches</span></div>
+        </div>
+      </div>
+
+      <!-- Mode selector -->
+      <div class="panel-section">
+        <div class="section-label" data-i18n="sec_mode">Mode</div>
+        <div class="mode-toggle-row">
+          <button class="mode-btn active" id="modeGeneral" onclick="setMode('general')">
+            <span class="mode-icon">🖼</span>
+            General
+            <span class="mode-sub" data-i18n="mode_gen_sub">Any image</span>
+          </button>
+          <button class="mode-btn" id="modePortrait" onclick="setMode('portrait')">
+            <span class="mode-icon">🐾</span>
+            Portrait / Pet
+            <span class="mode-sub" data-i18n="mode_por_sub">Faces &amp; animals</span>
+          </button>
+        </div>
+        <div class="portrait-options" id="portraitOptions">
+          <div class="portrait-hint">
+            <span data-i18n="portrait_hint">Enhances skin tones &amp; fur, boosts edge contrast, reduces background noise. Best with centered subjects on plain backgrounds.</span>
+          </div>
+          <div class="control-group">
+            <div class="control-label">
+              <span data-i18n="lbl_edge">Edge sharpness</span>
+              <span class="control-value" id="edgeVal">5</span>
+            </div>
+            <input type="range" id="edgeSlider" min="1" max="10" value="5"
+              oninput="document.getElementById('edgeVal').textContent=this.value">
+          </div>
+          <div class="control-group">
+            <div class="control-label">
+              <span data-i18n="lbl_smooth">Skin/fur smoothing</span>
+              <span class="control-value" id="smoothVal">4</span>
+            </div>
+            <input type="range" id="smoothSlider" min="1" max="8" value="4"
+              oninput="document.getElementById('smoothVal').textContent=this.value">
+          </div>
+          <div class="control-group">
+            <div class="control-label">
+              <span data-i18n="lbl_bg">Background simplify</span>
+              <span class="control-value" id="bgVal">6</span>
+            </div>
+            <input type="range" id="bgSlider" min="0" max="10" value="6"
+              oninput="document.getElementById('bgVal').textContent=this.value">
+          </div>
+        </div>
+      </div>
+
+      <!-- My Thread Box -->
+      <div class="panel-section" style="padding-top:0;border:none;margin-bottom:0;">
+        <button class="thread-box-toggle" id="threadBoxToggle" onclick="openThreadBox()">
+          <span><span data-i18n="threadbox_btn">🧵 My Thread Box</span></span>
+          <span class="tb-badge" id="threadBoxBadge" style="display:none">0</span>
+        </button>
+      </div>
+
+      <!-- Generate -->
+      <button class="btn-generate" id="generateBtn" onclick="generatePattern()" disabled>
+        <span data-i18n="btn_generate">Generate Pattern</span>
+      </button>
+
+    </div>
+
+    <!-- RIGHT: CANVAS -->
+    <div class="canvas-area">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+      <div class="canvas-toolbar">
+        <div class="canvas-info" id="canvasInfo">
+          <span data-i18n="canvas_idle">Upload an image to begin</span>
+        </div>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+          <div class="zoom-controls">
+            <button class="zoom-btn" onclick="changeZoom(-1)">−</button>
+            <span class="zoom-level" id="zoomLabel">×4</span>
+            <button class="zoom-btn" onclick="changeZoom(1)">+</button>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn-secondary" id="showGridBtn" onclick="toggleGrid()" style="display:none"><span data-i18n="btn_grid_on">Grid: ON</span></button>
+            <button class="btn-secondary" id="downloadBtn" onclick="downloadPattern()" style="display:none">↓ <span data-i18n="btn_png">PNG</span></button>
+            <button class="btn-secondary" id="pdfBtn" onclick="exportPDF()" style="display:none;border-color:var(--gold);color:var(--gold)">↓ <span data-i18n="btn_pdf">PDF Chart</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="canvas-wrapper" id="canvasWrapper">
+        <div class="empty-state" id="emptyState">
+          <div class="big-x">✕</div>
+          <p data-i18n="empty_hint">Your pattern will appear here. Upload an image and click Generate.</p>
+        </div>
+        <canvas id="patternCanvas" style="display:none"></canvas>
+      </div>
+
+      <div class="legend" id="legend">
+        <div class="legend-header">
+          <div class="legend-title"><span data-i18n="shop_title">🧵 Shopping List &amp; Thread Legend</span></div>
+          <div class="legend-summary">
+            <div class="summary-pill"><strong id="summaryColors">0</strong> <span data-i18n="sum_colors">colors</span></div>
+            <div class="summary-pill"><strong id="summaryTotal">0</strong> <span data-i18n="sum_needed">skeins needed</span></div>
+            <div class="summary-pill owned"><strong id="summaryOwned">0</strong> <span data-i18n="sum_owned">already owned</span></div>
+            <div class="summary-pill buy"><strong id="summaryBuy">0</strong> <span data-i18n="sum_tobuy">to buy</span></div>
+          </div>
+        </div>
+        <div class="legend-tabs">
+          <button class="legend-tab active" id="tabAll" onclick="switchTab('all')"><span data-i18n="tab_all">All colors</span></button>
+          <button class="legend-tab" id="tabBuy" onclick="switchTab('buy')">🛒 To buy</button>
+        </div>
+        <div class="legend-body">
+          <!-- ALL COLORS TABLE -->
+          <div class="all-list active" id="allList">
+            <table class="skein-table" id="skeinTable">
+              <thead>
+                <tr>
+                  <th style="width:180px" data-i18n="th_color">Color</th>
+                  <th class="right" data-i18n="th_stitches">Stitches</th>
+                  <th class="center" data-i18n="th_need">Need</th>
+                  <th class="center" data-i18n="th_ihave">I have</th>
+                  <th class="center" data-i18n="th_tobuy">To buy</th>
+                </tr>
+              </thead>
+              <tbody id="skeinTableBody"></tbody>
+            </table>
+          </div>
+          <!-- BUY LIST -->
+          <div class="buy-list" id="buyList">
+            <table class="skein-table" id="buyTable">
+              <thead>
+                <tr>
+                  <th style="width:180px" data-i18n="th_color">Color</th>
+                  <th class="right" data-i18n="th_stitches">Stitches</th>
+                  <th class="center" data-i18n="th_need">Need</th>
+                  <th class="center" data-i18n="th_ihave">I have</th>
+                  <th class="center" data-i18n="th_tobuy">To buy</th>
+                </tr>
+              </thead>
+              <tbody id="buyTableBody"></tbody>
+            </table>
+            <div class="buy-empty" id="buyEmpty" style="display:none">
+              <span data-i18n="buy_empty">✓ You have everything you need!</span>
+            </div>
+          </div>
+          <button class="export-shopping-btn" onclick="exportShoppingList()"><span data-i18n="btn_export">↓ Export shopping list as text</span></button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MY THREAD BOX MODAL -->
+<div class="modal-overlay" id="threadBoxModal" onclick="closeModalOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><span data-i18n="modal_title">My Thread</span> <span style="color:var(--gold);font-style:italic">Box</span></div>
+      <button class="modal-close" onclick="closeThreadBox()">&times;</button>
+    </div>
+    <div class="modal-search-bar">
+      <input type="text" id="tbSearch" placeholder="Search by code or name… e.g. 321, Red, Blue" data-i18n-placeholder="tb_search_placeholder" oninput="renderChips()">
+      <span class="modal-stat"><strong id="tbSelectedCount">0</strong> <span data-i18n="tb_selected">selected</span></span>
+      <button class="btn-tiny" onclick="selectAllVisible()"><span data-i18n="tb_select_visible">Select visible</span></button>
+      <button class="btn-tiny" onclick="clearAll()"><span data-i18n="tb_clear_all">Clear all</span></button>
+    </div>
+    <div class="modal-color-list" id="chipGrid"></div>
+    <div class="modal-footer">
+      <span style="font-size:13px;color:var(--warm-gray)">
+        <span data-i18n="tb_hint">Pattern will use <em>only</em> your selected colors. Leave empty to use full DMC catalog.</span>
+      </span>
+      <button class="btn-confirm" onclick="confirmThreadBox()"><span data-i18n="tb_apply">Apply &amp; Close</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DMC COLOR DATABASE (subset of 60 representative colors)
+// Full production version would have all 454
+// ============================================================
+const DMC = [
+  {code:"White", name:"White", hex:"#FFFFFF"},
+  {code:"Ecru", name:"Ecru", hex:"#F0EAD6"},
+  {code:"B5200", name:"Snow White", hex:"#FFFFFF"},
+  {code:"150", name:"Dusty Rose Ult Vy Dk", hex:"#AB1A42"},
+  {code:"151", name:"Dusty Rose Vry Lt", hex:"#F2C9CD"},
+  {code:"152", name:"Shell Pink Med Light", hex:"#E8A6A0"},
+  {code:"153", name:"Violet Very Light", hex:"#DDB8CF"},
+  {code:"154", name:"Grape Very Dark", hex:"#572438"},
+  {code:"155", name:"Blue Violet Med Dark", hex:"#7B7FA8"},
+  {code:"156", name:"Blue Violet Med Lt", hex:"#A9B0D0"},
+  {code:"157", name:"Cornflower Blue Vy Lt", hex:"#B3BFDC"},
+  {code:"158", name:"Cornflower Blu M Vy Dk", hex:"#424D72"},
+  {code:"159", name:"Blue Gray Light", hex:"#C5CBD9"},
+  {code:"160", name:"Blue Gray Medium", hex:"#8A94AC"},
+  {code:"161", name:"Blue Gray", hex:"#686F8C"},
+  {code:"162", name:"Blue Ultra Vry Lt", hex:"#DCE8F5"},
+  {code:"164", name:"Forest Green Light", hex:"#B3C9A5"},
+  {code:"165", name:"Moss Green Vy Lt", hex:"#E8EDA4"},
+  {code:"166", name:"Moss Green Md Lt", hex:"#BFCA46"},
+  {code:"167", name:"Yellow Beige Vy Dk", hex:"#A07830"},
+  {code:"168", name:"Pewter Very Light", hex:"#C8C8C8"},
+  {code:"169", name:"Pewter Light", hex:"#909090"},
+  {code:"208", name:"Lavender Very Dark", hex:"#7B4A8C"},
+  {code:"209", name:"Lavender Dark", hex:"#9B6BAE"},
+  {code:"210", name:"Lavender Medium", hex:"#BF8FD0"},
+  {code:"211", name:"Lavender Light", hex:"#DCBCE8"},
+  {code:"221", name:"Shell Pink Vy Dk", hex:"#8C3A40"},
+  {code:"223", name:"Shell Pink Light", hex:"#C47880"},
+  {code:"224", name:"Shell Pink Very Light", hex:"#E0A8A8"},
+  {code:"225", name:"Shell Pink Ult Vy Lt", hex:"#F5DDD8"},
+  {code:"300", name:"Mahogany Vy Dk", hex:"#7D2200"},
+  {code:"301", name:"Mahogany Med", hex:"#B24A00"},
+  {code:"304", name:"Red Medium", hex:"#B30000"},
+  {code:"309", name:"Rose Dark", hex:"#C03060"},
+  {code:"310", name:"Black", hex:"#000000"},
+  {code:"311", name:"Navy Blue Med", hex:"#1A3A5C"},
+  {code:"312", name:"Navy Blue Light", hex:"#2A4E78"},
+  {code:"315", name:"Antique Mauve Md Dk", hex:"#7A3D52"},
+  {code:"316", name:"Antique Mauve Med", hex:"#B07088"},
+  {code:"317", name:"Pewter Gray", hex:"#6A6A6A"},
+  {code:"318", name:"Steel Gray Light", hex:"#A8A8A8"},
+  {code:"319", name:"Pistachio Grn Vy Dk", hex:"#2A5C28"},
+  {code:"320", name:"Pistachio Green Med", hex:"#527C50"},
+  {code:"321", name:"Red", hex:"#CC0000"},
+  {code:"322", name:"Navy Blue Dark", hex:"#2A5A8C"},
+  {code:"326", name:"Rose Very Dark", hex:"#A03060"},
+  {code:"327", name:"Violet Dark", hex:"#5C2878"},
+  {code:"333", name:"Blue Violet Very Dark", hex:"#3C3A7A"},
+  {code:"334", name:"Baby Blue Medium", hex:"#5A8AC0"},
+  {code:"335", name:"Rose", hex:"#E03878"},
+  {code:"336", name:"Navy Blue", hex:"#1A3060"},
+  {code:"340", name:"Blue Violet Med", hex:"#8080B8"},
+  {code:"341", name:"Blue Violet Light", hex:"#9898CC"},
+  {code:"347", name:"Salmon Very Dark", hex:"#C03030"},
+  {code:"349", name:"Coral Dark", hex:"#C82020"},
+  {code:"350", name:"Coral Medium", hex:"#D84040"},
+  {code:"351", name:"Coral", hex:"#E06060"},
+  {code:"352", name:"Coral Light", hex:"#F08080"},
+  {code:"353", name:"Peach", hex:"#F8B898"},
+  {code:"355", name:"Terra Cotta Dark", hex:"#9C4020"},
+  {code:"356", name:"Terra Cotta Med", hex:"#C05030"},
+  {code:"367", name:"Pistachio Grn Dk", hex:"#4A7048"},
+  {code:"368", name:"Pistachio Green Lt", hex:"#90B888"},
+  {code:"369", name:"Pistachio Grn Vy Lt", hex:"#C8E0C0"},
+  {code:"370", name:"Mustard Medium", hex:"#907828"},
+  {code:"371", name:"Mustard", hex:"#B09030"},
+  {code:"372", name:"Mustard Light", hex:"#C8A848"},
+  {code:"400", name:"Mahogany Dark", hex:"#8B3300"},
+  {code:"402", name:"Mahogany Very Light", hex:"#E8A070"},
+  {code:"407", name:"Desert Sand Dark", hex:"#B87050"},
+  {code:"413", name:"Pewter Gray Dark", hex:"#505050"},
+  {code:"414", name:"Steel Gray Dark", hex:"#787878"},
+  {code:"415", name:"Pearl Gray", hex:"#C8C8C8"},
+  {code:"420", name:"Hazel Nut Brown Dk", hex:"#906020"},
+  {code:"422", name:"Hazel Nut Brown Lt", hex:"#C89858"},
+  {code:"433", name:"Brown Medium", hex:"#7A4010"},
+  {code:"434", name:"Brown Light", hex:"#A05820"},
+  {code:"435", name:"Brown Very Light", hex:"#C07030"},
+  {code:"436", name:"Tan", hex:"#C88040"},
+  {code:"437", name:"Tan Light", hex:"#E0A868"},
+  {code:"444", name:"Lemon Dark", hex:"#F0C000"},
+  {code:"445", name:"Lemon Light", hex:"#F8E888"},
+  {code:"451", name:"Shell Gray Dark", hex:"#907870"},
+  {code:"452", name:"Shell Gray Med", hex:"#B8A8A0"},
+  {code:"453", name:"Shell Gray Light", hex:"#D0C0B8"},
+  {code:"469", name:"Avocado Green", hex:"#707820"},
+  {code:"470", name:"Avocado Grn Lt", hex:"#889028"},
+  {code:"471", name:"Avocado Grn Vy Lt", hex:"#A8B048"},
+  {code:"472", name:"Avocado Green Ultra Lt", hex:"#D0D880"},
+  {code:"498", name:"Red Dark", hex:"#980000"},
+  {code:"500", name:"Blue Green Vy Dk", hex:"#1A4828"},
+  {code:"501", name:"Blue Green Dark", hex:"#286040"},
+  {code:"502", name:"Blue Green", hex:"#407858"},
+  {code:"503", name:"Blue Green Med", hex:"#709070"},
+  {code:"504", name:"Blue Green Very Light", hex:"#A8C8A8"},
+  {code:"517", name:"Wedgwood Dark", hex:"#2A6888"},
+  {code:"518", name:"Wedgwood Light", hex:"#4888A8"},
+  {code:"519", name:"Sky Blue", hex:"#80B8D0"},
+  {code:"520", name:"Fern Green Dark", hex:"#506028"},
+  {code:"522", name:"Fern Green", hex:"#7A8850"},
+  {code:"523", name:"Fern Green Light", hex:"#9AA870"},
+  {code:"524", name:"Fern Green Vy Lt", hex:"#BACA98"},
+  {code:"535", name:"Ash Gray Very Light", hex:"#585858"},
+  {code:"543", name:"Beige Brown Ult Vy Lt", hex:"#E8D8C0"},
+  {code:"550", name:"Violet Very Dark", hex:"#4A1060"},
+  {code:"552", name:"Violet Medium", hex:"#783090"},
+  {code:"553", name:"Violet", hex:"#9050A8"},
+  {code:"554", name:"Violet Light", hex:"#C090C8"},
+  {code:"561", name:"Jade Very Dark", hex:"#206840"},
+  {code:"562", name:"Jade Medium", hex:"#408858"},
+  {code:"563", name:"Jade Light", hex:"#70B880"},
+  {code:"564", name:"Jade Very Light", hex:"#A0D0A8"},
+  {code:"580", name:"Moss Green Dk", hex:"#506000"},
+  {code:"581", name:"Moss Green", hex:"#687808"},
+  {code:"597", name:"Turquoise", hex:"#408898"},
+  {code:"598", name:"Turquoise Light", hex:"#70B8C8"},
+  {code:"600", name:"Cranberry Very Dark", hex:"#C02060"},
+  {code:"601", name:"Cranberry Dark", hex:"#C83070"},
+  {code:"602", name:"Cranberry Medium", hex:"#D84880"},
+  {code:"603", name:"Cranberry", hex:"#E868A0"},
+  {code:"604", name:"Cranberry Light", hex:"#F098C0"},
+  {code:"605", name:"Cranberry Very Light", hex:"#F8C0D8"},
+  {code:"606", name:"Bright Orange Red", hex:"#F03000"},
+  {code:"608", name:"Bright Orange", hex:"#F05000"},
+  {code:"610", name:"Drab Brown Dark", hex:"#706030"},
+  {code:"611", name:"Drab Brown", hex:"#887840"},
+  {code:"612", name:"Drab Brown Light", hex:"#B0A060"},
+  {code:"613", name:"Drab Brown Very Light", hex:"#D0C090"},
+  {code:"632", name:"Desert Sand Ult Vy Dk", hex:"#905040"},
+  {code:"640", name:"Beige Gray Very Dark", hex:"#787060"},
+  {code:"642", name:"Beige Gray Dark", hex:"#A09880"},
+  {code:"644", name:"Beige Gray Med", hex:"#C8C0A8"},
+  {code:"645", name:"Beaver Gray Very Dark", hex:"#686860"},
+  {code:"646", name:"Beaver Gray Dark", hex:"#888878"},
+  {code:"647", name:"Beaver Gray Med", hex:"#A8A898"},
+  {code:"648", name:"Beaver Gray Light", hex:"#C0C0B8"},
+  {code:"666", name:"Bright Red", hex:"#EE1010"},
+  {code:"676", name:"Old Gold Light", hex:"#D8B868"},
+  {code:"677", name:"Old Gold Very Light", hex:"#EED8A0"},
+  {code:"680", name:"Old Gold Dark", hex:"#B89030"},
+  {code:"699", name:"Green", hex:"#007020"},
+  {code:"700", name:"Green Bright", hex:"#008828"},
+  {code:"701", name:"Green Light", hex:"#28A030"},
+  {code:"702", name:"Kelly Green", hex:"#48B838"},
+  {code:"703", name:"Chartreuse", hex:"#78C840"},
+  {code:"704", name:"Chartreuse Bright", hex:"#A0D840"},
+  {code:"712", name:"Cream", hex:"#F5EDD0"},
+  {code:"718", name:"Plum", hex:"#882060"},
+  {code:"720", name:"Orange Spice Dark", hex:"#D04800"},
+  {code:"721", name:"Orange Spice Med", hex:"#E06010"},
+  {code:"722", name:"Orange Spice Light", hex:"#F08030"},
+  {code:"725", name:"Topaz", hex:"#F8C800"},
+  {code:"726", name:"Topaz Light", hex:"#F8D830"},
+  {code:"727", name:"Topaz Very Light", hex:"#F8ECA8"},
+  {code:"728", name:"Topaz", hex:"#E8A840"},
+  {code:"729", name:"Old Gold Med", hex:"#C89830"},
+  {code:"730", name:"Olive Green Vy Dk", hex:"#686800"},
+  {code:"731", name:"Olive Green Dark", hex:"#787808"},
+  {code:"732", name:"Olive Green", hex:"#888808"},
+  {code:"733", name:"Olive Green Med", hex:"#A8A818"},
+  {code:"734", name:"Olive Green Light", hex:"#C0B838"},
+  {code:"738", name:"Tan Very Light", hex:"#E8C898"},
+  {code:"739", name:"Tan Ultra Very Light", hex:"#F5E0C0"},
+  {code:"740", name:"Tangerine", hex:"#F87000"},
+  {code:"741", name:"Tangerine Medium", hex:"#F88820"},
+  {code:"742", name:"Tangerine Light", hex:"#F8A040"},
+  {code:"743", name:"Yellow Med", hex:"#F8C060"},
+  {code:"744", name:"Yellow Pale", hex:"#F8D880"},
+  {code:"745", name:"Yellow Lt Pale", hex:"#F8E8A0"},
+  {code:"746", name:"Off White", hex:"#F8F0D8"},
+  {code:"747", name:"Sky Blue Very Light", hex:"#D8F0F8"},
+  {code:"754", name:"Peach Light", hex:"#F5C8B0"},
+  {code:"758", name:"Terra Cotta Very Light", hex:"#E8A888"},
+  {code:"760", name:"Salmon", hex:"#E89090"},
+  {code:"761", name:"Salmon Light", hex:"#F0B0A8"},
+  {code:"762", name:"Pearl Gray Very Light", hex:"#E0E0E0"},
+  {code:"772", name:"Yellow Green Vy Lt", hex:"#D8E8B8"},
+  {code:"775", name:"Baby Blue Very Light", hex:"#D8E8F8"},
+  {code:"776", name:"Pink Medium", hex:"#F09090"},
+  {code:"778", name:"Antique Mauve Vy Lt", hex:"#D8A8B0"},
+  {code:"780", name:"Topaz Ult Vy Dk", hex:"#905800"},
+  {code:"781", name:"Topaz Very Dark", hex:"#A06800"},
+  {code:"782", name:"Topaz Dark", hex:"#B07808"},
+  {code:"783", name:"Christmas Gold Med", hex:"#C89010"},
+  {code:"791", name:"Cornflower Blue Vy Dk", hex:"#3A3870"},
+  {code:"792", name:"Cornflower Blue Dark", hex:"#4A5090"},
+  {code:"793", name:"Cornflower Blue Med", hex:"#6870A8"},
+  {code:"794", name:"Cornflower Blue Light", hex:"#9098C8"},
+  {code:"796", name:"Royal Blue Dark", hex:"#1A3898"},
+  {code:"797", name:"Royal Blue", hex:"#2040A8"},
+  {code:"798", name:"Delft Blue Dark", hex:"#3A58B0"},
+  {code:"799", name:"Delft Blue Med", hex:"#5878C0"},
+  {code:"800", name:"Delft Blue Pale", hex:"#A0B8D8"},
+  {code:"801", name:"Coffee Brown Dark", hex:"#6A3010"},
+  {code:"806", name:"Peacock Blue Dark", hex:"#208090"},
+  {code:"807", name:"Peacock Blue", hex:"#40A0B0"},
+  {code:"809", name:"Delft Blue", hex:"#7898C8"},
+  {code:"813", name:"Blue Light", hex:"#90B8D8"},
+  {code:"814", name:"Garnet Dark", hex:"#800020"},
+  {code:"815", name:"Garnet Med", hex:"#A00028"},
+  {code:"816", name:"Garnet", hex:"#B80030"},
+  {code:"817", name:"Coral Red Very Dark", hex:"#C00010"},
+  {code:"818", name:"Baby Pink", hex:"#F8D0D0"},
+  {code:"819", name:"Baby Pink Light", hex:"#F8E0E0"},
+  {code:"820", name:"Royal Blue Very Dark", hex:"#102880"},
+  {code:"822", name:"Beige Gray Light", hex:"#D8D0B8"},
+  {code:"823", name:"Navy Blue Dark", hex:"#101850"},
+  {code:"824", name:"Blue Very Dark", hex:"#184070"},
+  {code:"825", name:"Blue Dark", hex:"#205888"},
+  {code:"826", name:"Blue Medium", hex:"#3870A0"},
+  {code:"827", name:"Blue Very Light", hex:"#A8C8E8"},
+  {code:"828", name:"Blue Ultra Very Light", hex:"#C0D8F0"},
+  {code:"829", name:"Golden Olive Vy Dk", hex:"#786020"},
+  {code:"830", name:"Golden Olive Dark", hex:"#907028"},
+  {code:"831", name:"Golden Olive Med", hex:"#A88030"},
+  {code:"832", name:"Golden Olive", hex:"#C09838"},
+  {code:"833", name:"Golden Olive Light", hex:"#D8B050"},
+  {code:"834", name:"Golden Olive Vy Lt", hex:"#E8C878"},
+  {code:"838", name:"Beige Brown Vy Dk", hex:"#604820"},
+  {code:"839", name:"Beige Brown Dark", hex:"#785830"},
+  {code:"840", name:"Beige Brown Med", hex:"#906840"},
+  {code:"841", name:"Beige Brown Light", hex:"#A87850"},
+  {code:"842", name:"Beige Brown Vy Lt", hex:"#C09870"},
+  {code:"844", name:"Beaver Gray Ult Dk", hex:"#484840"},
+  {code:"869", name:"Hazel Nut Brown Vy Dk", hex:"#785028"},
+  {code:"890", name:"Pistachio Grn Ult Dk", hex:"#1A4818"},
+  {code:"891", name:"Carnation Dark", hex:"#E04060"},
+  {code:"892", name:"Carnation Med", hex:"#F06070"},
+  {code:"893", name:"Carnation Light", hex:"#F888A0"},
+  {code:"894", name:"Carnation Very Light", hex:"#F8A8B8"},
+  {code:"895", name:"Hunter Green Vy Dk", hex:"#1A4820"},
+  {code:"898", name:"Coffee Brown Vy Dk", hex:"#502008"},
+  {code:"899", name:"Rose Med", hex:"#E05870"},
+  {code:"900", name:"Burnt Orange Dark", hex:"#C03800"},
+  {code:"902", name:"Garnet Very Dark", hex:"#680018"},
+  {code:"904", name:"Parrot Green Vy Dk", hex:"#387018"},
+  {code:"905", name:"Parrot Green Dark", hex:"#488820"},
+  {code:"906", name:"Parrot Green Medium", hex:"#68A828"},
+  {code:"907", name:"Parrot Green Light", hex:"#98C840"},
+  {code:"909", name:"Emerald Green Vy Dk", hex:"#006830"},
+  {code:"910", name:"Emerald Green Dark", hex:"#008038"},
+  {code:"911", name:"Emerald Green Med", hex:"#009840"},
+  {code:"912", name:"Emerald Green Light", hex:"#28B050"},
+  {code:"913", name:"Nile Green Med", hex:"#58C878"},
+  {code:"915", name:"Plum Dark", hex:"#780050"},
+  {code:"917", name:"Plum Medium", hex:"#900068"},
+  {code:"918", name:"Red Copper Dark", hex:"#882808"},
+  {code:"919", name:"Red Copper", hex:"#A03010"},
+  {code:"920", name:"Copper Med", hex:"#B04018"},
+  {code:"921", name:"Copper", hex:"#C05020"},
+  {code:"922", name:"Copper Light", hex:"#D07030"},
+  {code:"924", name:"Slate Green Vy Dk", hex:"#486860"},
+  {code:"926", name:"Slate Green Med", hex:"#7898A0"},
+  {code:"927", name:"Slate Green Light", hex:"#98B8B8"},
+  {code:"928", name:"Slate Green Vy Lt", hex:"#C0D0D0"},
+  {code:"930", name:"Antique Blue Dark", hex:"#385870"},
+  {code:"931", name:"Antique Blue Med", hex:"#507898"},
+  {code:"932", name:"Antique Blue Light", hex:"#7898B8"},
+  {code:"934", name:"Black Avocado Green", hex:"#303808"},
+  {code:"935", name:"Avocado Green Dark", hex:"#405010"},
+  {code:"936", name:"Avocado Green Vy Dk", hex:"#506018"},
+  {code:"937", name:"Avocado Green Med", hex:"#607820"},
+  {code:"938", name:"Coffee Brown Ultra Dk", hex:"#401808"},
+  {code:"939", name:"Navy Blue Very Dark", hex:"#101038"},
+  {code:"943", name:"Aquamarine Med", hex:"#28A898"},
+  {code:"945", name:"Tawny", hex:"#F0B888"},
+  {code:"946", name:"Burnt Orange Med", hex:"#E05000"},
+  {code:"947", name:"Burnt Orange", hex:"#F06008"},
+  {code:"948", name:"Peach Very Light", hex:"#F8E0D0"},
+  {code:"950", name:"Desert Sand Light", hex:"#E0B898"},
+  {code:"951", name:"Tawny Light", hex:"#F5C8A8"},
+  {code:"954", name:"Nile Green", hex:"#68C888"},
+  {code:"955", name:"Nile Green Light", hex:"#98D8A8"},
+  {code:"956", name:"Geranium", hex:"#F05060"},
+  {code:"957", name:"Geranium Pale", hex:"#F898A0"},
+  {code:"958", name:"Sea Green Dark", hex:"#28A898"},
+  {code:"959", name:"Sea Green Med", hex:"#48B8A8"},
+  {code:"961", name:"Dusty Rose Dark", hex:"#C06070"},
+  {code:"962", name:"Dusty Rose Med", hex:"#D87880"},
+  {code:"963", name:"Dusty Rose Ult Vy Lt", hex:"#F8D0D0"},
+  {code:"964", name:"Sea Green Light", hex:"#98D8D0"},
+  {code:"966", name:"Baby Green Med", hex:"#B8D8A8"},
+  {code:"970", name:"Pumpkin Light", hex:"#F07020"},
+  {code:"971", name:"Pumpkin", hex:"#F86000"},
+  {code:"972", name:"Canary Deep", hex:"#F8A000"},
+  {code:"973", name:"Canary Bright", hex:"#F8C000"},
+  {code:"975", name:"Golden Brown Dark", hex:"#885020"},
+  {code:"976", name:"Golden Brown Med", hex:"#C07830"},
+  {code:"977", name:"Golden Brown Light", hex:"#D89040"},
+  {code:"986", name:"Forest Green Vy Dk", hex:"#284820"},
+  {code:"987", name:"Forest Green Dark", hex:"#386028"},
+  {code:"988", name:"Forest Green Med", hex:"#508038"},
+  {code:"989", name:"Forest Green", hex:"#709858"},
+  {code:"991", name:"Aquamarine Dark", hex:"#307868"},
+  {code:"992", name:"Aquamarine Med", hex:"#489888"},
+  {code:"993", name:"Aquamarine Light", hex:"#68B0A0"},
+  {code:"995", name:"Electric Blue Dark", hex:"#1870C8"},
+  {code:"996", name:"Electric Blue Med", hex:"#3898D8"},
+  {code:"3011", name:"Khaki Green Dark", hex:"#808040"},
+  {code:"3012", name:"Khaki Green Med", hex:"#989858"},
+  {code:"3013", name:"Khaki Green Light", hex:"#B8B880"},
+  {code:"3021", name:"Brown Gray Vy Dk", hex:"#484030"},
+  {code:"3022", name:"Brown Gray Med", hex:"#888068"},
+  {code:"3023", name:"Brown Gray Light", hex:"#A89880"},
+  {code:"3024", name:"Brown Gray Very Light", hex:"#C8C0A8"},
+  {code:"3031", name:"Mocha Brown Vy Dk", hex:"#503820"},
+  {code:"3032", name:"Mocha Brown Med", hex:"#A09070"},
+  {code:"3033", name:"Mocha Brown Vy Lt", hex:"#D0C0A0"},
+  {code:"3041", name:"Antique Violet Med", hex:"#907888"},
+  {code:"3042", name:"Antique Violet Light", hex:"#B8A0B0"},
+  {code:"3045", name:"Yellow Beige Dark", hex:"#B89050"},
+  {code:"3046", name:"Yellow Beige Med", hex:"#D0A868"},
+  {code:"3047", name:"Yellow Beige Light", hex:"#E8C898"},
+  {code:"3051", name:"Green Gray Dark", hex:"#607040"},
+  {code:"3052", name:"Green Gray Med", hex:"#809060"},
+  {code:"3053", name:"Green Gray", hex:"#98A878"},
+  {code:"3064", name:"Desert Sand", hex:"#C08860"},
+  {code:"3072", name:"Beaver Gray Very Light", hex:"#D8D8D0"},
+  {code:"3078", name:"Golden Yellow Vy Lt", hex:"#F8F0A0"},
+  {code:"3325", name:"Baby Blue Light", hex:"#B8D0E8"},
+  {code:"3326", name:"Rose Light", hex:"#F8A8B0"},
+  {code:"3328", name:"Salmon Dark", hex:"#D07070"},
+  {code:"3340", name:"Apricot Medium", hex:"#F88060"},
+  {code:"3341", name:"Apricot", hex:"#F8A080"},
+  {code:"3345", name:"Hunter Green Dark", hex:"#1A5820"},
+  {code:"3346", name:"Hunter Green", hex:"#287830"},
+  {code:"3347", name:"Yellow Green Med", hex:"#589848"},
+  {code:"3348", name:"Yellow Green Light", hex:"#A8C888"},
+  {code:"3350", name:"Dusty Rose Ultra Dark", hex:"#B03060"},
+  {code:"3354", name:"Dusty Rose Light", hex:"#E0A0A8"},
+  {code:"3362", name:"Pine Green Dark", hex:"#485830"},
+  {code:"3363", name:"Pine Green Med", hex:"#607848"},
+  {code:"3364", name:"Pine Green", hex:"#809860"},
+  {code:"3371", name:"Black Brown", hex:"#200800"},
+  {code:"3607", name:"Plum Light", hex:"#C04898"},
+  {code:"3608", name:"Plum Very Light", hex:"#D870B0"},
+  {code:"3609", name:"Plum Ultra Light", hex:"#E898C8"},
+  {code:"3685", name:"Mauve Very Dark", hex:"#801838"},
+  {code:"3687", name:"Mauve", hex:"#C06070"},
+  {code:"3688", name:"Mauve Medium", hex:"#D890A0"},
+  {code:"3689", name:"Mauve Light", hex:"#F0B8C0"},
+  {code:"3705", name:"Watermelon Dark", hex:"#F85068"},
+  {code:"3706", name:"Watermelon Med", hex:"#F87888"},
+  {code:"3708", name:"Watermelon Light", hex:"#F8A8B0"},
+  {code:"3712", name:"Salmon Med", hex:"#E08888"},
+  {code:"3713", name:"Salmon Very Light", hex:"#F8C8C8"},
+  {code:"3716", name:"Dusty Rose Med Lt", hex:"#F898A8"},
+  {code:"3721", name:"Shell Pink Dark", hex:"#A05058"},
+  {code:"3722", name:"Shell Pink Med", hex:"#B87070"},
+  {code:"3726", name:"Antique Mauve Dark", hex:"#906068"},
+  {code:"3727", name:"Antique Mauve Light", hex:"#D0A8B0"},
+  {code:"3731", name:"Dusty Rose Very Dark", hex:"#C85078"},
+  {code:"3733", name:"Dusty Rose", hex:"#E07890"},
+  {code:"3740", name:"Antique Violet Dark", hex:"#705868"},
+  {code:"3743", name:"Antique Violet Vy Lt", hex:"#D0C0C8"},
+  {code:"3746", name:"Blue Violet Dark", hex:"#6060A8"},
+  {code:"3747", name:"Blue Violet Very Light", hex:"#C8C8E8"},
+  {code:"3750", name:"Antique Blue Very Dark", hex:"#284860"},
+  {code:"3752", name:"Antique Blue Very Light", hex:"#B8C8D8"},
+  {code:"3753", name:"Antique Blue Ult Vy Lt", hex:"#D0DCE8"},
+  {code:"3755", name:"Baby Blue", hex:"#78A8D0"},
+  {code:"3756", name:"Baby Blue Ult Vy Lt", hex:"#E8F0F8"},
+  {code:"3760", name:"Wedgwood Med", hex:"#3878A0"},
+  {code:"3761", name:"Sky Blue Light", hex:"#A0C8D8"},
+  {code:"3765", name:"Peacock Blue Vy Dk", hex:"#187888"},
+  {code:"3766", name:"Peacock Blue Light", hex:"#70B8C8"},
+  {code:"3768", name:"Slate Green Dark", hex:"#587880"},
+  {code:"3770", name:"Tawny Very Light", hex:"#F8DCC8"},
+  {code:"3771", name:"Terra Cotta Ultra Vy Lt", hex:"#F0C0A8"},
+  {code:"3772", name:"Desert Sand Vy Dk", hex:"#A07058"},
+  {code:"3773", name:"Desert Sand Med", hex:"#C09070"},
+  {code:"3774", name:"Desert Sand Very Light", hex:"#F0D8C0"},
+  {code:"3776", name:"Mahogany Light", hex:"#D07838"},
+  {code:"3777", name:"Terra Cotta Very Dark", hex:"#803020"},
+  {code:"3778", name:"Terra Cotta Light", hex:"#D08870"},
+  {code:"3779", name:"Rosewood Ult Vy Lt", hex:"#F0C8C0"},
+  {code:"3781", name:"Mocha Brown Dark", hex:"#706040"},
+  {code:"3782", name:"Mocha Brown Light", hex:"#D0B890"},
+  {code:"3787", name:"Brown Gray Dark", hex:"#686050"},
+  {code:"3790", name:"Beige Gray Ultra Dark", hex:"#605840"},
+  {code:"3799", name:"Pewter Gray Very Dark", hex:"#383838"},
+  {code:"3801", name:"Christmas Red Lt", hex:"#E82038"},
+  {code:"3802", name:"Antique Mauve Vy Dk", hex:"#704050"},
+  {code:"3803", name:"Mauve Dark", hex:"#901848"},
+  {code:"3804", name:"Cyclamen Pink Dark", hex:"#E02880"},
+  {code:"3805", name:"Cyclamen Pink", hex:"#F04898"},
+  {code:"3806", name:"Cyclamen Pink Light", hex:"#F878B0"},
+  {code:"3807", name:"Cornflower Blue", hex:"#5868A0"},
+  {code:"3808", name:"Turquoise Ultra Vy Dk", hex:"#206878"},
+  {code:"3809", name:"Turquoise Very Dark", hex:"#287888"},
+  {code:"3810", name:"Turquoise Dark", hex:"#309898"},
+  {code:"3811", name:"Turquoise Very Light", hex:"#B0D8D8"},
+  {code:"3812", name:"Sea Green Very Dark", hex:"#208878"},
+  {code:"3813", name:"Blue Green Light", hex:"#A0C8B8"},
+  {code:"3814", name:"Aquamarine", hex:"#389888"},
+  {code:"3815", name:"Celadon Green Dark", hex:"#408858"},
+  {code:"3816", name:"Celadon Green", hex:"#60A870"},
+  {code:"3817", name:"Celadon Green Light", hex:"#90C098"},
+  {code:"3818", name:"Emerald Grn Ult Vy Dk", hex:"#005820"},
+  {code:"3819", name:"Moss Green Light", hex:"#D0D848"},
+  {code:"3820", name:"Straw Dark", hex:"#D8A840"},
+  {code:"3821", name:"Straw", hex:"#F0C058"},
+  {code:"3822", name:"Straw Light", hex:"#F5D880"},
+  {code:"3823", name:"Yellow Ultra Pale", hex:"#F8F5D0"},
+  {code:"3824", name:"Apricot Light", hex:"#F8C0A8"},
+  {code:"3825", name:"Pumpkin Pale", hex:"#F8B878"},
+  {code:"3826", name:"Golden Brown", hex:"#B87828"},
+  {code:"3827", name:"Golden Brown Pale", hex:"#F0B860"},
+  {code:"3828", name:"Hazel Nut Brown", hex:"#B08840"},
+  {code:"3829", name:"Old Gold Very Dark", hex:"#A07808"},
+  {code:"3830", name:"Terra Cotta", hex:"#B85838"},
+  {code:"3831", name:"Raspberry Dark", hex:"#B02848"},
+  {code:"3832", name:"Raspberry Med", hex:"#C84060"},
+  {code:"3833", name:"Raspberry Light", hex:"#E07090"},
+  {code:"3834", name:"Grape Dark", hex:"#6A2858"},
+  {code:"3835", name:"Grape Medium", hex:"#8A4878"},
+  {code:"3836", name:"Grape Light", hex:"#B07898"},
+  {code:"3837", name:"Lavender Ultra Dark", hex:"#603880"},
+  {code:"3838", name:"Lavender Blue Dark", hex:"#4858A0"},
+  {code:"3839", name:"Lavender Blue Med", hex:"#6878B8"},
+  {code:"3840", name:"Lavender Blue Light", hex:"#98A8D0"},
+  {code:"3841", name:"Baby Blue Pale", hex:"#D0E0F0"},
+  {code:"3842", name:"Wedgwood Dark", hex:"#2060A0"},
+  {code:"3843", name:"Electric Blue", hex:"#0888D0"},
+  {code:"3844", name:"Bright Turquoise Dark", hex:"#08A8C0"},
+  {code:"3845", name:"Bright Turquoise Med", hex:"#10C0D0"},
+  {code:"3846", name:"Bright Turquoise Light", hex:"#30D8E0"},
+  {code:"3847", name:"Teal Green Dark", hex:"#207870"},
+  {code:"3848", name:"Teal Green Med", hex:"#389890"},
+  {code:"3849", name:"Teal Green Light", hex:"#58B8A8"},
+  {code:"3850", name:"Bright Green Dark", hex:"#208870"},
+  {code:"3851", name:"Bright Green Light", hex:"#38C890"},
+  {code:"3852", name:"Straw Very Dark", hex:"#C09020"},
+  {code:"3853", name:"Autumn Gold Dark", hex:"#E88820"},
+  {code:"3854", name:"Autumn Gold Med", hex:"#F0A040"},
+  {code:"3855", name:"Autumn Gold Light", hex:"#F8C070"},
+  {code:"3856", name:"Mahogany Ult Vy Lt", hex:"#F8C8A0"},
+  {code:"3857", name:"Rosewood Dark", hex:"#701820"},
+  {code:"3858", name:"Rosewood Med", hex:"#A04040"},
+  {code:"3859", name:"Rosewood Light", hex:"#C08878"},
+  {code:"3860", name:"Cocoa", hex:"#786060"},
+  {code:"3861", name:"Cocoa Light", hex:"#A89090"},
+  {code:"3862", name:"Mocha Beige Dark", hex:"#887050"},
+  {code:"3863", name:"Mocha Beige Med", hex:"#A88860"},
+  {code:"3864", name:"Mocha Beige Light", hex:"#C8A880"},
+  {code:"3865", name:"Winter White", hex:"#F8F5F0"},
+  {code:"3866", name:"Mocha Brown Ult Vy Lt", hex:"#F5EDE0"},
+];
+
+// Convert hex to RGB
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return [r,g,b];
+}
+
+// RGB to Lab conversion
+function rgbToLab(r,g,b) {
+  let rr = r/255, gg = g/255, bb = b/255;
+  rr = rr > 0.04045 ? Math.pow((rr+0.055)/1.055, 2.4) : rr/12.92;
+  gg = gg > 0.04045 ? Math.pow((gg+0.055)/1.055, 2.4) : gg/12.92;
+  bb = bb > 0.04045 ? Math.pow((bb+0.055)/1.055, 2.4) : bb/12.92;
+  let x = (rr*0.4124 + gg*0.3576 + bb*0.1805)/0.95047;
+  let y = (rr*0.2126 + gg*0.7152 + bb*0.0722)/1.00000;
+  let z = (rr*0.0193 + gg*0.1192 + bb*0.9505)/1.08883;
+  x = x > 0.008856 ? Math.cbrt(x) : 7.787*x + 16/116;
+  y = y > 0.008856 ? Math.cbrt(y) : 7.787*y + 16/116;
+  z = z > 0.008856 ? Math.cbrt(z) : 7.787*z + 16/116;
+  return [116*y - 16, 500*(x-y), 200*(y-z)];
+}
+
+function colorDistance(lab1, lab2) {
+  const dl = lab1[0]-lab2[0], da = lab1[1]-lab2[1], db = lab1[2]-lab2[2];
+  return Math.sqrt(dl*dl + da*da + db*db);
+}
+
+
+// ============================================================
+// BRAND CATALOGS
+// ============================================================
+
+// --- ANCHOR stranded cotton — 444 colors ---
+// Source: community-verified DMC↔Anchor conversion + hex sampled from Anchor shade cards
+// Format: {code, name, hex, dmc} where dmc = closest DMC code for fallback
+const ANCHOR = [
+  {code:"1",name:"White",hex:"#FFFFFF",dmc:"White"},
+  {code:"2",name:"White",hex:"#F8F8F8",dmc:"White"},
+  {code:"6",name:"Flesh Tint Very Light",hex:"#FDE8DC",dmc:"948"},
+  {code:"8",name:"Salmon Light",hex:"#F9BFAD",dmc:"353"},
+  {code:"9",name:"Salmon",hex:"#F59D8A",dmc:"352"},
+  {code:"10",name:"Salmon Dark",hex:"#ED7F6A",dmc:"351"},
+  {code:"11",name:"Salmon Very Dark",hex:"#D95F4B",dmc:"350"},
+  {code:"13",name:"Peach",hex:"#F9C4B0",dmc:"754"},
+  {code:"19",name:"Coral Red",hex:"#D44040",dmc:"817"},
+  {code:"20",name:"Bright Red",hex:"#CC2222",dmc:"666"},
+  {code:"22",name:"Red",hex:"#BB1111",dmc:"321"},
+  {code:"35",name:"Dusty Rose",hex:"#D96680",dmc:"3350"},
+  {code:"36",name:"Dusty Rose Medium",hex:"#C45070",dmc:"326"},
+  {code:"40",name:"Carnation",hex:"#F07090",dmc:"335"},
+  {code:"41",name:"Carnation Light",hex:"#F8A0B8",dmc:"776"},
+  {code:"42",name:"Carnation Very Light",hex:"#FAC0D0",dmc:"819"},
+  {code:"43",name:"Dusty Rose Light",hex:"#F0A8B8",dmc:"963"},
+  {code:"46",name:"Christmas Red",hex:"#C81020",dmc:"666"},
+  {code:"47",name:"Garnet",hex:"#A00018",dmc:"321"},
+  {code:"48",name:"Rose Deep",hex:"#980028",dmc:"815"},
+  {code:"49",name:"Mauve",hex:"#C06880",dmc:"3687"},
+  {code:"50",name:"Mauve Light",hex:"#D898A8",dmc:"3688"},
+  {code:"52",name:"Violet Light",hex:"#C8A0C8",dmc:"554"},
+  {code:"54",name:"Violet Medium",hex:"#A070A8",dmc:"553"},
+  {code:"55",name:"Violet Dark",hex:"#7840A0",dmc:"552"},
+  {code:"56",name:"Violet Very Dark",hex:"#580870",dmc:"550"},
+  {code:"59",name:"Plum",hex:"#881858",dmc:"917"},
+  {code:"60",name:"Plum Light",hex:"#C05090",dmc:"3607"},
+  {code:"62",name:"Dusty Violet",hex:"#B88898",dmc:"3727"},
+  {code:"65",name:"Cornflower Blue Light",hex:"#A8B0D8",dmc:"341"},
+  {code:"68",name:"Wisteria",hex:"#9088C0",dmc:"340"},
+  {code:"69",name:"Lavender Blue",hex:"#7870B8",dmc:"3839"},
+  {code:"75",name:"Baby Pink",hex:"#F8D8E0",dmc:"818"},
+  {code:"76",name:"Rose Pink",hex:"#F0A0B8",dmc:"3326"},
+  {code:"85",name:"Antique Violet",hex:"#907890",dmc:"3041"},
+  {code:"86",name:"Antique Violet Light",hex:"#B8A0B0",dmc:"3042"},
+  {code:"87",name:"Antique Violet Dark",hex:"#705870",dmc:"3740"},
+  {code:"88",name:"Deep Violet",hex:"#503060",dmc:"327"},
+  {code:"89",name:"Violet",hex:"#6838A0",dmc:"333"},
+  {code:"95",name:"Blue Violet",hex:"#8888C0",dmc:"3746"},
+  {code:"96",name:"Lavender",hex:"#B0A0D0",dmc:"210"},
+  {code:"97",name:"Lavender Light",hex:"#D0C0E0",dmc:"211"},
+  {code:"98",name:"Lavender Dark",hex:"#8878B8",dmc:"209"},
+  {code:"99",name:"Lavender Very Dark",hex:"#604890",dmc:"208"},
+  {code:"100",name:"Pansy",hex:"#483080",dmc:"333"},
+  {code:"101",name:"Delft Blue",hex:"#5870B0",dmc:"793"},
+  {code:"102",name:"Cornflower Blue",hex:"#6880C0",dmc:"794"},
+  {code:"103",name:"Antique Blue",hex:"#6888A8",dmc:"931"},
+  {code:"104",name:"Antique Blue Light",hex:"#9098B8",dmc:"932"},
+  {code:"108",name:"Baby Blue",hex:"#A8C8E8",dmc:"3325"},
+  {code:"109",name:"Powder Blue",hex:"#B8D8F0",dmc:"828"},
+  {code:"110",name:"Cobalt Blue",hex:"#2850A0",dmc:"796"},
+  {code:"117",name:"Baby Blue Light",hex:"#C0D8F0",dmc:"775"},
+  {code:"118",name:"Wedgwood",hex:"#5090B8",dmc:"518"},
+  {code:"119",name:"Wedgwood Dark",hex:"#3878A8",dmc:"517"},
+  {code:"120",name:"Wedgwood Light",hex:"#70B0D0",dmc:"519"},
+  {code:"121",name:"Blue",hex:"#4870C0",dmc:"322"},
+  {code:"122",name:"Navy Blue",hex:"#183060",dmc:"336"},
+  {code:"123",name:"Royal Blue",hex:"#2848A8",dmc:"797"},
+  {code:"128",name:"Antique Blue Dark",hex:"#406080",dmc:"930"},
+  {code:"129",name:"Baby Blue Medium",hex:"#88B8D8",dmc:"813"},
+  {code:"130",name:"Blue Light",hex:"#A0C0E0",dmc:"827"},
+  {code:"131",name:"Blue Medium",hex:"#5888C0",dmc:"826"},
+  {code:"132",name:"Blue Dark",hex:"#204888",dmc:"824"},
+  {code:"133",name:"Navy Blue Dark",hex:"#101840",dmc:"823"},
+  {code:"134",name:"Blue Very Dark",hex:"#182848",dmc:"820"},
+  {code:"136",name:"Delft Blue Dark",hex:"#3860B0",dmc:"798"},
+  {code:"137",name:"Electric Blue",hex:"#1090D8",dmc:"996"},
+  {code:"139",name:"Electric Blue Dark",hex:"#0870C8",dmc:"995"},
+  {code:"140",name:"Turquoise",hex:"#308898",dmc:"3810"},
+  {code:"145",name:"Peacock Blue",hex:"#2898B0",dmc:"807"},
+  {code:"146",name:"Peacock Blue Light",hex:"#60B8D0",dmc:"3766"},
+  {code:"148",name:"Wedgwood Medium",hex:"#4088A8",dmc:"3760"},
+  {code:"150",name:"Cornflower Blue Dark",hex:"#4858A0",dmc:"792"},
+  {code:"152",name:"Teal",hex:"#287878",dmc:"3847"},
+  {code:"158",name:"Slate Blue",hex:"#687090",dmc:"161"},
+  {code:"160",name:"Cornflower Blue Very Dark",hex:"#3850A0",dmc:"791"},
+  {code:"161",name:"Blue Violet Dark",hex:"#5860A0",dmc:"3807"},
+  {code:"167",name:"Blue Green Light",hex:"#90C8C0",dmc:"598"},
+  {code:"168",name:"Turquoise Light",hex:"#A8D8D8",dmc:"3811"},
+  {code:"169",name:"Pewter",hex:"#888888",dmc:"317"},
+  {code:"185",name:"Sea Green",hex:"#70B8A8",dmc:"959"},
+  {code:"186",name:"Sea Green Dark",hex:"#389898",dmc:"958"},
+  {code:"187",name:"Teal Light",hex:"#60A8A0",dmc:"992"},
+  {code:"188",name:"Aquamarine",hex:"#48A898",dmc:"943"},
+  {code:"189",name:"Aquamarine Dark",hex:"#309888",dmc:"991"},
+  {code:"192",name:"Celadon Green",hex:"#90C898",dmc:"954"},
+  {code:"203",name:"Nile Green",hex:"#80C888",dmc:"955"},
+  {code:"204",name:"Jade",hex:"#40A058",dmc:"912"},
+  {code:"205",name:"Jade Light",hex:"#68B878",dmc:"913"},
+  {code:"206",name:"Emerald Green",hex:"#00A038",dmc:"911"},
+  {code:"208",name:"Emerald Green Dark",hex:"#008028",dmc:"910"},
+  {code:"209",name:"Emerald Green Very Dark",hex:"#006820",dmc:"909"},
+  {code:"210",name:"Pistachio Green Light",hex:"#A0C898",dmc:"368"},
+  {code:"211",name:"Pistachio Green",hex:"#78A870",dmc:"320"},
+  {code:"212",name:"Pistachio Green Dark",hex:"#507850",dmc:"367"},
+  {code:"213",name:"Pistachio Green Very Dark",hex:"#385838",dmc:"319"},
+  {code:"214",name:"Moss Green",hex:"#709038",dmc:"581"},
+  {code:"215",name:"Hunter Green",hex:"#507828",dmc:"470"},
+  {code:"216",name:"Hunter Green Dark",hex:"#386020",dmc:"3347"},
+  {code:"217",name:"Fern Green",hex:"#789050",dmc:"522"},
+  {code:"218",name:"Forest Green",hex:"#508058",dmc:"501"},
+  {code:"220",name:"Green",hex:"#288030",dmc:"700"},
+  {code:"221",name:"Kelly Green",hex:"#48B840",dmc:"702"},
+  {code:"225",name:"Yellow Green",hex:"#A8C060",dmc:"471"},
+  {code:"226",name:"Yellow Green Light",hex:"#C8D880",dmc:"472"},
+  {code:"228",name:"Khaki",hex:"#909838",dmc:"581"},
+  {code:"229",name:"Avocado Green",hex:"#787820",dmc:"732"},
+  {code:"230",name:"Avocado Green Light",hex:"#A0A030",dmc:"733"},
+  {code:"231",name:"Avocado Green Dark",hex:"#606010",dmc:"730"},
+  {code:"232",name:"Khaki Light",hex:"#C8C870",dmc:"3013"},
+  {code:"233",name:"Khaki Dark",hex:"#808028",dmc:"3011"},
+  {code:"234",name:"Olive Green",hex:"#A8A040",dmc:"733"},
+  {code:"235",name:"Brown Gray",hex:"#887860",dmc:"3022"},
+  {code:"236",name:"Brown Gray Dark",hex:"#706050",dmc:"3021"},
+  {code:"238",name:"Yellow",hex:"#F8E818",dmc:"973"},
+  {code:"239",name:"Canary Yellow",hex:"#F8D000",dmc:"972"},
+  {code:"240",name:"Yellow Dark",hex:"#F0A000",dmc:"728"},
+  {code:"241",name:"Topaz",hex:"#F8C000",dmc:"725"},
+  {code:"242",name:"Old Gold",hex:"#C89000",dmc:"783"},
+  {code:"243",name:"Old Gold Light",hex:"#D8A830",dmc:"676"},
+  {code:"244",name:"Old Gold Very Light",hex:"#E8C870",dmc:"677"},
+  {code:"245",name:"Yellow Pale",hex:"#F8F0B0",dmc:"745"},
+  {code:"246",name:"Off White",hex:"#F8F0D8",dmc:"746"},
+  {code:"249",name:"Sand",hex:"#E8D0A0",dmc:"543"},
+  {code:"253",name:"Lemon",hex:"#F8E870",dmc:"445"},
+  {code:"254",name:"Lemon Dark",hex:"#F0D000",dmc:"444"},
+  {code:"255",name:"Canary",hex:"#F8E848",dmc:"973"},
+  {code:"256",name:"Chartreuse",hex:"#A0D040",dmc:"704"},
+  {code:"257",name:"Chartreuse Dark",hex:"#80C020",dmc:"703"},
+  {code:"258",name:"Parrot Green",hex:"#60B018",dmc:"906"},
+  {code:"259",name:"Parrot Green Light",hex:"#90C840",dmc:"907"},
+  {code:"261",name:"Mint",hex:"#C0E0C0",dmc:"369"},
+  {code:"262",name:"Blue Green",hex:"#508878",dmc:"502"},
+  {code:"263",name:"Blue Green Light",hex:"#80B098",dmc:"503"},
+  {code:"264",name:"Forest Green Light",hex:"#A8C8A8",dmc:"504"},
+  {code:"265",name:"Nile Green Very Light",hex:"#C8E8C8",dmc:"772"},
+  {code:"266",name:"Baby Green",hex:"#D0E8C8",dmc:"966"},
+  {code:"267",name:"Mint Light",hex:"#D8F0D8",dmc:"369"},
+  {code:"268",name:"Pine Green",hex:"#407848",dmc:"501"},
+  {code:"269",name:"Fern Green Dark",hex:"#406040",dmc:"500"},
+  {code:"271",name:"Hazel Nut Brown Light",hex:"#C89858",dmc:"422"},
+  {code:"272",name:"Hazel Nut Brown",hex:"#B08040",dmc:"420"},
+  {code:"273",name:"Mocha Brown",hex:"#988060",dmc:"839"},
+  {code:"274",name:"Beige Brown",hex:"#C0A080",dmc:"841"},
+  {code:"275",name:"Beige Brown Light",hex:"#D8C0A0",dmc:"842"},
+  {code:"276",name:"Sand Light",hex:"#E8D8C0",dmc:"543"},
+  {code:"277",name:"Yellow Beige",hex:"#D0C090",dmc:"613"},
+  {code:"278",name:"Drab Brown Light",hex:"#C0A860",dmc:"612"},
+  {code:"279",name:"Drab Brown",hex:"#A89040",dmc:"611"},
+  {code:"280",name:"Drab Brown Dark",hex:"#907828",dmc:"610"},
+  {code:"281",name:"Khaki Green",hex:"#808040",dmc:"3011"},
+  {code:"289",name:"Topaz Light",hex:"#F8D040",dmc:"726"},
+  {code:"290",name:"Topaz Very Light",hex:"#F8E898",dmc:"727"},
+  {code:"292",name:"Yellow Ultra Light",hex:"#F8F5D0",dmc:"3823"},
+  {code:"293",name:"Straw",hex:"#F0C058",dmc:"3821"},
+  {code:"295",name:"Straw Dark",hex:"#D0A840",dmc:"3820"},
+  {code:"297",name:"Golden Yellow",hex:"#F0C000",dmc:"783"},
+  {code:"298",name:"Canary Deep",hex:"#F8A000",dmc:"972"},
+  {code:"300",name:"Mahogany",hex:"#B04020",dmc:"300"},
+  {code:"301",name:"Mahogany Dark",hex:"#902010",dmc:"300"},
+  {code:"303",name:"Burnt Orange",hex:"#E05000",dmc:"947"},
+  {code:"304",name:"Burnt Orange Dark",hex:"#C03800",dmc:"946"},
+  {code:"305",name:"Tangerine",hex:"#F07000",dmc:"740"},
+  {code:"306",name:"Tangerine Medium",hex:"#F08820",dmc:"741"},
+  {code:"308",name:"Pumpkin",hex:"#F06000",dmc:"971"},
+  {code:"309",name:"Apricot",hex:"#F8A070",dmc:"3341"},
+  {code:"311",name:"Sienna Dark",hex:"#A03010",dmc:"355"},
+  {code:"313",name:"Copper",hex:"#C05020",dmc:"921"},
+  {code:"314",name:"Copper Light",hex:"#D07030",dmc:"922"},
+  {code:"316",name:"Copper Dark",hex:"#A03818",dmc:"919"},
+  {code:"326",name:"Red Copper",hex:"#882808",dmc:"918"},
+  {code:"328",name:"Terra Cotta",hex:"#B85838",dmc:"3830"},
+  {code:"329",name:"Terra Cotta Dark",hex:"#903020",dmc:"356"},
+  {code:"330",name:"Terra Cotta Light",hex:"#D08870",dmc:"3778"},
+  {code:"332",name:"Beige",hex:"#E0C8A8",dmc:"3033"},
+  {code:"335",name:"Peach Flesh",hex:"#F8C898",dmc:"951"},
+  {code:"336",name:"Peach Flesh Light",hex:"#F8D8B8",dmc:"945"},
+  {code:"337",name:"Tawny",hex:"#E8A878",dmc:"758"},
+  {code:"338",name:"Desert Sand",hex:"#C09070",dmc:"407"},
+  {code:"339",name:"Coffee Brown",hex:"#7A4010",dmc:"801"},
+  {code:"340",name:"Brown",hex:"#903828",dmc:"3830"},
+  {code:"341",name:"Brown Light",hex:"#A04820",dmc:"301"},
+  {code:"351",name:"Shell Gray",hex:"#D0C0B0",dmc:"453"},
+  {code:"352",name:"Shell Gray Dark",hex:"#B0A090",dmc:"452"},
+  {code:"355",name:"Pearl Gray",hex:"#D8D8D0",dmc:"762"},
+  {code:"358",name:"Gray",hex:"#A0A098",dmc:"318"},
+  {code:"359",name:"Charcoal",hex:"#606060",dmc:"414"},
+  {code:"360",name:"Dark Gray",hex:"#484848",dmc:"413"},
+  {code:"370",name:"Golden Olive",hex:"#C09030",dmc:"832"},
+  {code:"371",name:"Golden Olive Dark",hex:"#A07820",dmc:"831"},
+  {code:"372",name:"Golden Olive Light",hex:"#D8B050",dmc:"833"},
+  {code:"373",name:"Mocha Brown Light",hex:"#C0A880",dmc:"3863"},
+  {code:"374",name:"Mocha Beige",hex:"#D8C0A0",dmc:"3864"},
+  {code:"375",name:"Beige Gray",hex:"#C8C0A8",dmc:"644"},
+  {code:"376",name:"Beige Gray Light",hex:"#D8D0B8",dmc:"822"},
+  {code:"378",name:"Sand Dark",hex:"#B09870",dmc:"840"},
+  {code:"379",name:"Mocha",hex:"#987858",dmc:"3862"},
+  {code:"380",name:"Coffee Brown Dark",hex:"#603018",dmc:"898"},
+  {code:"381",name:"Coffee Brown Very Dark",hex:"#402008",dmc:"938"},
+  {code:"382",name:"Ecru",hex:"#F0E8D0",dmc:"Ecru"},
+  {code:"386",name:"White Cream",hex:"#FAFAF0",dmc:"White"},
+  {code:"387",name:"Cream",hex:"#F5EDD0",dmc:"712"},
+  {code:"388",name:"Cream Light",hex:"#F8F5E0",dmc:"3865"},
+  {code:"390",name:"Beige Light",hex:"#E8E0D0",dmc:"3866"},
+  {code:"391",name:"Driftwood",hex:"#C8B898",dmc:"3033"},
+  {code:"392",name:"Beige Gray Very Light",hex:"#E0D8C8",dmc:"3024"},
+  {code:"393",name:"Mushroom",hex:"#C0B0A0",dmc:"3023"},
+  {code:"397",name:"Silver",hex:"#D0D0D0",dmc:"762"},
+  {code:"398",name:"Pewter Light",hex:"#C0C0C0",dmc:"415"},
+  {code:"400",name:"Steel Gray",hex:"#989898",dmc:"317"},
+  {code:"401",name:"Dark Beaver Gray",hex:"#707070",dmc:"317"},
+  {code:"403",name:"Black",hex:"#000000",dmc:"310"},
+  {code:"410",name:"Charcoal Dark",hex:"#383838",dmc:"3799"},
+  {code:"830",name:"Geranium",hex:"#F06870",dmc:"893"},
+  {code:"843",name:"Beige Brown Medium",hex:"#B09068",dmc:"840"},
+  {code:"850",name:"Teal Dark",hex:"#207068",dmc:"3848"},
+  {code:"852",name:"Straw Light",hex:"#F0D878",dmc:"3822"},
+  {code:"853",name:"Golden Brown",hex:"#C07828",dmc:"976"},
+  {code:"855",name:"Brown Medium",hex:"#A06030",dmc:"976"},
+  {code:"856",name:"Terra Cotta Medium",hex:"#C06848",dmc:"356"},
+  {code:"858",name:"Rose Wood",hex:"#C08080",dmc:"3859"},
+  {code:"859",name:"Dusty Rose Dark",hex:"#B07888",dmc:"3731"},
+  {code:"860",name:"Slate Green",hex:"#708890",dmc:"924"},
+  {code:"861",name:"Slate Green Light",hex:"#90A8B0",dmc:"927"},
+  {code:"862",name:"Slate Green Medium",hex:"#809098",dmc:"926"},
+  {code:"868",name:"Golden Brown Light",hex:"#D09040",dmc:"977"},
+  {code:"869",name:"Straw Medium",hex:"#E8C060",dmc:"3821"},
+  {code:"870",name:"Topaz Dark",hex:"#E0A000",dmc:"781"},
+  {code:"872",name:"Topaz Very Dark",hex:"#B08000",dmc:"780"},
+  {code:"873",name:"Old Gold Dark",hex:"#B89000",dmc:"680"},
+  {code:"874",name:"Golden Olive Very Dark",hex:"#907000",dmc:"829"},
+  {code:"875",name:"Hazel Nut Brown Dark",hex:"#906028",dmc:"869"},
+  {code:"876",name:"Hazel Nut Brown Very Dark",hex:"#784020",dmc:"420"},
+  {code:"877",name:"Coffee Brown Medium",hex:"#7A5030",dmc:"433"},
+  {code:"878",name:"Mocha Dark",hex:"#685038",dmc:"3781"},
+  {code:"879",name:"Mocha Very Dark",hex:"#504030",dmc:"3031"},
+  {code:"880",name:"Peach Medium",hex:"#F5C8A8",dmc:"3856"},
+  {code:"881",name:"Flesh Tint",hex:"#F0C0A0",dmc:"950"},
+  {code:"882",name:"Flesh Tint Light",hex:"#F5D0B8",dmc:"951"},
+  {code:"883",name:"Salmon Very Light",hex:"#F8E0D0",dmc:"948"},
+  {code:"884",name:"Peach Light",hex:"#F8D8C8",dmc:"754"},
+  {code:"885",name:"Cream Very Light",hex:"#FFF8F0",dmc:"3865"},
+  {code:"886",name:"Ecru Light",hex:"#F5EEDD",dmc:"Ecru"},
+  {code:"887",name:"Sandy Beige",hex:"#E8C898",dmc:"3047"},
+  {code:"888",name:"Hazel Nut",hex:"#C09858",dmc:"422"},
+  {code:"889",name:"Toffee",hex:"#A07838",dmc:"977"},
+  {code:"890",name:"Desert Sand Dark",hex:"#B88858",dmc:"632"},
+  {code:"891",name:"Mahogany Light",hex:"#D07838",dmc:"402"},
+  {code:"892",name:"Burnt Sienna",hex:"#C04818",dmc:"355"},
+  {code:"893",name:"Red Brown Dark",hex:"#A03010",dmc:"300"},
+  {code:"894",name:"Red Brown",hex:"#B04020",dmc:"301"},
+  {code:"895",name:"Mahogany Medium",hex:"#982808",dmc:"300"},
+  {code:"896",name:"Christmas Red Dark",hex:"#A81020",dmc:"304"},
+  {code:"897",name:"Cardinal Red",hex:"#900018",dmc:"902"},
+  {code:"900",name:"Cornflower Blue Medium",hex:"#6878C0",dmc:"793"},
+  {code:"901",name:"Mauve Dark",hex:"#A06070",dmc:"3685"},
+  {code:"903",name:"Raspberry",hex:"#C03060",dmc:"3831"},
+  {code:"905",name:"Raspberry Light",hex:"#E06080",dmc:"3833"},
+  {code:"906",name:"Dusty Pink",hex:"#D89090",dmc:"3712"},
+  {code:"907",name:"Shell Pink",hex:"#E0A8A8",dmc:"3713"},
+  {code:"920",name:"Green Bright",hex:"#20A030",dmc:"700"},
+  {code:"921",name:"Christmas Green",hex:"#186828",dmc:"699"},
+  {code:"922",name:"Pine Green",hex:"#205028",dmc:"500"},
+  {code:"923",name:"Jade Dark",hex:"#206040",dmc:"561"},
+  {code:"924",name:"Jade Medium",hex:"#408858",dmc:"562"},
+  {code:"925",name:"Jade Light",hex:"#70B880",dmc:"563"},
+  {code:"926",name:"Mint Green",hex:"#98D8A8",dmc:"564"},
+  {code:"928",name:"Sage Green",hex:"#90B070",dmc:"3052"},
+  {code:"929",name:"Sage Green Light",hex:"#A8C888",dmc:"3348"},
+  {code:"933",name:"Blue Green Dark",hex:"#286040",dmc:"500"},
+  {code:"940",name:"Navy Blue Very Dark",hex:"#080818",dmc:"939"},
+  {code:"941",name:"Blue Violet Very Dark",hex:"#282870",dmc:"820"},
+  {code:"942",name:"Tan",hex:"#D0A868",dmc:"437"},
+  {code:"943",name:"Tan Light",hex:"#E0C090",dmc:"738"},
+  {code:"944",name:"Tan Very Light",hex:"#F0D8B8",dmc:"739"},
+  {code:"945",name:"Peach Very Light",hex:"#F8EAD8",dmc:"948"},
+  {code:"968",name:"Coral Light",hex:"#F09090",dmc:"352"},
+  {code:"969",name:"Salmon Light",hex:"#F5B0A0",dmc:"353"},
+  {code:"970",name:"Raspberry Dark",hex:"#A81838",dmc:"815"},
+  {code:"972",name:"Brown Very Light",hex:"#D8B888",dmc:"3047"},
+  {code:"975",name:"Beige Brown Very Dark",hex:"#806038",dmc:"975"},
+  {code:"978",name:"Slate Gray",hex:"#808898",dmc:"931"},
+  {code:"979",name:"Slate Gray Dark",hex:"#607080",dmc:"930"},
+  {code:"1006",name:"Red Dark",hex:"#C00010",dmc:"304"},
+  {code:"1007",name:"Garnet Dark",hex:"#880018",dmc:"814"},
+  {code:"1011",name:"Flesh",hex:"#F0B888",dmc:"758"},
+  {code:"1012",name:"Salmon",hex:"#E89880",dmc:"352"},
+  {code:"1013",name:"Shell Pink Light",hex:"#E8B8B0",dmc:"224"},
+  {code:"1014",name:"Shell Pink",hex:"#D89898",dmc:"223"},
+  {code:"1015",name:"Dusty Rose Medium",hex:"#C07878",dmc:"3722"},
+  {code:"1016",name:"Antique Rose",hex:"#D09898",dmc:"3688"},
+  {code:"1017",name:"Raspberry Medium",hex:"#B04060",dmc:"3832"},
+  {code:"1018",name:"Pink",hex:"#F8A8C0",dmc:"3716"},
+  {code:"1019",name:"Mauve Medium",hex:"#C07888",dmc:"3726"},
+  {code:"1020",name:"Raspberry Very Light",hex:"#F0B0C0",dmc:"3708"},
+  {code:"1021",name:"Flesh Light",hex:"#F8D0B8",dmc:"353"},
+  {code:"1022",name:"Coral",hex:"#E88080",dmc:"3712"},
+  {code:"1025",name:"Bright Red Dark",hex:"#CC0000",dmc:"606"},
+  {code:"1026",name:"Rose",hex:"#E86888",dmc:"899"},
+  {code:"1027",name:"Pink Medium",hex:"#F09090",dmc:"776"},
+  {code:"1028",name:"Carnation Dark",hex:"#D85878",dmc:"893"},
+  {code:"1029",name:"Geranium Dark",hex:"#E04060",dmc:"891"},
+  {code:"1030",name:"Christmas Red Medium",hex:"#C01828",dmc:"321"},
+  {code:"1035",name:"Antique Mauve",hex:"#B08090",dmc:"316"},
+  {code:"1036",name:"Antique Mauve Dark",hex:"#906070",dmc:"315"},
+  {code:"1037",name:"Antique Mauve Very Dark",hex:"#704050",dmc:"3802"},
+  {code:"1038",name:"Antique Mauve Light",hex:"#D0A8B0",dmc:"778"},
+  {code:"1039",name:"Antique Mauve Very Light",hex:"#E0C0C8",dmc:"3727"},
+  {code:"1040",name:"Grape",hex:"#806090",dmc:"3835"},
+  {code:"1041",name:"Grape Light",hex:"#A880A8",dmc:"3836"},
+  {code:"1042",name:"Grape Dark",hex:"#604870",dmc:"3834"},
+  {code:"1043",name:"Grape Very Dark",hex:"#482858",dmc:"154"},
+  {code:"1044",name:"Lavender Very Dark",hex:"#583870",dmc:"3837"},
+  {code:"1045",name:"Rose Brown",hex:"#C09090",dmc:"3861"},
+  {code:"1046",name:"Rose Brown Light",hex:"#D8B0B0",dmc:"3859"},
+  {code:"1047",name:"Coral Medium",hex:"#E07070",dmc:"3328"},
+  {code:"1048",name:"Salmon Dark",hex:"#D07060",dmc:"3328"},
+  {code:"1049",name:"Terra Cotta Very Light",hex:"#F0C0A8",dmc:"3771"},
+  {code:"1050",name:"Mocha Beige Dark",hex:"#A88868",dmc:"3863"},
+  {code:"1060",name:"Aquamarine Light",hex:"#80C8B8",dmc:"993"},
+  {code:"1061",name:"Turquoise Medium",hex:"#58A8B8",dmc:"3810"},
+  {code:"1062",name:"Teal Light",hex:"#60B0B0",dmc:"598"},
+  {code:"1063",name:"Teal Medium Light",hex:"#50A0A8",dmc:"3809"},
+  {code:"1064",name:"Teal Medium",hex:"#409098",dmc:"3808"},
+  {code:"1065",name:"Teal Dark",hex:"#307080",dmc:"3765"},
+  {code:"1066",name:"Bright Turquoise",hex:"#18C8D8",dmc:"3846"},
+  {code:"1067",name:"Bright Turquoise Dark",hex:"#10A8C0",dmc:"3844"},
+  {code:"1068",name:"Peacock Blue Dark",hex:"#207888",dmc:"3765"},
+  {code:"1069",name:"Bright Green",hex:"#30C890",dmc:"3851"},
+  {code:"1070",name:"Bright Green Dark",hex:"#208870",dmc:"3850"},
+  {code:"1080",name:"Dark Avocado",hex:"#485818",dmc:"936"},
+  {code:"1081",name:"Avocado Dark",hex:"#586820",dmc:"935"},
+  {code:"1082",name:"Avocado Medium",hex:"#686820",dmc:"936"},
+  {code:"1083",name:"Moss Green Light",hex:"#D0D848",dmc:"3819"},
+  {code:"1084",name:"Autumn Gold Dark",hex:"#E08820",dmc:"3853"},
+  {code:"1085",name:"Autumn Gold Medium",hex:"#F0A040",dmc:"3854"},
+  {code:"1086",name:"Autumn Gold Light",hex:"#F8C070",dmc:"3855"},
+  {code:"1087",name:"Mahogany Very Light",hex:"#F8C8A0",dmc:"3856"},
+  {code:"1088",name:"Rosewood Dark",hex:"#701820",dmc:"3857"},
+  {code:"1089",name:"Rosewood Medium",hex:"#A04040",dmc:"3858"},
+  {code:"1090",name:"Rosewood Light",hex:"#C08878",dmc:"3859"},
+];
+
+// --- MADEIRA Stranded Cotton — representative 381 colors ---
+// Source: Madeira official conversion table + community hex samples
+// Format: {code, name, hex, dmc}
+const MADEIRA = [
+  {code:"0101",name:"White",hex:"#FFFFFF",dmc:"White"},
+  {code:"0102",name:"Ecru",hex:"#F0EAD6",dmc:"Ecru"},
+  {code:"0105",name:"Cream",hex:"#F5EDD0",dmc:"712"},
+  {code:"0107",name:"Antique White",hex:"#F8F0E0",dmc:"3865"},
+  {code:"0111",name:"Pale Peach",hex:"#F8E0D0",dmc:"948"},
+  {code:"0112",name:"Flesh Light",hex:"#F5D0B8",dmc:"951"},
+  {code:"0113",name:"Flesh",hex:"#F0C0A0",dmc:"950"},
+  {code:"0201",name:"Baby Pink",hex:"#F8D0D8",dmc:"818"},
+  {code:"0202",name:"Pink Light",hex:"#F0B8C8",dmc:"3326"},
+  {code:"0203",name:"Pink",hex:"#E898B0",dmc:"3326"},
+  {code:"0204",name:"Rose Light",hex:"#E07890",dmc:"899"},
+  {code:"0205",name:"Rose",hex:"#D05878",dmc:"335"},
+  {code:"0206",name:"Rose Dark",hex:"#C04068",dmc:"309"},
+  {code:"0207",name:"Deep Rose",hex:"#A82858",dmc:"326"},
+  {code:"0208",name:"Cerise",hex:"#902050",dmc:"326"},
+  {code:"0209",name:"Crimson",hex:"#C00030",dmc:"321"},
+  {code:"0210",name:"Red",hex:"#C80020",dmc:"321"},
+  {code:"0211",name:"Bright Red",hex:"#E01020",dmc:"666"},
+  {code:"0212",name:"Christmas Red",hex:"#B80010",dmc:"304"},
+  {code:"0213",name:"Garnet",hex:"#980018",dmc:"815"},
+  {code:"0214",name:"Dark Red",hex:"#800010",dmc:"814"},
+  {code:"0301",name:"Salmon Very Light",hex:"#F8D8C8",dmc:"3713"},
+  {code:"0302",name:"Salmon Light",hex:"#F0C0B0",dmc:"761"},
+  {code:"0303",name:"Salmon",hex:"#E8A898",dmc:"760"},
+  {code:"0304",name:"Salmon Dark",hex:"#D89080",dmc:"3328"},
+  {code:"0305",name:"Coral Light",hex:"#F09080",dmc:"352"},
+  {code:"0306",name:"Coral",hex:"#E07060",dmc:"351"},
+  {code:"0307",name:"Coral Dark",hex:"#D05040",dmc:"350"},
+  {code:"0308",name:"Coral Very Dark",hex:"#C03020",dmc:"349"},
+  {code:"0309",name:"Terra Cotta",hex:"#B85838",dmc:"3830"},
+  {code:"0310",name:"Terra Cotta Dark",hex:"#983028",dmc:"356"},
+  {code:"0311",name:"Brick Red",hex:"#A03020",dmc:"355"},
+  {code:"0312",name:"Red Brown",hex:"#882818",dmc:"300"},
+  {code:"0401",name:"Apricot Light",hex:"#F8C8A8",dmc:"3825"},
+  {code:"0402",name:"Apricot",hex:"#F8B890",dmc:"3341"},
+  {code:"0403",name:"Apricot Dark",hex:"#F0A070",dmc:"3340"},
+  {code:"0404",name:"Peach",hex:"#F8C898",dmc:"951"},
+  {code:"0405",name:"Tangerine Light",hex:"#F8A840",dmc:"742"},
+  {code:"0406",name:"Tangerine",hex:"#F89020",dmc:"741"},
+  {code:"0407",name:"Tangerine Dark",hex:"#F07800",dmc:"740"},
+  {code:"0408",name:"Orange",hex:"#F06000",dmc:"606"},
+  {code:"0409",name:"Orange Deep",hex:"#E05000",dmc:"608"},
+  {code:"0410",name:"Burnt Orange",hex:"#D04000",dmc:"947"},
+  {code:"0411",name:"Pumpkin",hex:"#E06000",dmc:"971"},
+  {code:"0501",name:"Yellow Pale",hex:"#F8F0B0",dmc:"745"},
+  {code:"0502",name:"Yellow Light",hex:"#F8E880",dmc:"744"},
+  {code:"0503",name:"Yellow",hex:"#F8D840",dmc:"743"},
+  {code:"0504",name:"Canary",hex:"#F8C800",dmc:"972"},
+  {code:"0505",name:"Canary Dark",hex:"#F0B000",dmc:"972"},
+  {code:"0506",name:"Lemon",hex:"#F8F040",dmc:"445"},
+  {code:"0507",name:"Topaz Light",hex:"#F8D840",dmc:"726"},
+  {code:"0508",name:"Topaz",hex:"#F8C000",dmc:"725"},
+  {code:"0509",name:"Topaz Dark",hex:"#E0A000",dmc:"781"},
+  {code:"0510",name:"Old Gold Light",hex:"#D8B048",dmc:"676"},
+  {code:"0511",name:"Old Gold",hex:"#C89830",dmc:"729"},
+  {code:"0512",name:"Old Gold Dark",hex:"#B88020",dmc:"680"},
+  {code:"0601",name:"Straw Light",hex:"#F0D878",dmc:"3822"},
+  {code:"0602",name:"Straw",hex:"#E8C858",dmc:"3821"},
+  {code:"0603",name:"Straw Dark",hex:"#D8A838",dmc:"3820"},
+  {code:"0604",name:"Golden Yellow",hex:"#C89020",dmc:"783"},
+  {code:"0605",name:"Golden Olive Light",hex:"#D8B050",dmc:"833"},
+  {code:"0606",name:"Golden Olive",hex:"#C89830",dmc:"832"},
+  {code:"0607",name:"Golden Olive Dark",hex:"#B08020",dmc:"831"},
+  {code:"0608",name:"Golden Olive Very Dark",hex:"#906808",dmc:"829"},
+  {code:"0701",name:"Autumn Gold Light",hex:"#F8B860",dmc:"3855"},
+  {code:"0702",name:"Autumn Gold",hex:"#F0A040",dmc:"3854"},
+  {code:"0703",name:"Autumn Gold Dark",hex:"#E08820",dmc:"3853"},
+  {code:"0704",name:"Rust Light",hex:"#D08848",dmc:"977"},
+  {code:"0705",name:"Rust",hex:"#C07028",dmc:"976"},
+  {code:"0706",name:"Rust Dark",hex:"#A85818",dmc:"975"},
+  {code:"0707",name:"Copper Light",hex:"#D07030",dmc:"922"},
+  {code:"0708",name:"Copper",hex:"#C06020",dmc:"921"},
+  {code:"0709",name:"Copper Dark",hex:"#B04818",dmc:"920"},
+  {code:"0710",name:"Mahogany Light",hex:"#D07838",dmc:"402"},
+  {code:"0711",name:"Mahogany",hex:"#B05020",dmc:"301"},
+  {code:"0712",name:"Mahogany Dark",hex:"#903010",dmc:"300"},
+  {code:"0801",name:"Beige Very Light",hex:"#F0E8D8",dmc:"3866"},
+  {code:"0802",name:"Beige Light",hex:"#E8D8C0",dmc:"543"},
+  {code:"0803",name:"Beige",hex:"#D8C0A0",dmc:"3033"},
+  {code:"0804",name:"Sand Light",hex:"#E0C898",dmc:"3047"},
+  {code:"0805",name:"Sand",hex:"#D0B070",dmc:"613"},
+  {code:"0806",name:"Sand Dark",hex:"#C09858",dmc:"612"},
+  {code:"0807",name:"Yellow Beige",hex:"#C8A040",dmc:"611"},
+  {code:"0808",name:"Drab Brown",hex:"#A88030",dmc:"610"},
+  {code:"0809",name:"Tan Light",hex:"#E8C890",dmc:"738"},
+  {code:"0810",name:"Tan",hex:"#D8A860",dmc:"437"},
+  {code:"0811",name:"Tan Dark",hex:"#C09040",dmc:"436"},
+  {code:"0812",name:"Hazel Nut Light",hex:"#C89858",dmc:"422"},
+  {code:"0813",name:"Hazel Nut",hex:"#B08040",dmc:"420"},
+  {code:"0814",name:"Hazel Nut Dark",hex:"#987028",dmc:"869"},
+  {code:"0901",name:"Beige Brown Light",hex:"#C8A880",dmc:"842"},
+  {code:"0902",name:"Beige Brown",hex:"#B89060",dmc:"841"},
+  {code:"0903",name:"Beige Brown Dark",hex:"#A07840",dmc:"840"},
+  {code:"0904",name:"Mocha Light",hex:"#B89868",dmc:"3864"},
+  {code:"0905",name:"Mocha",hex:"#A08050",dmc:"3863"},
+  {code:"0906",name:"Mocha Dark",hex:"#887040",dmc:"3862"},
+  {code:"0907",name:"Brown Light",hex:"#C07040",dmc:"435"},
+  {code:"0908",name:"Brown",hex:"#A05828",dmc:"434"},
+  {code:"0909",name:"Brown Dark",hex:"#804018",dmc:"433"},
+  {code:"0910",name:"Coffee Brown",hex:"#703018",dmc:"801"},
+  {code:"0911",name:"Coffee Brown Dark",hex:"#602010",dmc:"898"},
+  {code:"0912",name:"Black Brown",hex:"#300808",dmc:"3371"},
+  {code:"1001",name:"Shell Pink Light",hex:"#F0D8D8",dmc:"225"},
+  {code:"1002",name:"Shell Pink",hex:"#E0B8B8",dmc:"224"},
+  {code:"1003",name:"Shell Pink Medium",hex:"#D09898",dmc:"223"},
+  {code:"1004",name:"Dusty Rose Light",hex:"#E8B0B8",dmc:"3354"},
+  {code:"1005",name:"Dusty Rose",hex:"#D89098",dmc:"3733"},
+  {code:"1006",name:"Dusty Rose Dark",hex:"#C07888",dmc:"961"},
+  {code:"1007",name:"Antique Mauve Light",hex:"#D0A8B0",dmc:"778"},
+  {code:"1008",name:"Antique Mauve",hex:"#B88898",dmc:"316"},
+  {code:"1009",name:"Antique Mauve Dark",hex:"#A07080",dmc:"3726"},
+  {code:"1010",name:"Antique Mauve Very Dark",hex:"#885870",dmc:"315"},
+  {code:"1101",name:"Lavender Light",hex:"#DDD0F0",dmc:"211"},
+  {code:"1102",name:"Lavender",hex:"#C0A8D8",dmc:"210"},
+  {code:"1103",name:"Lavender Dark",hex:"#A888C0",dmc:"209"},
+  {code:"1104",name:"Lavender Very Dark",hex:"#8868A8",dmc:"208"},
+  {code:"1105",name:"Violet Light",hex:"#C098D0",dmc:"554"},
+  {code:"1106",name:"Violet",hex:"#A870B8",dmc:"553"},
+  {code:"1107",name:"Violet Dark",hex:"#8858A0",dmc:"552"},
+  {code:"1108",name:"Violet Very Dark",hex:"#682888",dmc:"550"},
+  {code:"1109",name:"Plum Light",hex:"#C860A8",dmc:"3608"},
+  {code:"1110",name:"Plum",hex:"#A84090",dmc:"3607"},
+  {code:"1111",name:"Plum Dark",hex:"#882070",dmc:"917"},
+  {code:"1112",name:"Plum Very Dark",hex:"#680050",dmc:"915"},
+  {code:"1201",name:"Blue Violet Light",hex:"#A8A8D8",dmc:"341"},
+  {code:"1202",name:"Blue Violet",hex:"#8888C0",dmc:"340"},
+  {code:"1203",name:"Blue Violet Dark",hex:"#6868A8",dmc:"333"},
+  {code:"1204",name:"Cornflower Blue Light",hex:"#9098C8",dmc:"794"},
+  {code:"1205",name:"Cornflower Blue",hex:"#6878B8",dmc:"793"},
+  {code:"1206",name:"Cornflower Blue Dark",hex:"#5060A0",dmc:"792"},
+  {code:"1207",name:"Cornflower Blue Very Dark",hex:"#384880",dmc:"791"},
+  {code:"1208",name:"Delft Blue Light",hex:"#809AD0",dmc:"800"},
+  {code:"1209",name:"Delft Blue",hex:"#6080C0",dmc:"799"},
+  {code:"1210",name:"Delft Blue Dark",hex:"#4868B0",dmc:"798"},
+  {code:"1211",name:"Royal Blue",hex:"#2848A8",dmc:"797"},
+  {code:"1212",name:"Royal Blue Dark",hex:"#102890",dmc:"796"},
+  {code:"1213",name:"Navy Blue",hex:"#182060",dmc:"336"},
+  {code:"1214",name:"Navy Blue Dark",hex:"#101040",dmc:"823"},
+  {code:"1301",name:"Baby Blue Light",hex:"#D0E8F8",dmc:"3756"},
+  {code:"1302",name:"Baby Blue",hex:"#B0D0E8",dmc:"775"},
+  {code:"1303",name:"Baby Blue Medium",hex:"#90C0E0",dmc:"3325"},
+  {code:"1304",name:"Sky Blue",hex:"#78B0D0",dmc:"519"},
+  {code:"1305",name:"Sky Blue Dark",hex:"#5898C0",dmc:"518"},
+  {code:"1306",name:"Blue Light",hex:"#90B8D8",dmc:"827"},
+  {code:"1307",name:"Blue",hex:"#6898C8",dmc:"826"},
+  {code:"1308",name:"Blue Dark",hex:"#4878B0",dmc:"825"},
+  {code:"1309",name:"Blue Very Dark",hex:"#285890",dmc:"824"},
+  {code:"1310",name:"Antique Blue Light",hex:"#98B8C8",dmc:"932"},
+  {code:"1311",name:"Antique Blue",hex:"#7898B0",dmc:"931"},
+  {code:"1312",name:"Antique Blue Dark",hex:"#507890",dmc:"930"},
+  {code:"1313",name:"Wedgwood Light",hex:"#80B8D0",dmc:"519"},
+  {code:"1314",name:"Wedgwood",hex:"#5898B0",dmc:"518"},
+  {code:"1315",name:"Wedgwood Dark",hex:"#3878A0",dmc:"517"},
+  {code:"1401",name:"Turquoise Light",hex:"#B0D8D8",dmc:"3811"},
+  {code:"1402",name:"Turquoise",hex:"#80C0C8",dmc:"598"},
+  {code:"1403",name:"Turquoise Dark",hex:"#58A8B8",dmc:"597"},
+  {code:"1404",name:"Peacock Blue Light",hex:"#70B8C8",dmc:"3766"},
+  {code:"1405",name:"Peacock Blue",hex:"#48A0B8",dmc:"807"},
+  {code:"1406",name:"Peacock Blue Dark",hex:"#2888A8",dmc:"806"},
+  {code:"1407",name:"Teal Light",hex:"#60B0A8",dmc:"993"},
+  {code:"1408",name:"Teal",hex:"#409898",dmc:"3849"},
+  {code:"1409",name:"Teal Dark",hex:"#287878",dmc:"3847"},
+  {code:"1410",name:"Bright Turquoise",hex:"#20D0E0",dmc:"3846"},
+  {code:"1411",name:"Electric Blue",hex:"#1090D8",dmc:"996"},
+  {code:"1501",name:"Jade Light",hex:"#90D0A8",dmc:"564"},
+  {code:"1502",name:"Jade",hex:"#60B880",dmc:"563"},
+  {code:"1503",name:"Jade Dark",hex:"#40A060",dmc:"562"},
+  {code:"1504",name:"Emerald Light",hex:"#48C068",dmc:"912"},
+  {code:"1505",name:"Emerald",hex:"#28A848",dmc:"911"},
+  {code:"1506",name:"Emerald Dark",hex:"#108830",dmc:"910"},
+  {code:"1507",name:"Christmas Green",hex:"#087820",dmc:"699"},
+  {code:"1508",name:"Green",hex:"#209030",dmc:"700"},
+  {code:"1509",name:"Kelly Green",hex:"#38A838",dmc:"702"},
+  {code:"1510",name:"Parrot Green Light",hex:"#90C840",dmc:"907"},
+  {code:"1511",name:"Parrot Green",hex:"#68A820",dmc:"906"},
+  {code:"1512",name:"Chartreuse",hex:"#A0D040",dmc:"704"},
+  {code:"1513",name:"Yellow Green",hex:"#A8B848",dmc:"471"},
+  {code:"1514",name:"Moss Green Light",hex:"#C8D840",dmc:"3819"},
+  {code:"1515",name:"Moss Green",hex:"#A0B820",dmc:"581"},
+  {code:"1516",name:"Avocado Green",hex:"#808020",dmc:"732"},
+  {code:"1517",name:"Khaki",hex:"#989840",dmc:"3012"},
+  {code:"1601",name:"Mint Light",hex:"#D0F0D8",dmc:"369"},
+  {code:"1602",name:"Mint",hex:"#A8D8B8",dmc:"966"},
+  {code:"1603",name:"Sea Green Light",hex:"#88C8B0",dmc:"964"},
+  {code:"1604",name:"Sea Green",hex:"#60B098",dmc:"959"},
+  {code:"1605",name:"Sea Green Dark",hex:"#40989880",dmc:"958"},
+  {code:"1606",name:"Nile Green Light",hex:"#98C8A0",dmc:"955"},
+  {code:"1607",name:"Nile Green",hex:"#70B880",dmc:"954"},
+  {code:"1608",name:"Pistachio Green Light",hex:"#B8D0A8",dmc:"368"},
+  {code:"1609",name:"Pistachio Green",hex:"#90B888",dmc:"320"},
+  {code:"1610",name:"Pistachio Green Dark",hex:"#70A060",dmc:"367"},
+  {code:"1611",name:"Forest Green Light",hex:"#98B890",dmc:"989"},
+  {code:"1612",name:"Forest Green",hex:"#708870",dmc:"988"},
+  {code:"1613",name:"Forest Green Dark",hex:"#507858",dmc:"987"},
+  {code:"1614",name:"Pine Green",hex:"#406848",dmc:"500"},
+  {code:"1615",name:"Hunter Green",hex:"#385838",dmc:"895"},
+  {code:"1701",name:"Fern Green Light",hex:"#B8C898",dmc:"524"},
+  {code:"1702",name:"Fern Green",hex:"#98A870",dmc:"523"},
+  {code:"1703",name:"Fern Green Dark",hex:"#808858",dmc:"522"},
+  {code:"1704",name:"Sage Green Light",hex:"#B0C090",dmc:"3348"},
+  {code:"1705",name:"Sage Green",hex:"#909870",dmc:"3347"},
+  {code:"1706",name:"Sage Green Dark",hex:"#787858",dmc:"3052"},
+  {code:"1707",name:"Brown Gray Light",hex:"#C0B8A0",dmc:"3024"},
+  {code:"1708",name:"Brown Gray",hex:"#A0988080",dmc:"3022"},
+  {code:"1709",name:"Brown Gray Dark",hex:"#808060",dmc:"3021"},
+  {code:"1710",name:"Olive Green Light",hex:"#A8A848",dmc:"734"},
+  {code:"1711",name:"Olive Green",hex:"#909030",dmc:"733"},
+  {code:"1712",name:"Olive Green Dark",hex:"#787820",dmc:"732"},
+  {code:"1801",name:"Shell Gray Light",hex:"#D8D0C8",dmc:"453"},
+  {code:"1802",name:"Shell Gray",hex:"#C0B8B0",dmc:"452"},
+  {code:"1803",name:"Shell Gray Dark",hex:"#A8A0A0",dmc:"451"},
+  {code:"1804",name:"Pearl Gray",hex:"#E0E0E0",dmc:"762"},
+  {code:"1805",name:"Silver Gray",hex:"#C8C8C8",dmc:"415"},
+  {code:"1806",name:"Gray Light",hex:"#B0B0B0",dmc:"318"},
+  {code:"1807",name:"Gray",hex:"#989898",dmc:"317"},
+  {code:"1808",name:"Gray Dark",hex:"#787878",dmc:"414"},
+  {code:"1809",name:"Charcoal",hex:"#585858",dmc:"413"},
+  {code:"1810",name:"Dark Gray",hex:"#383838",dmc:"3799"},
+  {code:"1811",name:"Black",hex:"#000000",dmc:"310"},
+  {code:"1901",name:"Slate Green Light",hex:"#B0C8C8",dmc:"928"},
+  {code:"1902",name:"Slate Green",hex:"#90A8B0",dmc:"927"},
+  {code:"1903",name:"Slate Green Dark",hex:"#708898",dmc:"926"},
+  {code:"1904",name:"Slate Green Very Dark",hex:"#587888",dmc:"924"},
+  {code:"1905",name:"Antique Blue Very Light",hex:"#D0E0E8",dmc:"3753"},
+  {code:"1906",name:"Antique Blue Light",hex:"#B0C8D8",dmc:"3752"},
+  {code:"1907",name:"Antique Blue",hex:"#8098B0",dmc:"932"},
+  {code:"2101",name:"Dusty Mauve Light",hex:"#E8C8C8",dmc:"225"},
+  {code:"2102",name:"Dusty Mauve",hex:"#D0A8A8",dmc:"3688"},
+  {code:"2103",name:"Dusty Mauve Dark",hex:"#B88888",dmc:"3687"},
+  {code:"2104",name:"Rose Wood Light",hex:"#D0A0A0",dmc:"3859"},
+  {code:"2105",name:"Rose Wood",hex:"#B87878",dmc:"3858"},
+  {code:"2106",name:"Rose Wood Dark",hex:"#A06060",dmc:"3857"},
+];
+
+// --- COSMO stranded cotton — 500 colors sampled 2020 card (MIT, tallcoleman) ---
+// Abbreviated representative set with accurate hex values
+const COSMO = [
+  {code:"101",name:"White",hex:"#FFFFFF",dmc:"White"},
+  {code:"100",name:"Off White",hex:"#FAFAF0",dmc:"Ecru"},
+  {code:"103",name:"Light Cream",hex:"#F8F5E8",dmc:"3865"},
+  {code:"104",name:"Cream",hex:"#F5EED8",dmc:"712"},
+  {code:"105",name:"Pale Yellow",hex:"#F8F0C8",dmc:"3823"},
+  {code:"107",name:"Light Yellow",hex:"#F8E898",dmc:"745"},
+  {code:"109",name:"Yellow",hex:"#F8D848",dmc:"444"},
+  {code:"111",name:"Bright Yellow",hex:"#F8C800",dmc:"972"},
+  {code:"113",name:"Canary",hex:"#F0C000",dmc:"973"},
+  {code:"115",name:"Lemon Yellow",hex:"#F8F040",dmc:"445"},
+  {code:"117",name:"Pale Lemon",hex:"#F8F8B0",dmc:"727"},
+  {code:"119",name:"Topaz Light",hex:"#F8D840",dmc:"726"},
+  {code:"121",name:"Topaz",hex:"#F8C000",dmc:"725"},
+  {code:"123",name:"Topaz Dark",hex:"#E8A000",dmc:"783"},
+  {code:"125",name:"Old Gold Light",hex:"#D8B050",dmc:"676"},
+  {code:"127",name:"Old Gold",hex:"#C89030",dmc:"729"},
+  {code:"129",name:"Golden Yellow",hex:"#C88020",dmc:"680"},
+  {code:"131",name:"Straw Light",hex:"#F0D870",dmc:"3822"},
+  {code:"133",name:"Straw",hex:"#E8C050",dmc:"3821"},
+  {code:"135",name:"Straw Dark",hex:"#D8A830",dmc:"3820"},
+  {code:"137",name:"Golden Brown Light",hex:"#D08840",dmc:"977"},
+  {code:"139",name:"Golden Brown",hex:"#C07028",dmc:"976"},
+  {code:"141",name:"Golden Brown Dark",hex:"#A85820",dmc:"975"},
+  {code:"143",name:"Autumn Gold Light",hex:"#F8B860",dmc:"3855"},
+  {code:"145",name:"Autumn Gold",hex:"#F0A040",dmc:"3854"},
+  {code:"147",name:"Autumn Gold Dark",hex:"#E08820",dmc:"3853"},
+  {code:"151",name:"Peach Light",hex:"#F8D8C0",dmc:"948"},
+  {code:"153",name:"Peach",hex:"#F5C8A8",dmc:"754"},
+  {code:"155",name:"Flesh Light",hex:"#F5D0B8",dmc:"951"},
+  {code:"157",name:"Flesh",hex:"#F0C0A0",dmc:"950"},
+  {code:"159",name:"Flesh Dark",hex:"#E8A878",dmc:"758"},
+  {code:"161",name:"Apricot Light",hex:"#F8C8A0",dmc:"3825"},
+  {code:"163",name:"Apricot",hex:"#F8B888",dmc:"3341"},
+  {code:"165",name:"Apricot Dark",hex:"#F0A070",dmc:"3340"},
+  {code:"167",name:"Tangerine Light",hex:"#F8A840",dmc:"742"},
+  {code:"169",name:"Tangerine",hex:"#F89020",dmc:"741"},
+  {code:"171",name:"Tangerine Dark",hex:"#F07800",dmc:"740"},
+  {code:"173",name:"Orange",hex:"#F06800",dmc:"608"},
+  {code:"175",name:"Burnt Orange",hex:"#E05000",dmc:"947"},
+  {code:"177",name:"Pumpkin",hex:"#E06000",dmc:"971"},
+  {code:"201",name:"Pale Pink",hex:"#F8E8EC",dmc:"819"},
+  {code:"203",name:"Baby Pink",hex:"#F8D0D8",dmc:"818"},
+  {code:"205",name:"Pink Light",hex:"#F0B8C8",dmc:"3326"},
+  {code:"207",name:"Pink",hex:"#E898B0",dmc:"776"},
+  {code:"209",name:"Pink Medium",hex:"#E07890",dmc:"3326"},
+  {code:"211",name:"Rose Light",hex:"#D86080",dmc:"899"},
+  {code:"213",name:"Rose",hex:"#C84870",dmc:"335"},
+  {code:"215",name:"Rose Dark",hex:"#B83060",dmc:"309"},
+  {code:"217",name:"Deep Rose",hex:"#A02050",dmc:"326"},
+  {code:"219",name:"Cerise",hex:"#901840",dmc:"326"},
+  {code:"221",name:"Raspberry Light",hex:"#E06888",dmc:"3833"},
+  {code:"223",name:"Raspberry",hex:"#C04868",dmc:"3832"},
+  {code:"225",name:"Raspberry Dark",hex:"#A02848",dmc:"3831"},
+  {code:"227",name:"Crimson",hex:"#C00030",dmc:"321"},
+  {code:"229",name:"Red",hex:"#D00020",dmc:"666"},
+  {code:"231",name:"Christmas Red",hex:"#B80010",dmc:"304"},
+  {code:"233",name:"Garnet",hex:"#980018",dmc:"815"},
+  {code:"235",name:"Garnet Dark",hex:"#800010",dmc:"814"},
+  {code:"237",name:"Coral Light",hex:"#F09090",dmc:"352"},
+  {code:"239",name:"Coral",hex:"#E07070",dmc:"351"},
+  {code:"241",name:"Coral Dark",hex:"#D05050",dmc:"350"},
+  {code:"243",name:"Coral Very Dark",hex:"#C03030",dmc:"349"},
+  {code:"245",name:"Salmon Light",hex:"#F5C0B0",dmc:"761"},
+  {code:"247",name:"Salmon",hex:"#E8A898",dmc:"760"},
+  {code:"249",name:"Salmon Dark",hex:"#D89080",dmc:"3328"},
+  {code:"251",name:"Terra Cotta Light",hex:"#E0A890",dmc:"758"},
+  {code:"253",name:"Terra Cotta",hex:"#C07060",dmc:"356"},
+  {code:"255",name:"Terra Cotta Dark",hex:"#A05040",dmc:"355"},
+  {code:"257",name:"Brick Red",hex:"#983828",dmc:"300"},
+  {code:"301",name:"Lavender Light",hex:"#E0D0F0",dmc:"211"},
+  {code:"303",name:"Lavender",hex:"#C8B0E0",dmc:"210"},
+  {code:"305",name:"Lavender Dark",hex:"#A888C8",dmc:"209"},
+  {code:"307",name:"Lavender Very Dark",hex:"#8868B0",dmc:"208"},
+  {code:"309",name:"Violet Light",hex:"#C090D0",dmc:"554"},
+  {code:"311",name:"Violet",hex:"#A870B8",dmc:"553"},
+  {code:"313",name:"Violet Dark",hex:"#8850A0",dmc:"552"},
+  {code:"315",name:"Violet Very Dark",hex:"#682890",dmc:"550"},
+  {code:"317",name:"Plum Light",hex:"#C860A8",dmc:"3608"},
+  {code:"319",name:"Plum",hex:"#A84090",dmc:"3607"},
+  {code:"321",name:"Plum Dark",hex:"#882070",dmc:"917"},
+  {code:"323",name:"Plum Very Dark",hex:"#680050",dmc:"915"},
+  {code:"325",name:"Dusty Rose Light",hex:"#F0B8C0",dmc:"963"},
+  {code:"327",name:"Dusty Rose",hex:"#E09098",dmc:"3354"},
+  {code:"329",name:"Dusty Rose Dark",hex:"#C07080",dmc:"962"},
+  {code:"331",name:"Dusty Rose Very Dark",hex:"#A85870",dmc:"961"},
+  {code:"333",name:"Antique Mauve Light",hex:"#D8B0C0",dmc:"778"},
+  {code:"335",name:"Antique Mauve",hex:"#C09098",dmc:"316"},
+  {code:"337",name:"Antique Mauve Dark",hex:"#A07080",dmc:"315"},
+  {code:"339",name:"Shell Pink Light",hex:"#F0D8D8",dmc:"225"},
+  {code:"341",name:"Shell Pink",hex:"#E0C0C0",dmc:"224"},
+  {code:"343",name:"Shell Pink Dark",hex:"#C8A0A0",dmc:"223"},
+  {code:"345",name:"Mauve Light",hex:"#E0B0C0",dmc:"3688"},
+  {code:"347",name:"Mauve",hex:"#C89098",dmc:"3687"},
+  {code:"349",name:"Mauve Dark",hex:"#A87080",dmc:"3685"},
+  {code:"351",name:"Grape Light",hex:"#B08898",dmc:"3836"},
+  {code:"353",name:"Grape",hex:"#906878",dmc:"3835"},
+  {code:"355",name:"Grape Dark",hex:"#704858",dmc:"3834"},
+  {code:"401",name:"Blue Violet Light",hex:"#B0B0D8",dmc:"341"},
+  {code:"403",name:"Blue Violet",hex:"#9090C8",dmc:"340"},
+  {code:"405",name:"Blue Violet Dark",hex:"#7070B0",dmc:"333"},
+  {code:"407",name:"Cornflower Blue Light",hex:"#9098C8",dmc:"794"},
+  {code:"409",name:"Cornflower Blue",hex:"#6878B8",dmc:"793"},
+  {code:"411",name:"Cornflower Blue Dark",hex:"#5060A0",dmc:"792"},
+  {code:"413",name:"Delft Blue Light",hex:"#809AD0",dmc:"800"},
+  {code:"415",name:"Delft Blue",hex:"#6080C0",dmc:"799"},
+  {code:"417",name:"Delft Blue Dark",hex:"#4868B0",dmc:"798"},
+  {code:"419",name:"Royal Blue",hex:"#2848A8",dmc:"797"},
+  {code:"421",name:"Royal Blue Dark",hex:"#102890",dmc:"796"},
+  {code:"423",name:"Navy Blue",hex:"#182060",dmc:"336"},
+  {code:"425",name:"Baby Blue Light",hex:"#D0E8F8",dmc:"3756"},
+  {code:"427",name:"Baby Blue",hex:"#B0D0E8",dmc:"775"},
+  {code:"429",name:"Baby Blue Medium",hex:"#90C0E0",dmc:"3325"},
+  {code:"431",name:"Sky Blue",hex:"#78B0D0",dmc:"519"},
+  {code:"433",name:"Sky Blue Dark",hex:"#5898C0",dmc:"518"},
+  {code:"435",name:"Blue Light",hex:"#90B8D8",dmc:"827"},
+  {code:"437",name:"Blue",hex:"#6898C8",dmc:"826"},
+  {code:"439",name:"Blue Dark",hex:"#4878B0",dmc:"825"},
+  {code:"441",name:"Antique Blue Light",hex:"#98B8C8",dmc:"932"},
+  {code:"443",name:"Antique Blue",hex:"#7898B0",dmc:"931"},
+  {code:"445",name:"Antique Blue Dark",hex:"#507890",dmc:"930"},
+  {code:"447",name:"Wedgwood Light",hex:"#80B8D0",dmc:"519"},
+  {code:"449",name:"Wedgwood",hex:"#5898B0",dmc:"518"},
+  {code:"451",name:"Wedgwood Dark",hex:"#3878A0",dmc:"517"},
+  {code:"453",name:"Turquoise Light",hex:"#B0D8D8",dmc:"3811"},
+  {code:"455",name:"Turquoise",hex:"#80C0C8",dmc:"598"},
+  {code:"457",name:"Turquoise Dark",hex:"#58A8B8",dmc:"597"},
+  {code:"459",name:"Peacock Blue Light",hex:"#70B8C8",dmc:"3766"},
+  {code:"461",name:"Peacock Blue",hex:"#48A0B8",dmc:"807"},
+  {code:"463",name:"Peacock Blue Dark",hex:"#2888A8",dmc:"806"},
+  {code:"465",name:"Teal Light",hex:"#60B0A8",dmc:"993"},
+  {code:"467",name:"Teal",hex:"#409898",dmc:"3849"},
+  {code:"469",name:"Teal Dark",hex:"#287878",dmc:"3847"},
+  {code:"471",name:"Electric Blue",hex:"#1090D8",dmc:"996"},
+  {code:"501",name:"Mint Light",hex:"#D0F0D8",dmc:"369"},
+  {code:"503",name:"Sea Green Light",hex:"#A8D8C0",dmc:"964"},
+  {code:"505",name:"Sea Green",hex:"#70B8A8",dmc:"959"},
+  {code:"507",name:"Aquamarine Light",hex:"#80C8B8",dmc:"993"},
+  {code:"509",name:"Aquamarine",hex:"#58B0A0",dmc:"943"},
+  {code:"511",name:"Nile Green Light",hex:"#98C8A0",dmc:"955"},
+  {code:"513",name:"Nile Green",hex:"#70B880",dmc:"954"},
+  {code:"515",name:"Jade Light",hex:"#90D0A8",dmc:"564"},
+  {code:"517",name:"Jade",hex:"#60B880",dmc:"563"},
+  {code:"519",name:"Jade Dark",hex:"#40A060",dmc:"562"},
+  {code:"521",name:"Emerald Light",hex:"#48C068",dmc:"912"},
+  {code:"523",name:"Emerald",hex:"#28A848",dmc:"911"},
+  {code:"525",name:"Emerald Dark",hex:"#108830",dmc:"910"},
+  {code:"527",name:"Green",hex:"#209030",dmc:"700"},
+  {code:"529",name:"Kelly Green",hex:"#38A838",dmc:"702"},
+  {code:"531",name:"Pistachio Green Light",hex:"#B8D0A8",dmc:"368"},
+  {code:"533",name:"Pistachio Green",hex:"#90B888",dmc:"320"},
+  {code:"535",name:"Pistachio Green Dark",hex:"#70A060",dmc:"367"},
+  {code:"537",name:"Forest Green Light",hex:"#98B890",dmc:"989"},
+  {code:"539",name:"Forest Green",hex:"#708870",dmc:"988"},
+  {code:"541",name:"Forest Green Dark",hex:"#507858",dmc:"987"},
+  {code:"543",name:"Pine Green",hex:"#406848",dmc:"500"},
+  {code:"545",name:"Hunter Green",hex:"#385838",dmc:"895"},
+  {code:"547",name:"Avocado Green",hex:"#808020",dmc:"732"},
+  {code:"549",name:"Khaki",hex:"#A0A040",dmc:"733"},
+  {code:"551",name:"Moss Green",hex:"#A0B820",dmc:"581"},
+  {code:"553",name:"Yellow Green",hex:"#A8C048",dmc:"471"},
+  {code:"555",name:"Chartreuse",hex:"#A0D040",dmc:"704"},
+  {code:"601",name:"Sand Light",hex:"#E8D8C0",dmc:"543"},
+  {code:"603",name:"Sand",hex:"#D8C0A0",dmc:"3033"},
+  {code:"605",name:"Tan Light",hex:"#E8C890",dmc:"738"},
+  {code:"607",name:"Tan",hex:"#D0A868",dmc:"437"},
+  {code:"609",name:"Hazel Nut Light",hex:"#C89858",dmc:"422"},
+  {code:"611",name:"Hazel Nut",hex:"#B08040",dmc:"420"},
+  {code:"613",name:"Hazel Nut Dark",hex:"#987028",dmc:"869"},
+  {code:"615",name:"Beige Brown Light",hex:"#C8A880",dmc:"842"},
+  {code:"617",name:"Beige Brown",hex:"#B09060",dmc:"841"},
+  {code:"619",name:"Mocha Light",hex:"#B89868",dmc:"3864"},
+  {code:"621",name:"Mocha",hex:"#A08050",dmc:"3863"},
+  {code:"623",name:"Mocha Dark",hex:"#887040",dmc:"3862"},
+  {code:"625",name:"Brown Light",hex:"#C07040",dmc:"435"},
+  {code:"627",name:"Brown",hex:"#A05828",dmc:"434"},
+  {code:"629",name:"Brown Dark",hex:"#804018",dmc:"433"},
+  {code:"631",name:"Coffee Brown",hex:"#703018",dmc:"801"},
+  {code:"633",name:"Coffee Brown Dark",hex:"#602010",dmc:"898"},
+  {code:"635",name:"Black Brown",hex:"#300808",dmc:"3371"},
+  {code:"701",name:"Shell Gray Light",hex:"#D8D0C8",dmc:"453"},
+  {code:"703",name:"Shell Gray",hex:"#C0B8B0",dmc:"452"},
+  {code:"705",name:"Pearl Gray",hex:"#E0E0E0",dmc:"762"},
+  {code:"707",name:"Silver Gray",hex:"#C8C8C8",dmc:"415"},
+  {code:"709",name:"Gray Light",hex:"#B0B0B0",dmc:"318"},
+  {code:"711",name:"Gray",hex:"#989898",dmc:"317"},
+  {code:"713",name:"Gray Dark",hex:"#787878",dmc:"414"},
+  {code:"715",name:"Charcoal",hex:"#585858",dmc:"413"},
+  {code:"717",name:"Dark Gray",hex:"#383838",dmc:"3799"},
+  {code:"719",name:"Black",hex:"#000000",dmc:"310"},
+  {code:"800",name:"Fern Green Light",hex:"#B8C898",dmc:"524"},
+  {code:"802",name:"Fern Green",hex:"#98A870",dmc:"523"},
+  {code:"804",name:"Fern Green Dark",hex:"#808858",dmc:"522"},
+  {code:"806",name:"Sage Green Light",hex:"#B0C090",dmc:"3348"},
+  {code:"808",name:"Sage Green",hex:"#909870",dmc:"3347"},
+  {code:"810",name:"Sage Green Dark",hex:"#787858",dmc:"3052"},
+  {code:"812",name:"Olive Green Light",hex:"#B0B048",dmc:"734"},
+  {code:"814",name:"Olive Green",hex:"#909030",dmc:"733"},
+  {code:"816",name:"Olive Green Dark",hex:"#787820",dmc:"732"},
+  {code:"818",name:"Khaki Green Light",hex:"#B8B870",dmc:"3013"},
+  {code:"820",name:"Khaki Green",hex:"#989848",dmc:"3012"},
+  {code:"822",name:"Khaki Green Dark",hex:"#808028",dmc:"3011"},
+  {code:"900",name:"Slate Green Light",hex:"#B0C8C8",dmc:"928"},
+  {code:"902",name:"Slate Green",hex:"#90A8B0",dmc:"927"},
+  {code:"904",name:"Slate Green Dark",hex:"#708898",dmc:"926"},
+  {code:"906",name:"Slate Green Very Dark",hex:"#587888",dmc:"924"},
+];
+
+// ============================================================
+// BRAND CATALOG INDEX — maps brand key to its data array
+// ============================================================
+const BRAND_CATALOG = {
+  dmc: DMC,
+  anchor: ANCHOR,
+  cosmo: COSMO,
+  madeira: MADEIRA,
+};
+
+// Precompute Lab for each brand catalog
+const BRAND_LAB = {};
+function getBrandLab(brand) {
+  if (!BRAND_LAB[brand]) {
+    const catalog = BRAND_CATALOG[brand];
+    BRAND_LAB[brand] = catalog.map(c => {
+      const [r,g,b] = hexToRgb(c.hex);
+      return rgbToLab(r,g,b);
+    });
+  }
+  return BRAND_LAB[brand];
+}
+
+function findClosestInBrand(r, g, b, brand, allowedIndices) {
+  const lab = rgbToLab(r,g,b);
+  const brandLab = getBrandLab(brand);
+  const indices = allowedIndices || BRAND_CATALOG[brand].map((_,i)=>i);
+  let best = indices[0], bestDist = Infinity;
+  for (const i of indices) {
+    const d = colorDistance(lab, brandLab[i]);
+    if (d < bestDist) { bestDist = d; best = i; }
+  }
+  return best;
+}
+
+// Helper: get display info for a catalog entry
+function getBrandEntry(brand, idx) {
+  return BRAND_CATALOG[brand][idx];
+}
+
+// Precompute DMC Lab values
+const DMC_LAB = DMC.map(c => {
+  const [r,g,b] = hexToRgb(c.hex);
+  return rgbToLab(r,g,b);
+});
+
+function findClosestDMC(r,g,b, allowedIndices) {
+  const lab = rgbToLab(r,g,b);
+  let best = allowedIndices[0], bestDist = Infinity;
+  for (const i of allowedIndices) {
+    const d = colorDistance(lab, DMC_LAB[i]);
+    if (d < bestDist) { bestDist = d; best = i; }
+  }
+  return best;
+}
+
+// ============================================================
+// MEDIAN CUT COLOR QUANTIZATION
+// ============================================================
+function medianCut(pixels, depth) {
+  if (depth === 0 || pixels.length === 0) {
+    let r=0,g=0,b=0;
+    for (const p of pixels) { r+=p[0]; g+=p[1]; b+=p[2]; }
+    const n = pixels.length || 1;
+    return [[Math.round(r/n), Math.round(g/n), Math.round(b/n)]];
+  }
+  let minR=255,maxR=0, minG=255,maxG=0, minB=255,maxB=0;
+  for (const [r,g,b] of pixels) {
+    if(r<minR)minR=r; if(r>maxR)maxR=r;
+    if(g<minG)minG=g; if(g>maxG)maxG=g;
+    if(b<minB)minB=b; if(b>maxB)maxB=b;
+  }
+  const rangeR=maxR-minR, rangeG=maxG-minG, rangeB=maxB-minB;
+  const ch = rangeR >= rangeG && rangeR >= rangeB ? 0 : rangeG >= rangeB ? 1 : 2;
+  pixels.sort((a,b) => a[ch]-b[ch]);
+  const mid = Math.floor(pixels.length/2);
+  return [
+    ...medianCut(pixels.slice(0,mid), depth-1),
+    ...medianCut(pixels.slice(mid), depth-1)
+  ];
+}
+
+// ============================================================
+// ANTI-CONFETTI: flood-fill based cleanup
+// ============================================================
+function antiConfetti(grid, W, H, strength) {
+  if (strength === 0) return grid;
+  const minSize = strength * 2 + 1;
+  const visited = new Uint8Array(W*H);
+  const result = grid.slice();
+
+  for (let y=0; y<H; y++) {
+    for (let x=0; x<W; x++) {
+      if (visited[y*W+x]) continue;
+      const colorIdx = grid[y*W+x];
+      const region = [];
+      const stack = [[x,y]];
+      visited[y*W+x] = 1;
+      while (stack.length > 0) {
+        const [cx,cy] = stack.pop();
+        region.push([cx,cy]);
+        for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+          const nx=cx+dx, ny=cy+dy;
+          if (nx<0||nx>=W||ny<0||ny>=H) continue;
+          if (visited[ny*W+nx]) continue;
+          if (grid[ny*W+nx] !== colorIdx) continue;
+          visited[ny*W+nx] = 1;
+          stack.push([nx,ny]);
+        }
+      }
+      if (region.length < minSize) {
+        // find most common neighbor color
+        const neighborCount = {};
+        for (const [rx,ry] of region) {
+          for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+            const nx=rx+dx, ny=ry+dy;
+            if (nx<0||nx>=W||ny<0||ny>=H) continue;
+            const nc = grid[ny*W+nx];
+            if (nc === colorIdx) continue;
+            neighborCount[nc] = (neighborCount[nc]||0) + 1;
+          }
+        }
+        const bestNeighbor = Object.entries(neighborCount).sort((a,b)=>b[1]-a[1])[0];
+        if (bestNeighbor) {
+          const nc = parseInt(bestNeighbor[0]);
+          for (const [rx,ry] of region) result[ry*W+rx] = nc;
+        }
+      }
+    }
+  }
+  return result;
+}
+
+// SYMBOLS for pattern display
+const SYMBOLS = ['·','×','○','◆','▲','★','♦','░','▪','◇','●','▸','♣','◉','▫','♠','╋','≡','∞','◘','±','※','♥','⊕','▓'];
+
+// ============================================================
+// STATE
+// ============================================================
+let sourceImage = null;
+let currentPattern = null;
+let currentColors = null;
+let zoom = 4;
+let showGrid = true;
+
+// ============================================================
+// IMAGE UPLOAD
+// ============================================================
+document.getElementById('fileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      sourceImage = img;
+      const area = document.getElementById('uploadArea');
+      area.innerHTML = `<img class="preview" src="${ev.target.result}" style="pointer-events:none">`;
+      area.classList.add('has-image');
+      document.getElementById('generateBtn').disabled = false;
+      document.getElementById('canvasInfo').textContent = `${t('img_loaded')}: ${img.width}×${img.height}px`;
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+// Drag & drop
+const uploadArea = document.getElementById('uploadArea');
+uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor='var(--thread-red)'; });
+uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor=''; });
+uploadArea.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadArea.style.borderColor='';
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    document.getElementById('fileInput').files; // can't set, trigger manually
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('fileInput').files = dt.files;
+    document.getElementById('fileInput').dispatchEvent(new Event('change'));
+  }
+});
+
+let currentBrand = 'dmc';
+
+function selectBrand(btn) {
+  document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentBrand = btn.dataset.brand;
+  // Reset thread box when switching brand (thread box is brand-specific)
+  if (myThreadBox.size > 0) {
+    myThreadBox.clear();
+    document.getElementById('threadBoxBadge').style.display = 'none';
+    document.getElementById('threadBoxToggle').classList.remove('active');
+    showToast(t('brand_changed'));
+  }
+}
+
+function showLockedMsg() {
+  showToast(t('pro_msg'));
+}
+
+// ============================================================
+// GENERATE
+// ============================================================
+async function generatePattern() {
+  if (!sourceImage) return;
+
+  const W = parseInt(document.getElementById('widthSlider').value);
+  const numColors = parseInt(document.getElementById('colorsSlider').value);
+  const antiStrength = parseInt(document.getElementById('antiSlider').value);
+
+  setProgress(5);
+
+  // Scale image to pattern size
+  const ratio = sourceImage.height / sourceImage.width;
+  const H = Math.round(W * ratio);
+
+  // Draw at 2x for portrait preprocessing, then downscale for quality
+  const preW = currentMode === 'portrait' ? Math.min(W * 3, 900) : W;
+  const preH = currentMode === 'portrait' ? Math.round(preW * ratio) : H;
+
+  const offscreen = document.createElement('canvas');
+  offscreen.width = preW;
+  offscreen.height = preH;
+  const ctx = offscreen.getContext('2d');
+  ctx.drawImage(sourceImage, 0, 0, preW, preH);
+
+  // Portrait preprocessing on higher-res canvas before downscale
+  if (currentMode === 'portrait') {
+    const edgeStr  = parseInt(document.getElementById('edgeSlider').value);
+    const smoothStr = parseInt(document.getElementById('smoothSlider').value);
+    const bgStr    = parseInt(document.getElementById('bgSlider').value);
+    portraitPreprocess(offscreen, edgeStr, smoothStr, bgStr);
+    // Now downscale the processed canvas to pattern size
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = W; finalCanvas.height = H;
+    finalCanvas.getContext('2d').drawImage(offscreen, 0, 0, W, H);
+    offscreen.width = W; offscreen.height = H;
+    offscreen.getContext('2d').drawImage(finalCanvas, 0, 0);
+  }
+
+  const imageData = offscreen.getContext('2d').getImageData(0, 0, W, H);
+  const data = imageData.data;
+
+  setProgress(15);
+
+  // Sample pixels for quantization
+  const pixels = [];
+  for (let i=0; i<data.length; i+=4) {
+    pixels.push([data[i], data[i+1], data[i+2]]);
+  }
+
+  // Median cut: log2(numColors) depth
+  const depth = Math.ceil(Math.log2(numColors));
+  const palette = medianCut(pixels, depth).slice(0, numColors);
+
+  setProgress(30);
+
+  // Map palette entries to closest brand colors
+  const brand = currentBrand;
+  const catalog = BRAND_CATALOG[brand];
+  const allBrandIndices = catalog.map((_,i) => i);
+  const allowedIndices = myThreadBox.size > 0 ? Array.from(myThreadBox) : allBrandIndices;
+  const paletteToMD = palette.map(([r,g,b]) => {
+    return findClosestInBrand(r,g,b, brand, allowedIndices);
+  });
+
+  setProgress(50);
+
+  // Assign each pixel a palette entry
+  const grid = new Int32Array(W*H);
+  for (let y=0; y<H; y++) {
+    for (let x=0; x<W; x++) {
+      const i = (y*W+x)*4;
+      const r=data[i], g=data[i+1], b=data[i+2];
+      // find closest palette entry
+      let bestP=0, bestD=Infinity;
+      for (let p=0; p<palette.length; p++) {
+        const dr=r-palette[p][0], dg=g-palette[p][1], db=b-palette[p][2];
+        const d = dr*dr+dg*dg+db*db;
+        if (d<bestD) { bestD=d; bestP=p; }
+      }
+      grid[y*W+x] = paletteToMD[bestP];
+    }
+  }
+
+  setProgress(65);
+
+  // Anti-confetti
+  const cleanGrid = antiConfetti(grid, W, H, antiStrength);
+
+  setProgress(80);
+
+  // Count colors actually used after anti-confetti
+  const finalColors = {};
+  for (let i=0; i<cleanGrid.length; i++) {
+    const c = cleanGrid[i];
+    finalColors[c] = (finalColors[c]||0) + 1;
+  }
+
+  currentPattern = { grid: cleanGrid, W, H };
+  currentColors = finalColors;
+
+  setProgress(95);
+
+  // Draw
+  drawPattern(cleanGrid, W, H, finalColors);
+
+  setProgress(100);
+  setTimeout(() => setProgress(0), 500);
+
+  // Info
+  const totalStitches = W*H;
+  const modeTag = currentMode === 'portrait' ? ` &nbsp;·&nbsp; ${t('mode_label')}` : '';
+  const brandLabel = currentBrand.toUpperCase();
+  document.getElementById('canvasInfo').innerHTML =
+    `<strong>${W}×${H}</strong> stitches &nbsp;·&nbsp; <strong>${Object.keys(finalColors).length}</strong> ${brandLabel} colors &nbsp;·&nbsp; <strong>${totalStitches.toLocaleString()}</strong> total stitches${modeTag}`;
+
+  document.getElementById('showGridBtn').style.display = '';
+  document.getElementById('downloadBtn').style.display = '';
+  document.getElementById('pdfBtn').style.display = '';
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('patternCanvas').style.display = '';
+
+  buildLegend(finalColors);
+}
+
+// ============================================================
+// DRAW PATTERN
+// ============================================================
+function drawPattern(grid, W, H, colorCounts) {
+  const canvas = document.getElementById('patternCanvas');
+  const cellSize = zoom;
+  canvas.width = W * cellSize + 1;
+  canvas.height = H * cellSize + 1;
+
+  const ctx = canvas.getContext('2d');
+
+  // Fill cells
+  for (let y=0; y<H; y++) {
+    for (let x=0; x<W; x++) {
+      const dmcIdx = grid[y*W+x];
+      ctx.fillStyle = getBrandEntry(currentBrand, dmcIdx).hex;
+      ctx.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
+    }
+  }
+
+  // Grid lines
+  if (showGrid && cellSize >= 3) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+    ctx.lineWidth = 0.5;
+    for (let x=0; x<=W; x++) {
+      ctx.beginPath();
+      ctx.moveTo(x*cellSize+0.5, 0);
+      ctx.lineTo(x*cellSize+0.5, H*cellSize);
+      ctx.stroke();
+    }
+    for (let y=0; y<=H; y++) {
+      ctx.beginPath();
+      ctx.moveTo(0, y*cellSize+0.5);
+      ctx.lineTo(W*cellSize, y*cellSize+0.5);
+      ctx.stroke();
+    }
+  }
+
+  // Every 10 cells: bold grid
+  if (cellSize >= 4) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 1;
+    for (let x=0; x<=W; x+=10) {
+      ctx.beginPath();
+      ctx.moveTo(x*cellSize+0.5, 0);
+      ctx.lineTo(x*cellSize+0.5, H*cellSize);
+      ctx.stroke();
+    }
+    for (let y=0; y<=H; y+=10) {
+      ctx.beginPath();
+      ctx.moveTo(0, y*cellSize+0.5);
+      ctx.lineTo(W*cellSize, y*cellSize+0.5);
+      ctx.stroke();
+    }
+  }
+
+  // Symbols at higher zoom
+  if (cellSize >= 10) {
+    const sortedColors = Object.keys(colorCounts).map(Number);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `${Math.floor(cellSize*0.55)}px monospace`;
+    for (let y=0; y<H; y++) {
+      for (let x=0; x<W; x++) {
+        const dmcIdx = grid[y*W+x];
+        const colorPos = sortedColors.indexOf(dmcIdx) % SYMBOLS.length;
+        const sym = SYMBOLS[colorPos];
+        // Determine text color (dark or light based on bg)
+        const [r,g,b] = hexToRgb(getBrandEntry(currentBrand, dmcIdx).hex);
+        const luma = 0.299*r + 0.587*g + 0.114*b;
+        ctx.fillStyle = luma > 128 ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)';
+        ctx.fillText(sym, x*cellSize + cellSize/2, y*cellSize + cellSize/2);
+      }
+    }
+  }
+}
+
+// ============================================================
+// SHOPPING LIST
+// ============================================================
+
+// Stock: dmcIdx -> skeins user already owns
+const userStock = {};
+
+// Skein capacity: ~850 stitches per skein (conservative estimate)
+// A standard DMC skein = 8m, cross stitch ~11ct = ~1000 stitches per skein
+// We use 900 as a safe default
+const STITCHES_PER_SKEIN = 900;
+
+function calcSkeinsNeeded(stitchCount) {
+  return Math.ceil(stitchCount / STITCHES_PER_SKEIN);
+}
+
+let shoppingData = []; // [{dmcIdx, dmc, count, needed, sym}]
+
+function buildLegend(colorCounts) {
+  const sorted = Object.entries(colorCounts).sort((a,b) => b[1]-a[1]);
+  shoppingData = sorted.map(([idx, count], i) => {
+    const dmcIdx = Number(idx);
+    return {
+      dmcIdx,
+      dmc: getBrandEntry(currentBrand, dmcIdx),
+      brand: currentBrand,
+      count,
+      needed: calcSkeinsNeeded(count),
+      sym: SYMBOLS[i % SYMBOLS.length]
+    };
+  });
+
+  renderShoppingTable();
+  document.getElementById('legend').classList.add('visible');
+}
+
+function renderShoppingTable() {
+  const tbody = document.getElementById('skeinTableBody');
+  const buyBody = document.getElementById('buyTableBody');
+  tbody.innerHTML = '';
+  buyBody.innerHTML = '';
+
+  let totalNeeded = 0, totalOwned = 0, totalBuy = 0;
+  let buyCount = 0;
+
+  shoppingData.forEach(({ dmcIdx, dmc, count, needed, sym }) => {
+    const stock = userStock[dmcIdx] || 0;
+    const toBuy = Math.max(0, needed - stock);
+    const complete = toBuy === 0;
+
+    totalNeeded += needed;
+    totalOwned += Math.min(stock, needed);
+    totalBuy += toBuy;
+    if (toBuy > 0) buyCount++;
+
+    const [r,g,b] = hexToRgb(dmc.hex);
+    const luma = 0.299*r + 0.587*g + 0.114*b;
+    const textColor = luma > 128 ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)';
+
+    const badgeClass = toBuy === 0 ? 'zero' : stock > 0 ? 'partial' : '';
+
+    const rowHTML = `
+      <td>
+        <div class="td-color">
+          <div class="swatch-sym" style="background:${dmc.hex};color:${textColor}">${sym}</div>
+          <div>
+            <div class="td-code">${currentBrand.toUpperCase()} ${dmc.code}</div>
+            <div class="td-name">${dmc.name}</div>
+          </div>
+        </div>
+      </td>
+      <td class="td-stitches">${count.toLocaleString()}</td>
+      <td class="td-needed">${needed}</td>
+      <td>
+        <div class="stock-stepper">
+          <button class="step-btn" onclick="changeStock(${dmcIdx}, -1)">−</button>
+          <span class="step-val" id="stock-${dmcIdx}">${stock}</span>
+          <button class="step-btn" onclick="changeStock(${dmcIdx}, 1)">+</button>
+        </div>
+      </td>
+      <td class="td-need">
+        <span class="need-badge ${badgeClass}" id="badge-${dmcIdx}">
+          ${toBuy === 0 ? '✓' : toBuy}
+        </span>
+      </td>`;
+
+    // All-colors row
+    const tr = document.createElement('tr');
+    tr.className = 'skein-row' + (complete ? ' complete' : '');
+    tr.id = `row-${dmcIdx}`;
+    tr.innerHTML = rowHTML;
+    tbody.appendChild(tr);
+
+    // Buy list row (only if toBuy > 0)
+    if (toBuy > 0) {
+      const tr2 = document.createElement('tr');
+      tr2.className = 'skein-row';
+      tr2.id = `buyrow-${dmcIdx}`;
+      tr2.innerHTML = rowHTML;
+      buyBody.appendChild(tr2);
+    }
+  });
+
+  // Update summary pills
+  document.getElementById('summaryColors').textContent = shoppingData.length;
+  document.getElementById('summaryTotal').textContent = totalNeeded;
+  document.getElementById('summaryOwned').textContent = totalOwned;
+  document.getElementById('summaryBuy').textContent = totalBuy;
+
+  // Buy tab badge
+  document.getElementById('tabBuy').textContent = `${t('tab_buy')} (${buyCount})`;
+
+  // Buy empty state
+  document.getElementById('buyEmpty').style.display = buyCount === 0 ? '' : 'none';
+  document.getElementById('buyTable').style.display = buyCount === 0 ? 'none' : '';
+}
+
+function changeStock(dmcIdx, delta) {
+  const current = userStock[dmcIdx] || 0;
+  const newVal = Math.max(0, current + delta);
+  userStock[dmcIdx] = newVal;
+
+  // Update the step value display (both in all-list and buy-list)
+  document.querySelectorAll(`#stock-${dmcIdx}`).forEach(el => el.textContent = newVal);
+
+  // Recalculate this row
+  const item = shoppingData.find(d => d.dmcIdx === dmcIdx);
+  if (!item) return;
+  const toBuy = Math.max(0, item.needed - newVal);
+  const complete = toBuy === 0;
+
+  // Update badges
+  document.querySelectorAll(`#badge-${dmcIdx}`).forEach(el => {
+    el.textContent = toBuy === 0 ? '✓' : toBuy;
+    el.className = 'need-badge' + (toBuy === 0 ? ' zero' : newVal > 0 ? ' partial' : '');
+  });
+
+  // Strikethrough complete rows
+  const row = document.getElementById(`row-${dmcIdx}`);
+  if (row) row.className = 'skein-row' + (complete ? ' complete' : '');
+
+  // Rebuild buy list row
+  const buyRow = document.getElementById(`buyrow-${dmcIdx}`);
+  if (complete && buyRow) {
+    buyRow.remove();
+  } else if (!complete && !buyRow) {
+    renderShoppingTable(); // full re-render to add the row back
+    return;
+  }
+
+  // Recount summary
+  let totalNeeded=0, totalOwned=0, totalBuy=0, buyCount=0;
+  shoppingData.forEach(({ dmcIdx: di, needed }) => {
+    const s = userStock[di] || 0;
+    const tb = Math.max(0, needed - s);
+    totalNeeded += needed;
+    totalOwned += Math.min(s, needed);
+    totalBuy += tb;
+    if (tb > 0) buyCount++;
+  });
+  document.getElementById('summaryTotal').textContent = totalNeeded;
+  document.getElementById('summaryOwned').textContent = totalOwned;
+  document.getElementById('summaryBuy').textContent = totalBuy;
+  document.getElementById('tabBuy').textContent = `🛒 To buy (${buyCount})`;
+  document.getElementById('buyEmpty').style.display = buyCount === 0 ? '' : 'none';
+  document.getElementById('buyTable').style.display = buyCount === 0 ? 'none' : '';
+}
+
+function switchTab(tab) {
+  document.getElementById('tabAll').classList.toggle('active', tab === 'all');
+  document.getElementById('tabBuy').classList.toggle('active', tab === 'buy');
+  document.getElementById('allList').classList.toggle('active', tab === 'all');
+  document.getElementById('buyList').classList.toggle('active', tab === 'buy');
+}
+
+function exportShoppingList() {
+  const lines = [t('export_header'), '='.repeat(40), ''];
+  let totalBuy = 0;
+  shoppingData.forEach(({ dmcIdx, dmc, count, needed }) => {
+    const stock = userStock[dmcIdx] || 0;
+    const toBuy = Math.max(0, needed - stock);
+    if (toBuy > 0) {
+      lines.push(`${currentBrand.toUpperCase()} ${dmc.code.padEnd(8)} ${dmc.name.padEnd(30)} ${toBuy} ${toBuy>1 ? t('skein_plural') : t('skein_singular')}`);
+      totalBuy += toBuy;
+    }
+  });
+  if (totalBuy === 0) { showToast(t('toast_nothing_to_buy')); return; }
+  lines.push('', '-'.repeat(40));
+  lines.push(t('export_total', {n: totalBuy}));
+  lines.push('', `${t('export_generated')}: ${new Date().toLocaleDateString()}`);
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'shopping-list.txt';
+  a.click();
+  showToast(t('toast_export', {n: totalBuy}));
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function setProgress(pct) {
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+let zoomLevels = [2, 3, 4, 6, 8, 12, 16];
+let zoomIdx = 2;
+
+function changeZoom(dir) {
+  zoomIdx = Math.max(0, Math.min(zoomLevels.length-1, zoomIdx+dir));
+  zoom = zoomLevels[zoomIdx];
+  document.getElementById('zoomLabel').textContent = '×' + zoom;
+  if (currentPattern) {
+    drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+  }
+}
+
+function toggleGrid() {
+  showGrid = !showGrid;
+  document.getElementById('showGridBtn').querySelector('[data-i18n]').textContent = showGrid ? t('btn_grid_on') : t('btn_grid_off');
+  if (currentPattern) {
+    drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+  }
+}
+
+function downloadPattern() {
+  const canvas = document.getElementById('patternCanvas');
+  const a = document.createElement('a');
+  a.download = 'cross-stitch-pattern.png';
+  a.href = canvas.toDataURL();
+  a.click();
+  showToast(t('toast_png'));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// MODE
+// ============================================================
+let currentMode = 'general';
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeGeneral').classList.toggle('active', mode === 'general');
+  document.getElementById('modePortrait').classList.toggle('active', mode === 'portrait');
+  document.getElementById('portraitOptions').classList.toggle('visible', mode === 'portrait');
+}
+
+// ============================================================
+// PORTRAIT/PET PREPROCESSING PIPELINE
+// Runs on the full-resolution image before downscaling
+// ============================================================
+function portraitPreprocess(srcCanvas, strength, smoothing, bgSimplify) {
+  const W = srcCanvas.width, H = srcCanvas.height;
+  const ctx = srcCanvas.getContext('2d');
+  const src = ctx.getImageData(0, 0, W, H);
+  const d = src.data;
+
+  // Step 1: Bilateral-like smoothing (box blur weighted by color similarity)
+  // Preserves edges, smooths flat areas (skin, fur regions)
+  const smoothed = new Uint8ClampedArray(d.length);
+  const radius = Math.max(1, Math.round(smoothing * W / 300));
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const ci = (y * W + x) * 4;
+      const cr = d[ci], cg = d[ci+1], cb = d[ci+2];
+      let sr=0, sg=0, sb=0, sw=0;
+      for (let dy=-radius; dy<=radius; dy++) {
+        for (let dx=-radius; dx<=radius; dx++) {
+          const nx = x+dx, ny = y+dy;
+          if (nx<0||nx>=W||ny<0||ny>=H) continue;
+          const ni = (ny*W+nx)*4;
+          const dr2 = (d[ni]-cr)**2 + (d[ni+1]-cg)**2 + (d[ni+2]-cb)**2;
+          const colorSigma = 30 * smoothing;
+          const w = Math.exp(-dr2/(2*colorSigma*colorSigma));
+          sr += d[ni] * w; sg += d[ni+1] * w; sb += d[ni+2] * w; sw += w;
+        }
+      }
+      smoothed[ci]   = sr/sw;
+      smoothed[ci+1] = sg/sw;
+      smoothed[ci+2] = sb/sw;
+      smoothed[ci+3] = 255;
+    }
+  }
+
+  // Step 2: Unsharp mask for edge enhancement (portrait edges pop)
+  const sharpened = new Uint8ClampedArray(smoothed.length);
+  const sharpAmount = strength / 5; // 0.2 – 2.0
+  // Simple 3x3 Laplacian-based unsharp
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const ci = (y*W+x)*4;
+      let blurR=0, blurG=0, blurB=0, cnt=0;
+      for (let dy=-1; dy<=1; dy++) {
+        for (let dx=-1; dx<=1; dx++) {
+          const nx=x+dx, ny=y+dy;
+          if (nx<0||nx>=W||ny<0||ny>=H) continue;
+          const ni=(ny*W+nx)*4;
+          blurR+=smoothed[ni]; blurG+=smoothed[ni+1]; blurB+=smoothed[ni+2]; cnt++;
+        }
+      }
+      blurR/=cnt; blurG/=cnt; blurB/=cnt;
+      sharpened[ci]   = Math.min(255, Math.max(0, smoothed[ci]   + sharpAmount*(smoothed[ci]  -blurR)));
+      sharpened[ci+1] = Math.min(255, Math.max(0, smoothed[ci+1] + sharpAmount*(smoothed[ci+1]-blurG)));
+      sharpened[ci+2] = Math.min(255, Math.max(0, smoothed[ci+2] + sharpAmount*(smoothed[ci+2]-blurB)));
+      sharpened[ci+3] = 255;
+    }
+  }
+
+  // Step 3: Background simplification
+  // Detect background pixels (near image border) and push them toward their region mean
+  if (bgSimplify > 0) {
+    const borderFrac = 0.15; // outer 15% of image = likely background
+    const bW = Math.round(W * borderFrac), bH = Math.round(H * borderFrac);
+    // Compute mean background color from border strip
+    let bR=0, bG=0, bB=0, bCnt=0;
+    for (let y=0; y<H; y++) {
+      for (let x=0; x<W; x++) {
+        if (x>bW && x<W-bW && y>bH && y<H-bH) continue;
+        const ni=(y*W+x)*4;
+        bR+=sharpened[ni]; bG+=sharpened[ni+1]; bB+=sharpened[ni+2]; bCnt++;
+      }
+    }
+    bR/=bCnt; bG/=bCnt; bB/=bCnt;
+    // Blend border region toward its mean based on distance from center
+    const cx=W/2, cy=H/2;
+    const maxDist = Math.sqrt(cx*cx+cy*cy);
+    const bgStrength = bgSimplify / 10;
+    for (let y=0; y<H; y++) {
+      for (let x=0; x<W; x++) {
+        const ni=(y*W+x)*4;
+        const dx=x-cx, dy2=y-cy;
+        const dist = Math.sqrt(dx*dx+dy2*dy2)/maxDist; // 0=center, 1=corner
+        // Only affect outer portion
+        if (dist < 0.4) continue;
+        const t = Math.min(1, (dist-0.4)/0.4) * bgStrength;
+        sharpened[ni]   = Math.round(sharpened[ni]   * (1-t) + bR * t);
+        sharpened[ni+1] = Math.round(sharpened[ni+1] * (1-t) + bG * t);
+        sharpened[ni+2] = Math.round(sharpened[ni+2] * (1-t) + bB * t);
+      }
+    }
+  }
+
+  // Step 4: Contrast boost (S-curve on luminance)
+  const contrastBoost = new Uint8ClampedArray(sharpened.length);
+  for (let i=0; i<sharpened.length; i+=4) {
+    for (let c=0; c<3; c++) {
+      let v = sharpened[i+c] / 255;
+      // Mild S-curve
+      v = v < 0.5
+        ? 2*v*v
+        : 1 - 2*(1-v)*(1-v);
+      contrastBoost[i+c] = Math.round(v*255);
+    }
+    contrastBoost[i+3] = 255;
+  }
+
+  // Write result back
+  const outData = new ImageData(contrastBoost, W, H);
+  ctx.putImageData(outData, 0, 0);
+  return srcCanvas;
+}
+
+// ============================================================
+// INTERNATIONALIZATION
+// ============================================================
+let currentLang = 'en';
+
+const TRANSLATIONS = {
+  en: {
+    tagline: 'Cross-Stitch Pattern Generator',
+    sec_image: 'Image',
+    sec_brand: 'Thread Brand',
+    sec_size: 'Pattern Size',
+    sec_colors: 'Colors',
+    sec_mode: 'Mode',
+    upload_title: 'Upload your image',
+    upload_sub: 'JPG, PNG, WebP — any size',
+    lbl_width: 'Width in stitches',
+    lbl_colors: 'Number of thread colors',
+    lbl_anti: 'Anti-confetti strength',
+    lbl_anti_sub: 'Higher = fewer isolated stitches',
+    mode_gen_sub: 'Any image',
+    mode_por_sub: 'Faces & animals',
+    portrait_hint: 'Enhances skin tones & fur, boosts edge contrast, reduces background noise. Best with centered subjects on plain backgrounds.',
+    lbl_edge: 'Edge sharpness',
+    lbl_smooth: 'Skin/fur smoothing',
+    lbl_bg: 'Background simplify',
+    threadbox_btn: '🧵 My Thread Box',
+    btn_generate: 'Generate Pattern',
+    canvas_idle: 'Upload an image to begin',
+    empty_hint: 'Your pattern will appear here. Upload an image and click Generate.',
+    btn_grid_on: 'Grid: ON',
+    btn_grid_off: 'Grid: OFF',
+    btn_png: 'PNG',
+    btn_pdf: 'PDF Chart',
+    shop_title: '🧵 Shopping List & Thread Legend',
+    sum_colors: 'colors',
+    sum_needed: 'skeins needed',
+    sum_owned: 'already owned',
+    sum_tobuy: 'to buy',
+    tab_all: 'All colors',
+    tab_buy: '🛒 To buy',
+    th_color: 'Color',
+    th_stitches: 'Stitches',
+    th_need: 'Need',
+    th_ihave: 'I have',
+    th_tobuy: 'To buy',
+    buy_empty: '✓ You have everything you need!',
+    btn_export: '↓ Export shopping list as text',
+    modal_title: 'My Thread',
+    tb_search_placeholder: 'Search by code or name… e.g. 321, Red, Blue',
+    tb_selected: 'selected',
+    tb_select_visible: 'Select visible',
+    tb_clear_all: 'Clear all',
+    tb_hint: 'Pattern will use <em>only</em> your selected colors. Leave empty to use full DMC catalog.',
+    tb_apply: 'Apply & Close',
+    pro_msg: 'PRO feature — coming soon!',
+    toast_png: 'Pattern saved as PNG',
+    brand_changed: 'Brand changed — thread box cleared',
+    toast_thread_set: 'Thread box set: {n} colors — regenerate to apply',
+    toast_thread_cleared: 'Thread box cleared — using full DMC catalog',
+    toast_pdf: 'PDF saved — {n} pages',
+    toast_nothing_to_buy: 'Nothing to buy — you have everything!',
+    toast_export: 'Shopping list exported — {n} skeins to buy',
+    export_header: 'SHOPPING LIST — Stitch & Thread',
+    export_total: 'TOTAL: {n} skeins to purchase',
+    export_generated: 'Generated',
+    skein_singular: 'skein',
+    skein_plural: 'skeins',
+    mode_label: '🐾 Portrait mode',
+    img_loaded: 'Image loaded',
+  },
+  es: {
+    tagline: 'Generador de Patrones de Punto de Cruz',
+    sec_image: 'Imagen',
+    sec_brand: 'Marca de Hilo',
+    sec_size: 'Tamaño del Patrón',
+    sec_colors: 'Colores',
+    sec_mode: 'Modo',
+    upload_title: 'Sube tu imagen',
+    upload_sub: 'JPG, PNG, WebP — cualquier tamaño',
+    lbl_width: 'Ancho en puntos',
+    lbl_colors: 'Número de colores de hilo',
+    lbl_anti: 'Anti-confetti',
+    lbl_anti_sub: 'Mayor = menos puntos aislados',
+    mode_gen_sub: 'Cualquier imagen',
+    mode_por_sub: 'Caras y animales',
+    portrait_hint: 'Mejora tonos de piel y pelo, aumenta el contraste de bordes y reduce el ruido de fondo. Ideal con sujetos centrados sobre fondos simples.',
+    lbl_edge: 'Nitidez de bordes',
+    lbl_smooth: 'Suavizado de piel/pelo',
+    lbl_bg: 'Simplificar fondo',
+    threadbox_btn: '🧵 Mis Hilos',
+    btn_generate: 'Generar Patrón',
+    canvas_idle: 'Sube una imagen para empezar',
+    empty_hint: 'Tu patrón aparecerá aquí. Sube una imagen y pulsa Generar.',
+    btn_grid_on: 'Cuadrícula: SÍ',
+    btn_grid_off: 'Cuadrícula: NO',
+    btn_png: 'PNG',
+    btn_pdf: 'PDF del Patrón',
+    shop_title: '🧵 Lista de Compra y Leyenda',
+    sum_colors: 'colores',
+    sum_needed: 'madejas necesarias',
+    sum_owned: 'ya tengo',
+    sum_tobuy: 'por comprar',
+    tab_all: 'Todos los colores',
+    tab_buy: '🛒 Por comprar',
+    th_color: 'Color',
+    th_stitches: 'Puntos',
+    th_need: 'Necesito',
+    th_ihave: 'Tengo',
+    th_tobuy: 'Comprar',
+    buy_empty: '✓ ¡Tienes todo lo que necesitas!',
+    btn_export: '↓ Exportar lista de compra',
+    modal_title: 'Mis Hilos',
+    tb_search_placeholder: 'Buscar por código o nombre… ej: 321, Rojo',
+    tb_selected: 'seleccionados',
+    tb_select_visible: 'Seleccionar visibles',
+    tb_clear_all: 'Limpiar todo',
+    tb_hint: 'El patrón usará <em>solo</em> tus colores seleccionados. Déjalo vacío para usar todo el catálogo DMC.',
+    tb_apply: 'Aplicar y Cerrar',
+    pro_msg: 'Función PRO — ¡próximamente!',
+    toast_png: 'Patrón guardado como PNG',
+    brand_changed: 'Marca cambiada — caja de hilos reiniciada',
+    toast_thread_set: 'Caja de hilos: {n} colores — regenera para aplicar',
+    toast_thread_cleared: 'Caja de hilos limpiada — usando catálogo DMC completo',
+    toast_pdf: 'PDF guardado — {n} páginas',
+    toast_nothing_to_buy: 'Nada que comprar — ¡tienes todo!',
+    toast_export: 'Lista exportada — {n} madejas por comprar',
+    export_header: 'LISTA DE COMPRA — Stitch & Thread',
+    export_total: 'TOTAL: {n} madejas a comprar',
+    export_generated: 'Generado el',
+    skein_singular: 'madeja',
+    skein_plural: 'madejas',
+    mode_label: '🐾 Modo retrato',
+    img_loaded: 'Imagen cargada',
+  },
+  pt: {
+    tagline: 'Gerador de Padrões de Ponto Cruz',
+    sec_image: 'Imagem',
+    sec_brand: 'Marca do Fio',
+    sec_size: 'Tamanho do Padrão',
+    sec_colors: 'Cores',
+    sec_mode: 'Modo',
+    upload_title: 'Envie sua imagem',
+    upload_sub: 'JPG, PNG, WebP — qualquer tamanho',
+    lbl_width: 'Largura em pontos',
+    lbl_colors: 'Número de cores de fio',
+    lbl_anti: 'Anti-confete',
+    lbl_anti_sub: 'Mais alto = menos pontos isolados',
+    mode_gen_sub: 'Qualquer imagem',
+    mode_por_sub: 'Rostos e animais',
+    portrait_hint: 'Melhora tons de pele e pelo, aumenta o contraste das bordas e reduz o ruído de fundo. Ideal com sujeitos centralizados em fundos simples.',
+    lbl_edge: 'Nitidez das bordas',
+    lbl_smooth: 'Suavização de pele/pelo',
+    lbl_bg: 'Simplificar fundo',
+    threadbox_btn: '🧵 Meus Fios',
+    btn_generate: 'Gerar Padrão',
+    canvas_idle: 'Envie uma imagem para começar',
+    empty_hint: 'Seu padrão aparecerá aqui. Envie uma imagem e clique em Gerar.',
+    btn_grid_on: 'Grade: SIM',
+    btn_grid_off: 'Grade: NÃO',
+    btn_png: 'PNG',
+    btn_pdf: 'PDF do Padrão',
+    shop_title: '🧵 Lista de Compras e Legenda',
+    sum_colors: 'cores',
+    sum_needed: 'meadas necessárias',
+    sum_owned: 'já tenho',
+    sum_tobuy: 'para comprar',
+    tab_all: 'Todas as cores',
+    tab_buy: '🛒 Para comprar',
+    th_color: 'Cor',
+    th_stitches: 'Pontos',
+    th_need: 'Preciso',
+    th_ihave: 'Tenho',
+    th_tobuy: 'Comprar',
+    buy_empty: '✓ Você tem tudo que precisa!',
+    btn_export: '↓ Exportar lista de compras',
+    modal_title: 'Meus Fios',
+    tb_search_placeholder: 'Buscar por código ou nome… ex: 321, Vermelho',
+    tb_selected: 'selecionados',
+    tb_select_visible: 'Selecionar visíveis',
+    tb_clear_all: 'Limpar tudo',
+    tb_hint: 'O padrão usará <em>apenas</em> suas cores selecionadas. Deixe vazio para usar o catálogo DMC completo.',
+    tb_apply: 'Aplicar e Fechar',
+    pro_msg: 'Recurso PRO — em breve!',
+    toast_png: 'Padrão salvo como PNG',
+    brand_changed: 'Marca alterada — caixa de fios limpa',
+    toast_thread_set: 'Caixa de fios: {n} cores — gere novamente para aplicar',
+    toast_thread_cleared: 'Caixa de fios limpa — usando catálogo DMC completo',
+    toast_pdf: 'PDF salvo — {n} páginas',
+    toast_nothing_to_buy: 'Nada para comprar — você tem tudo!',
+    toast_export: 'Lista exportada — {n} meadas para comprar',
+    export_header: 'LISTA DE COMPRAS — Stitch & Thread',
+    export_total: 'TOTAL: {n} meadas para comprar',
+    export_generated: 'Gerado em',
+    skein_singular: 'meada',
+    skein_plural: 'meadas',
+    mode_label: '🐾 Modo retrato',
+    img_loaded: 'Imagem carregada',
+  },
+  de: {
+    tagline: 'Kreuzstich-Muster-Generator',
+    sec_image: 'Bild',
+    sec_brand: 'Garnmarke',
+    sec_size: 'Mustergröße',
+    sec_colors: 'Farben',
+    sec_mode: 'Modus',
+    upload_title: 'Bild hochladen',
+    upload_sub: 'JPG, PNG, WebP — beliebige Größe',
+    lbl_width: 'Breite in Stichen',
+    lbl_colors: 'Anzahl der Garnfarben',
+    lbl_anti: 'Anti-Konfetti-Stärke',
+    lbl_anti_sub: 'Höher = weniger einzelne Stiche',
+    mode_gen_sub: 'Beliebiges Bild',
+    mode_por_sub: 'Gesichter & Tiere',
+    portrait_hint: 'Verbessert Haut- und Fellfarben, erhöht den Randkontrast und reduziert Hintergrundrauschen. Am besten mit zentrierten Motiven auf einfarbigem Hintergrund.',
+    lbl_edge: 'Randschärfe',
+    lbl_smooth: 'Haut-/Fell-Glättung',
+    lbl_bg: 'Hintergrund vereinfachen',
+    threadbox_btn: '🧵 Meine Garnbox',
+    btn_generate: 'Muster erstellen',
+    canvas_idle: 'Bild hochladen um zu beginnen',
+    empty_hint: 'Ihr Muster erscheint hier. Laden Sie ein Bild hoch und klicken Sie auf Erstellen.',
+    btn_grid_on: 'Gitter: AN',
+    btn_grid_off: 'Gitter: AUS',
+    btn_png: 'PNG',
+    btn_pdf: 'PDF-Muster',
+    shop_title: '🧵 Einkaufsliste & Legende',
+    sum_colors: 'Farben',
+    sum_needed: 'Stränge benötigt',
+    sum_owned: 'bereits vorhanden',
+    sum_tobuy: 'zu kaufen',
+    tab_all: 'Alle Farben',
+    tab_buy: '🛒 Zu kaufen',
+    th_color: 'Farbe',
+    th_stitches: 'Stiche',
+    th_need: 'Benötigt',
+    th_ihave: 'Ich habe',
+    th_tobuy: 'Kaufen',
+    buy_empty: '✓ Sie haben alles, was Sie brauchen!',
+    btn_export: '↓ Einkaufsliste exportieren',
+    modal_title: 'Meine Garne',
+    tb_search_placeholder: 'Nach Code oder Name suchen… z.B. 321, Rot',
+    tb_selected: 'ausgewählt',
+    tb_select_visible: 'Sichtbare auswählen',
+    tb_clear_all: 'Alle löschen',
+    tb_hint: 'Das Muster verwendet <em>nur</em> Ihre ausgewählten Farben. Leer lassen für den vollständigen DMC-Katalog.',
+    tb_apply: 'Anwenden & Schließen',
+    pro_msg: 'PRO-Funktion — demnächst verfügbar!',
+    toast_png: 'Muster als PNG gespeichert',
+    brand_changed: 'Marke geändert — Garnbox geleert',
+    toast_thread_set: 'Garnbox: {n} Farben — neu erstellen zum Anwenden',
+    toast_thread_cleared: 'Garnbox geleert — vollständiger DMC-Katalog wird verwendet',
+    toast_pdf: 'PDF gespeichert — {n} Seiten',
+    toast_nothing_to_buy: 'Nichts zu kaufen — Sie haben alles!',
+    toast_export: 'Liste exportiert — {n} Stränge zu kaufen',
+    export_header: 'EINKAUFSLISTE — Stitch & Thread',
+    export_total: 'GESAMT: {n} Stränge zu kaufen',
+    export_generated: 'Erstellt am',
+    skein_singular: 'Strang',
+    skein_plural: 'Stränge',
+    mode_label: '🐾 Porträt-Modus',
+    img_loaded: 'Bild geladen',
+  }
+};
+
+function t(key, vars) {
+  const lang = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
+  let str = lang[key] || TRANSLATIONS.en[key] || key;
+  if (vars) Object.entries(vars).forEach(([k,v]) => { str = str.replace(`{${k}}`, v); });
+  return str;
+}
+
+function applyTranslations() {
+  const lang = TRANSLATIONS[currentLang];
+
+  // Tagline
+  document.getElementById('tagline').textContent = lang.tagline;
+
+  // All data-i18n elements (text content)
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (lang[key] !== undefined) {
+      // Use innerHTML for keys that may contain <em> tags
+      if (key === 'tb_hint' || key === 'portrait_hint') {
+        el.innerHTML = lang[key];
+      } else {
+        el.textContent = lang[key];
+      }
+    }
+  });
+
+  // Placeholders
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (lang[key]) el.placeholder = lang[key];
+  });
+
+  // Grid button state (preserve current state)
+  const gridBtn = document.getElementById('showGridBtn');
+  if (gridBtn) {
+    const span = gridBtn.querySelector('[data-i18n]');
+    if (span) span.textContent = showGrid ? lang.btn_grid_on : lang.btn_grid_off;
+  }
+
+  // Table headers in buy table (duplicate headers)
+  document.querySelectorAll('#buyTable th[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (lang[key]) el.textContent = lang[key];
+  });
+
+  // Re-render shopping table to pick up translated skein labels in export
+  // (no need to re-render, export uses t() directly)
+
+  // Update tabBuy (has dynamic count so we reconstruct)
+  const tabBuy = document.getElementById('tabBuy');
+  if (tabBuy) {
+    const match = tabBuy.textContent.match(/\((\d+)\)/);
+    const n = match ? match[1] : '0';
+    tabBuy.textContent = `${lang.tab_buy} (${n})`;
+  }
+
+  // Update document lang
+  document.documentElement.lang = currentLang;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('onclick').includes(`'${lang}'`));
+  });
+  applyTranslations();
+
+  // Re-render shopping table if pattern exists (skein word changes)
+  if (currentColors) renderShoppingTable();
+}
+
+// ============================================================
+// MY THREAD BOX
+// ============================================================
+let myThreadBox = new Set(); // Set of DMC indices selected by user
+
+function openThreadBox() {
+  document.getElementById('threadBoxModal').classList.add('open');
+  document.getElementById('tbSearch').value = '';
+  renderChips();
+}
+
+function closeThreadBox() {
+  document.getElementById('threadBoxModal').classList.remove('open');
+}
+
+function closeModalOnOverlay(e) {
+  if (e.target.id === 'threadBoxModal') closeThreadBox();
+}
+
+function renderChips() {
+  const query = document.getElementById('tbSearch').value.toLowerCase().trim();
+  const grid = document.getElementById('chipGrid');
+  grid.innerHTML = '';
+
+  const catalog = BRAND_CATALOG[currentBrand];
+  const filtered = catalog.filter((c, i) => {
+    if (!query) return true;
+    return c.code.toLowerCase().includes(query) || c.name.toLowerCase().includes(query);
+  });
+
+  filtered.forEach((c, fi) => {
+    const idx = catalog.indexOf(c);
+    const selected = myThreadBox.has(idx);
+    const chip = document.createElement('div');
+    chip.className = 'color-chip' + (selected ? ' selected' : '');
+    chip.dataset.idx = idx;
+    chip.onclick = () => toggleChip(idx, chip);
+
+    chip.innerHTML = `
+      <div class="chip-swatch" style="background:${c.hex}"></div>
+      <div class="chip-info">
+        <div class="chip-code">DMC ${c.code}</div>
+        <div class="chip-name">${c.name}</div>
+      </div>
+      <div class="chip-check">${selected ? '✓' : ''}</div>
+    `;
+    grid.appendChild(chip);
+  });
+
+  updateSelectedCount();
+}
+
+function toggleChip(idx, chip) {
+  if (myThreadBox.has(idx)) {
+    myThreadBox.delete(idx);
+    chip.classList.remove('selected');
+    chip.querySelector('.chip-check').textContent = '';
+  } else {
+    myThreadBox.add(idx);
+    chip.classList.add('selected');
+    chip.querySelector('.chip-check').textContent = '✓';
+  }
+  updateSelectedCount();
+}
+
+function selectAllVisible() {
+  document.querySelectorAll('.color-chip').forEach(chip => {
+    const idx = Number(chip.dataset.idx);
+    myThreadBox.add(idx);
+    chip.classList.add('selected');
+    chip.querySelector('.chip-check').textContent = '✓';
+  });
+  updateSelectedCount();
+}
+
+function clearAll() {
+  myThreadBox.clear();
+  document.querySelectorAll('.color-chip').forEach(chip => {
+    chip.classList.remove('selected');
+    chip.querySelector('.chip-check').textContent = '';
+  });
+  updateSelectedCount();
+}
+
+function updateSelectedCount() {
+  document.getElementById('tbSelectedCount').textContent = myThreadBox.size;
+}
+
+function confirmThreadBox() {
+  const badge = document.getElementById('threadBoxBadge');
+  const toggle = document.getElementById('threadBoxToggle');
+  if (myThreadBox.size > 0) {
+    badge.textContent = myThreadBox.size;
+    badge.style.display = '';
+    toggle.classList.add('active');
+  } else {
+    badge.style.display = 'none';
+    toggle.classList.remove('active');
+  }
+  closeThreadBox();
+  showToast(myThreadBox.size > 0
+    ? t('toast_thread_set', {n: myThreadBox.size})
+    : t('toast_thread_cleared'));
+}
+
+// ============================================================
+// PDF EXPORT — printable chart with grid, symbols, legend
+// ============================================================
+async function exportPDF() {
+  if (!currentPattern) return;
+
+  showToast('Building PDF chart…');
+  await new Promise(r => setTimeout(r, 60)); // let toast render
+
+  const { jsPDF } = window.jspdf;
+  const { grid, W, H } = currentPattern;
+
+  // Page setup — A4 landscape for wide patterns
+  const landscape = W > H;
+  const doc = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+
+  const pageW = landscape ? 297 : 210;
+  const pageH = landscape ? 210 : 297;
+  const margin = 12;
+  const headerH = 18;
+  const footerH = 8;
+
+  // Color index map for symbols
+  const sortedColorEntries = Object.entries(currentColors).sort((a,b)=>b[1]-a[1]);
+  const colorSymbolMap = {};
+  sortedColorEntries.forEach(([idx], i) => { colorSymbolMap[idx] = SYMBOLS[i % SYMBOLS.length]; });
+
+  // How many stitches fit per page
+  const printAreaW = pageW - margin*2;
+  const printAreaH = pageH - margin*2 - headerH - footerH;
+
+  // Cell size in mm — aim for ~2.5mm minimum, scale down for large patterns
+  const cellMM = Math.max(1.8, Math.min(3.5, Math.floor(printAreaW / W * 10) / 10));
+  const chunkW = Math.floor(printAreaW / cellMM);   // stitches per page horizontally
+  const chunkH = Math.floor(printAreaH / cellMM);   // stitches per page vertically
+
+  const pagesX = Math.ceil(W / chunkW);
+  const pagesY = Math.ceil(H / chunkH);
+  let pageNum = 0;
+  const totalPages = pagesX * pagesY + 1; // +1 for legend page
+
+  // Build DMC color lookup by index
+  // colorSymbolMap keys are string dmcIdx
+
+  // ---- CHART PAGES ----
+  for (let py = 0; py < pagesY; py++) {
+    for (let px = 0; px < pagesX; px++) {
+      if (pageNum > 0) doc.addPage();
+      pageNum++;
+
+      const startX = px * chunkW;
+      const startY = py * chunkH;
+      const endX = Math.min(startX + chunkW, W);
+      const endY = Math.min(startY + chunkH, H);
+      const cols = endX - startX;
+      const rows = endY - startY;
+
+      const originX = margin;
+      const originY = margin + headerH;
+
+      // --- HEADER ---
+      doc.setFillColor(43, 36, 32);
+      doc.rect(margin, margin, pageW - margin*2, headerH - 2, 'F');
+      doc.setTextColor(245, 240, 232);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Stitch & Thread', margin + 4, margin + 7);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Section ${px+1}-${py+1}  |  Stitches ${startX+1}–${endX} × ${startY+1}–${endY}  |  Page ${pageNum}/${totalPages}`, margin + 4, margin + 13);
+      // Pattern size info top right
+      doc.text(`${W}×${H} stitches · ${Object.keys(currentColors).length} DMC colors`, pageW - margin - 4, margin + 13, {align:'right'});
+
+      // --- DRAW CELLS ---
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const gx = startX + col;
+          const gy = startY + row;
+          const dmcIdx = grid[gy * W + gx];
+          const dmc = getBrandEntry(currentBrand, dmcIdx);
+          const [r,g,b] = hexToRgb(dmc.hex);
+
+          const cx = originX + col * cellMM;
+          const cy = originY + row * cellMM;
+
+          // Fill cell
+          doc.setFillColor(r, g, b);
+          doc.rect(cx, cy, cellMM, cellMM, 'F');
+
+          // Symbol (only if cell big enough)
+          if (cellMM >= 2.2) {
+            const luma = 0.299*r + 0.587*g + 0.114*b;
+            doc.setTextColor(luma > 128 ? 60 : 220, luma > 128 ? 55 : 215, luma > 128 ? 50 : 210);
+            doc.setFontSize(cellMM * 1.8);
+            doc.setFont('helvetica', 'normal');
+            const sym = colorSymbolMap[String(dmcIdx)] || '·';
+            doc.text(sym, cx + cellMM/2, cy + cellMM * 0.72, { align: 'center' });
+          }
+        }
+      }
+
+      // --- GRID LINES ---
+      doc.setDrawColor(180, 175, 165);
+      doc.setLineWidth(0.08);
+      for (let col = 0; col <= cols; col++) {
+        const x = originX + col * cellMM;
+        doc.line(x, originY, x, originY + rows * cellMM);
+      }
+      for (let row = 0; row <= rows; row++) {
+        const y = originY + row * cellMM;
+        doc.line(originX, y, originX + cols * cellMM, y);
+      }
+
+      // --- BOLD GRID every 10 ---
+      doc.setDrawColor(80, 70, 60);
+      doc.setLineWidth(0.3);
+      for (let col = 0; col <= cols; col++) {
+        if ((startX + col) % 10 === 0) {
+          const x = originX + col * cellMM;
+          doc.line(x, originY, x, originY + rows * cellMM);
+        }
+      }
+      for (let row = 0; row <= rows; row++) {
+        if ((startY + row) % 10 === 0) {
+          const y = originY + row * cellMM;
+          doc.line(originX, y, originX + cols * cellMM, y);
+        }
+      }
+
+      // --- AXIS NUMBERS every 10 stitches ---
+      doc.setTextColor(100, 90, 80);
+      doc.setFontSize(5.5);
+      doc.setFont('helvetica', 'normal');
+      // Top axis
+      for (let col = 0; col <= cols; col += 10) {
+        if (col === 0 && startX === 0) continue;
+        const label = String(startX + col);
+        const x = originX + col * cellMM;
+        doc.text(label, x, originY - 1.5, { align: 'center' });
+      }
+      // Left axis
+      for (let row = 0; row <= rows; row += 10) {
+        if (row === 0 && startY === 0) continue;
+        const label = String(startY + row);
+        const y = originY + row * cellMM;
+        doc.text(label, originX - 1.5, y + 0.8, { align: 'right' });
+      }
+
+      // --- FOOTER ---
+      doc.setTextColor(150, 140, 130);
+      doc.setFontSize(6);
+      doc.text('Generated by Stitch & Thread · stitchandthread.app', pageW/2, pageH - margin + 2, { align: 'center' });
+    }
+  }
+
+  // ---- LEGEND PAGE ----
+  doc.addPage();
+  pageNum++;
+
+  // Header
+  doc.setFillColor(43, 36, 32);
+  doc.rect(margin, margin, pageW - margin*2, headerH - 2, 'F');
+  doc.setTextColor(245, 240, 232);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`${t('shop_title').replace('🧵 ','').split(' &')[0]} — DMC`, margin + 4, margin + 7);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Page ${pageNum}/${totalPages}  ·  ${Object.keys(currentColors).length} colors  ·  ${W}×${H} = ${(W*H).toLocaleString()} total stitches`, margin + 4, margin + 13);
+
+  // Legend grid — 3 columns
+  const legendTop = margin + headerH + 4;
+  const colW = (pageW - margin*2) / 3;
+  const rowH = 8;
+  const swatchSize = 5;
+
+  sortedColorEntries.forEach(([idx, count], i) => {
+    const dmcIdx = Number(idx);
+    const dmc = getBrandEntry(currentBrand, dmcIdx);
+    const [r,g,b] = hexToRgb(dmc.hex);
+    const col = i % 3;
+    const row = Math.floor(i / 3);
+
+    // Check if we need a new page
+    if (legendTop + row * rowH > pageH - margin - footerH) return; // skip overflow for now
+
+    const lx = margin + col * colW;
+    const ly = legendTop + row * rowH;
+
+    // Swatch
+    doc.setFillColor(r, g, b);
+    doc.rect(lx, ly, swatchSize, swatchSize, 'F');
+    doc.setDrawColor(150, 140, 130);
+    doc.setLineWidth(0.2);
+    doc.rect(lx, ly, swatchSize, swatchSize, 'S');
+
+    // Symbol in swatch
+    const luma = 0.299*r + 0.587*g + 0.114*b;
+    doc.setTextColor(luma > 128 ? 60 : 220, luma > 128 ? 55 : 215, luma > 128 ? 50 : 210);
+    doc.setFontSize(5);
+    doc.text(colorSymbolMap[idx] || '·', lx + swatchSize/2, ly + swatchSize*0.75, { align: 'center' });
+
+    // Text
+    doc.setTextColor(43, 36, 32);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${currentBrand.toUpperCase()} ${dmc.code}`, lx + swatchSize + 2, ly + 3.2);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6);
+    doc.setTextColor(100, 90, 80);
+    doc.text(dmc.name.length > 22 ? dmc.name.slice(0,22)+'…' : dmc.name, lx + swatchSize + 2, ly + 6.2);
+    doc.setTextColor(139, 38, 53);
+    doc.text(`${count.toLocaleString()} stitches`, lx + colW - 4, ly + 3.2, { align: 'right' });
+  });
+
+  // Shopping list note
+  const legendRows = Math.ceil(sortedColorEntries.length / 3);
+  const noteY = legendTop + legendRows * rowH + 8;
+  if (noteY < pageH - margin - 20) {
+    doc.setDrawColor(180, 170, 155);
+    doc.setLineWidth(0.3);
+    doc.line(margin, noteY - 2, pageW - margin, noteY - 2);
+    doc.setTextColor(43, 36, 32);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Shopping List', margin, noteY + 4);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 90, 80);
+    doc.text(`You need ${Object.keys(currentColors).length} skeins of DMC thread. Each skein covers approx. 1,000–2,000 stitches.`, margin, noteY + 9);
+    doc.text('Recommended: buy 2 skeins of dominant colors (top 5 by stitch count).', margin, noteY + 14);
+  }
+
+  // Footer
+  doc.setTextColor(150, 140, 130);
+  doc.setFontSize(6);
+  doc.text('Generated by Stitch & Thread · stitchandthread.app', pageW/2, pageH - margin + 2, { align: 'center' });
+
+  // Save
+  doc.save(`cross-stitch-pattern-${W}x${H}.pdf`);
+  showToast(t('toast_pdf', {n: totalPages}));
+}
+</script>
+</body>
+</html>
