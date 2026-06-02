@@ -337,21 +337,24 @@
 
   .btn-blank-canvas {
     width: 100%;
-    padding: 10px;
+    padding: 11px;
     background: transparent;
     color: var(--warm-gray);
-    border: 1.5px dashed var(--grid-line);
+    border: 1.5px dashed var(--warm-gray);
     font-family: 'Crimson Pro', serif;
-    font-size: 14px;
+    font-size: 15px;
     cursor: pointer;
-    margin-top: 8px;
+    margin-top: 0;
+    margin-bottom: 12px;
     transition: all 0.2s;
     letter-spacing: 0.03em;
+    display: block;
   }
   .btn-blank-canvas:hover {
     border-color: var(--gold);
     color: var(--gold);
     border-style: solid;
+    background: #fdf8ee;
   }
 
   /* CANVAS AREA */
@@ -1007,7 +1010,8 @@
 
   /* ANTICONFETTI INDICATOR */
   .anti-confetti-demo {
-    margin-top: 8px;
+    margin-top: 0;
+    margin-bottom: 12px;
     font-size: 12px;
     color: var(--warm-gray);
     font-style: italic;
@@ -1126,10 +1130,10 @@
     <div class="logo">Stitch <span>&</span> Thread</div>
     <div class="tagline" id="tagline">Cross-Stitch Pattern Generator</div>
     <div class="lang-selector" style="margin-left:auto;">
-      <button class="lang-btn active" onclick="setLang('en')" title="English">🇬🇧 EN</button>
-      <button class="lang-btn" onclick="setLang('es')" title="Español">🇪🇸 ES</button>
-      <button class="lang-btn" onclick="setLang('pt')" title="Português">🇧🇷 PT</button>
-      <button class="lang-btn" onclick="setLang('de')" title="Deutsch">🇩🇪 DE</button>
+      <button class="lang-btn active" onclick="setLang('en')" title="English">EN</button>
+      <button class="lang-btn" onclick="setLang('es')" title="Español">ES</button>
+      <button class="lang-btn" onclick="setLang('pt')" title="Português">PT</button>
+      <button class="lang-btn" onclick="setLang('de')" title="Deutsch">DE</button>
     </div>
   </header>
 
@@ -1137,6 +1141,11 @@
 
     <!-- LEFT PANEL -->
     <div class="panel">
+
+      <!-- Blank Canvas -->
+      <button class="btn-blank-canvas" id="blankCanvasBtn" onclick="startBlankCanvas()">
+        + Start blank canvas
+      </button>
 
       <!-- Upload -->
       <div class="panel-section">
@@ -1270,9 +1279,6 @@
       <!-- Generate -->
       <button class="btn-generate" id="generateBtn" onclick="generatePattern()" disabled>
         <span data-i18n="btn_generate">Generate Pattern</span>
-      </button>
-      <button class="btn-blank-canvas" id="blankCanvasBtn" onclick="startBlankCanvas()">
-        ✦ Start blank canvas
       </button>
 
     </div>
