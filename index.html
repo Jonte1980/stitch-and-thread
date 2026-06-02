@@ -3516,6 +3516,8 @@ function selectBrand(btn) {
   document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   currentBrand = newBrand;
+  // Clear Lab cache for new brand to avoid stale values
+  delete BRAND_LAB[newBrand];
 
   // Reset thread box when switching brand (indices are brand-specific)
   if (myThreadBox.size > 0) {
@@ -3538,7 +3540,19 @@ function showLockedMsg() {
 // ============================================================
 // GENERATE
 // ============================================================
+let _generating = false;
 async function generatePattern() {
+  if (!sourceImage) return;
+  if (_generating) return; // prevent concurrent generation
+  _generating = true;
+  try {
+    await _generatePatternImpl();
+  } finally {
+    _generating = false;
+  }
+}
+
+async function _generatePatternImpl() {
   if (!sourceImage) return;
 
   // For Miyuki, use the bead dimensions from the options panel
@@ -3561,7 +3575,10 @@ async function generatePattern() {
 
   // Draw at 2x for portrait preprocessing, then downscale for quality
   const preW = currentMode === 'portrait' ? Math.min(W * 3, 900) : W;
-  const preH = currentMode === 'portrait' ? Math.round(preW * ratio) : H;
+  // preH must respect H_override (Miyuki fixed height) — never use ratio when H is fixed
+  const preH = (currentMode === 'portrait' && H_override === null)
+    ? Math.round(preW * ratio)
+    : Math.round(preW * (H / W));
 
   const offscreen = document.createElement('canvas');
   offscreen.width = preW;
@@ -3601,6 +3618,8 @@ async function generatePattern() {
 
   // Median cut: log2(numColors) depth
   const depth = Math.ceil(Math.log2(numColors));
+  // Yield to browser to update progress bar before heavy computation
+  await new Promise(r => setTimeout(r, 10));
   const palette = medianCut(pixels, depth).slice(0, numColors);
 
   setProgress(30);
@@ -3647,10 +3666,11 @@ async function generatePattern() {
     finalColors[c] = (finalColors[c]||0) + 1;
   }
 
-  // Clear per-color brand overrides and paint edits for new pattern
+  // Clear all stale state from previous pattern
   Object.keys(colorBrandOverride).forEach(k => delete colorBrandOverride[k]);
   Object.keys(paintOverride).forEach(k => delete paintOverride[k]);
   undoStack.length = 0;
+  shoppingData = [];
   if (editMode) toggleEditMode(); // close edit mode on regenerate
 
   // Reset progress for new pattern (different key = different pattern)
@@ -3693,7 +3713,7 @@ async function generatePattern() {
   document.getElementById('patternCanvas').style.display = '';
 
   buildLegend(finalColors);
-}
+} // end _generatePatternImpl
 
 // ============================================================
 // DRAW PATTERN
