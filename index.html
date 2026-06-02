@@ -5104,7 +5104,7 @@ let miyukiSizeUnit = 'beads';   // 'beads' | 'cm'
 // Shape presets (in beads)
 const SHAPE_PRESETS = {
   free:      { w: 20,  h: 30  },
-  earring:   { w: 15,  h: 25  },  // triangle base 15, height 25
+  earring:   { w: 15,  h: 20  },  // triangle base 15 (odd), height 20 — ~2.4×3.8cm
   bracelet:  { w: 150, h: 8   },  // ~24cm long, 8 beads wide (typical wrist)
   necklace:  { w: 200, h: 5   },  // long narrow strip
 };
@@ -5138,6 +5138,13 @@ function setMiyukiShape(shape) {
     document.getElementById('miyukiW').value = (preset.w * DB11_W_MM / 10).toFixed(1);
     document.getElementById('miyukiH').value = (preset.h * DB11_H_MM / 10).toFixed(1);
   }
+
+  // Auto-select best technique for each shape
+  const bestTech = { free: 'loom', earring: 'brick', bracelet: 'loom', necklace: 'loom' };
+  if (bestTech[shape] && bestTech[shape] !== miyukiTechnique) {
+    setMiyukiTechnique(bestTech[shape]);
+  }
+
   updateMiyukiSizeHint();
 
   // Auto-update pattern
@@ -5252,12 +5259,15 @@ function drawMiyukiPattern(canvas, grid, W, H, colorCounts) {
   function isInShape(col, row) {
     if (miyukiShape === 'free') return true;
     if (miyukiShape === 'earring') {
-      // Triangle: full width at bottom, narrows to 1 at top
-      const progress = row / H; // 0=top, 1=bottom
+      // Triangle: full width at top (bail), narrows to point at bottom
+      // Row 0 = top (widest), Row H-1 = bottom (1 bead)
+      const progress = 1 - (row / (H - 1)); // 1=top(wide), 0=bottom(point)
       const halfW2 = Math.floor(W / 2);
       const allowedHalf = Math.round(progress * halfW2);
       const center = Math.floor(W / 2);
-      return Math.abs(col - center) <= allowedHalf;
+      // Minimum 1 bead at the bottom point
+      const minAllowed = row === H - 1 ? 0 : allowedHalf;
+      return Math.abs(col - center) <= Math.max(0, minAllowed);
     }
     return true; // bracelet, necklace = free rectangle
   }
