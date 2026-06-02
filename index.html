@@ -399,6 +399,92 @@
     box-shadow: 0 4px 24px var(--shadow);
   }
 
+  /* PROGRESS MODE */
+  .progress-mode-bar {
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--linen);
+    display: none;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: #fdf8ee;
+  }
+  .progress-mode-bar.visible { display: flex; }
+
+  .progress-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    color: var(--charcoal);
+    user-select: none;
+  }
+  .toggle-switch {
+    width: 36px;
+    height: 20px;
+    background: var(--grid-line);
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: white;
+    top: 3px;
+    left: 3px;
+    transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle-switch.on { background: #3a7d44; }
+  .toggle-switch.on::after { left: 19px; }
+
+  .progress-stats {
+    display: flex;
+    gap: 14px;
+    font-size: 13px;
+    flex-wrap: wrap;
+  }
+  .pstat { color: var(--warm-gray); }
+  .pstat strong { color: var(--charcoal); }
+  .pstat.done strong { color: #3a7d44; }
+  .pstat.pct strong { color: var(--gold); font-size: 15px; }
+
+  .progress-track {
+    flex: 1;
+    min-width: 120px;
+    height: 6px;
+    background: var(--linen);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-track-fill {
+    height: 100%;
+    background: #3a7d44;
+    border-radius: 3px;
+    transition: width 0.3s;
+    width: 0%;
+  }
+
+  .btn-reset-progress {
+    padding: 4px 12px;
+    border: 1.5px solid var(--grid-line);
+    background: transparent;
+    font-family: 'Crimson Pro', serif;
+    font-size: 12px;
+    color: var(--warm-gray);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-reset-progress:hover { border-color: var(--thread-red); color: var(--thread-red); }
+
   /* EMPTY STATE */
   .empty-state {
     flex: 1;
@@ -803,8 +889,8 @@
       <!-- Upload -->
       <div class="panel-section">
         <div class="section-label" data-i18n="sec_image">Image</div>
-        <label class="upload-area" id="uploadArea" style="cursor:pointer;">
-          <input type="file" id="fileInput" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
+        <div class="upload-area" id="uploadArea" onclick="triggerFileInput()" style="cursor:pointer;">
+          <input type="file" id="fileInput" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0;">
           <svg class="upload-icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5">
             <rect x="4" y="10" width="32" height="24" rx="2"/>
             <circle cx="14" cy="19" r="3"/>
@@ -815,7 +901,7 @@
             <strong data-i18n="upload_title">Upload your image</strong>
             <span data-i18n="upload_sub">JPG, PNG, WebP — any size</span>
           </div>
-        </label>
+        </div>
       </div>
 
       <!-- Thread Brand -->
@@ -956,6 +1042,21 @@
             <button class="btn-secondary" id="pdfBtn" onclick="exportPDF()" style="display:none;border-color:var(--gold);color:var(--gold)">↓ <span data-i18n="btn_pdf">PDF Chart</span></button>
           </div>
         </div>
+      </div>
+
+      <!-- PROGRESS MODE BAR -->
+      <div class="progress-mode-bar" id="progressModeBar">
+        <label class="progress-toggle" onclick="toggleProgressMode()">
+          <div class="toggle-switch" id="progressToggle"></div>
+          <span>✅ Progress mode</span>
+        </label>
+        <div class="progress-stats" id="progressStats" style="display:none">
+          <div class="pstat done"><strong id="pDone">0</strong> done</div>
+          <div class="pstat"><strong id="pLeft">0</strong> left</div>
+          <div class="pstat pct"><strong id="pPct">0%</strong></div>
+          <div class="progress-track"><div class="progress-track-fill" id="pTrack"></div></div>
+        </div>
+        <button class="btn-reset-progress" id="resetProgressBtn" onclick="resetProgress()" style="display:none">↺ Reset</button>
       </div>
 
       <div class="canvas-wrapper" id="canvasWrapper">
@@ -2479,6 +2580,10 @@ let showGrid = true;
 // ============================================================
 // IMAGE UPLOAD
 // ============================================================
+function triggerFileInput() {
+  document.getElementById('fileInput').click();
+}
+
 document.getElementById('fileInput').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
@@ -2633,6 +2738,12 @@ async function generatePattern() {
     finalColors[c] = (finalColors[c]||0) + 1;
   }
 
+  // Reset progress for new pattern (different key = different pattern)
+  const newKey = `${W}x${H}_${currentBrand}`;
+  if (newKey !== progressPatternKey) {
+    doneStitches = new Set();
+    progressPatternKey = newKey;
+  }
   currentPattern = { grid: cleanGrid, W, H };
   currentColors = finalColors;
 
@@ -2654,6 +2765,14 @@ async function generatePattern() {
   document.getElementById('showGridBtn').style.display = '';
   document.getElementById('downloadBtn').style.display = '';
   document.getElementById('pdfBtn').style.display = '';
+  document.getElementById('progressModeBar').classList.add('visible');
+
+  // Load saved progress for this pattern
+  loadProgress();
+  if (progressMode) {
+    updateProgressStats();
+    drawPattern(cleanGrid, W, H, finalColors);
+  }
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('patternCanvas').style.display = '';
 
@@ -2727,12 +2846,219 @@ function drawPattern(grid, W, H, colorCounts) {
         const dmcIdx = grid[y*W+x];
         const colorPos = sortedColors.indexOf(dmcIdx) % SYMBOLS.length;
         const sym = SYMBOLS[colorPos];
-        // Determine text color (dark or light based on bg)
         const [r,g,b] = hexToRgb(getBrandEntry(currentBrand, dmcIdx).hex);
         const luma = 0.299*r + 0.587*g + 0.114*b;
         ctx.fillStyle = luma > 128 ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)';
         ctx.fillText(sym, x*cellSize + cellSize/2, y*cellSize + cellSize/2);
       }
+    }
+  }
+
+  // Progress overlay — draw done stitches
+  if (progressMode && doneStitches.size > 0) {
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (const key of doneStitches) {
+      const [cx, cy] = key.split(',').map(Number);
+      if (cx >= W || cy >= H) continue;
+      const dmcIdx = grid[cy*W+cx];
+      const [r,g,b] = hexToRgb(getBrandEntry(currentBrand, dmcIdx).hex);
+      // White dim overlay
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.fillRect(cx*cellSize, cy*cellSize, cellSize, cellSize);
+      // Check mark
+      if (cellSize >= 6) {
+        const luma = 0.299*r + 0.587*g + 0.114*b;
+        ctx.strokeStyle = luma > 180 ? 'rgba(40,120,60,0.9)' : 'rgba(60,180,80,0.95)';
+        ctx.lineWidth = Math.max(1, cellSize * 0.12);
+        const pad = cellSize * 0.22;
+        ctx.beginPath();
+        ctx.moveTo(cx*cellSize + pad, cy*cellSize + cellSize*0.52);
+        ctx.lineTo(cx*cellSize + cellSize*0.42, cy*cellSize + cellSize - pad);
+        ctx.lineTo(cx*cellSize + cellSize - pad, cy*cellSize + pad);
+        ctx.stroke();
+      }
+    }
+  }
+}
+
+// ============================================================
+// PROGRESS TRACKING
+// ============================================================
+let progressMode = false;
+let doneStitches = new Set(); // "x,y" keys
+let progressPatternKey = ''; // identifies which pattern the progress belongs to
+
+function getProgressKey() {
+  if (!currentPattern) return '';
+  return `${currentPattern.W}x${currentPattern.H}_${currentBrand}`;
+}
+
+function loadProgress() {
+  const key = getProgressKey();
+  if (!key) return;
+  try {
+    const saved = localStorage.getItem('snt_progress_' + key);
+    if (saved) {
+      doneStitches = new Set(JSON.parse(saved));
+    } else {
+      doneStitches = new Set();
+    }
+    progressPatternKey = key;
+  } catch(e) { doneStitches = new Set(); }
+}
+
+function saveProgress() {
+  const key = getProgressKey();
+  if (!key) return;
+  try {
+    localStorage.setItem('snt_progress_' + key, JSON.stringify([...doneStitches]));
+  } catch(e) {}
+}
+
+function toggleProgressMode() {
+  progressMode = !progressMode;
+  const toggle = document.getElementById('progressToggle');
+  const stats = document.getElementById('progressStats');
+  const resetBtn = document.getElementById('resetProgressBtn');
+  toggle.classList.toggle('on', progressMode);
+  stats.style.display = progressMode ? 'flex' : 'none';
+  resetBtn.style.display = progressMode ? '' : 'none';
+  document.getElementById('patternCanvas').style.cursor = progressMode ? 'pointer' : 'crosshair';
+  if (progressMode) updateProgressStats();
+  drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+}
+
+function resetProgress() {
+  if (!confirm('Reset all progress for this pattern?')) return;
+  doneStitches.clear();
+  saveProgress();
+  updateProgressStats();
+  drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+}
+
+function updateProgressStats() {
+  if (!currentPattern) return;
+  const total = currentPattern.W * currentPattern.H;
+  const done = doneStitches.size;
+  const left = total - done;
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  document.getElementById('pDone').textContent = done.toLocaleString();
+  document.getElementById('pLeft').textContent = left.toLocaleString();
+  document.getElementById('pPct').textContent = pct + '%';
+  document.getElementById('pTrack').style.width = pct + '%';
+}
+
+// Canvas click handler for progress mode
+document.getElementById('patternCanvas').addEventListener('click', function(e) {
+  if (!progressMode || !currentPattern) return;
+  const rect = this.getBoundingClientRect();
+  // Account for canvas scaling (display vs actual pixels)
+  const scaleX = this.width / rect.width;
+  const scaleY = this.height / rect.height;
+  const canvasX = (e.clientX - rect.left) * scaleX;
+  const canvasY = (e.clientY - rect.top) * scaleY;
+  const cellX = Math.floor(canvasX / zoom);
+  const cellY = Math.floor(canvasY / zoom);
+  const { W, H } = currentPattern;
+  if (cellX < 0 || cellX >= W || cellY < 0 || cellY >= H) return;
+
+  const key = `${cellX},${cellY}`;
+  if (doneStitches.has(key)) {
+    doneStitches.delete(key);
+  } else {
+    doneStitches.add(key);
+  }
+  saveProgress();
+  updateProgressStats();
+
+  // Redraw just the affected cell for performance
+  redrawCell(cellX, cellY);
+});
+
+// Touch support for mobile
+document.getElementById('patternCanvas').addEventListener('touchend', function(e) {
+  if (!progressMode || !currentPattern) return;
+  e.preventDefault();
+  const touch = e.changedTouches[0];
+  const rect = this.getBoundingClientRect();
+  const scaleX = this.width / rect.width;
+  const scaleY = this.height / rect.height;
+  const canvasX = (touch.clientX - rect.left) * scaleX;
+  const canvasY = (touch.clientY - rect.top) * scaleY;
+  const cellX = Math.floor(canvasX / zoom);
+  const cellY = Math.floor(canvasY / zoom);
+  const { W, H } = currentPattern;
+  if (cellX < 0 || cellX >= W || cellY < 0 || cellY >= H) return;
+
+  const key = `${cellX},${cellY}`;
+  if (doneStitches.has(key)) {
+    doneStitches.delete(key);
+  } else {
+    doneStitches.add(key);
+  }
+  saveProgress();
+  updateProgressStats();
+  redrawCell(cellX, cellY);
+}, { passive: false });
+
+function redrawCell(cellX, cellY) {
+  const canvas = document.getElementById('patternCanvas');
+  const ctx = canvas.getContext('2d');
+  const { grid, W } = currentPattern;
+  const cs = zoom;
+  const dmcIdx = grid[cellY * W + cellX];
+  const entry = getBrandEntry(currentBrand, dmcIdx);
+  const [r,g,b] = hexToRgb(entry.hex);
+
+  // Base color
+  ctx.fillStyle = entry.hex;
+  ctx.fillRect(cellX*cs, cellY*cs, cs, cs);
+
+  const isDone = doneStitches.has(`${cellX},${cellY}`);
+
+  if (isDone) {
+    // Dim overlay
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillRect(cellX*cs, cellY*cs, cs, cs);
+    // Check mark
+    if (cs >= 6) {
+      const luma = 0.299*r + 0.587*g + 0.114*b;
+      ctx.strokeStyle = luma > 180 ? 'rgba(40,120,60,0.9)' : 'rgba(60,180,80,0.95)';
+      ctx.lineWidth = Math.max(1, cs * 0.12);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      const pad = cs * 0.22;
+      ctx.beginPath();
+      ctx.moveTo(cellX*cs + pad, cellY*cs + cs*0.52);
+      ctx.lineTo(cellX*cs + cs*0.42, cellY*cs + cs - pad);
+      ctx.lineTo(cellX*cs + cs - pad, cellY*cs + pad);
+      ctx.stroke();
+    }
+  }
+
+  // Redraw grid lines over cell
+  if (showGrid && cs >= 3) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(cellX*cs + 0.5, cellY*cs + 0.5, cs, cs);
+  }
+
+  // Bold 10-grid lines if on boundary
+  if (cs >= 4) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 1;
+    if (cellX % 10 === 0) {
+      ctx.beginPath();
+      ctx.moveTo(cellX*cs + 0.5, cellY*cs);
+      ctx.lineTo(cellX*cs + 0.5, (cellY+1)*cs);
+      ctx.stroke();
+    }
+    if (cellY % 10 === 0) {
+      ctx.beginPath();
+      ctx.moveTo(cellX*cs, cellY*cs + 0.5);
+      ctx.lineTo((cellX+1)*cs, cellY*cs + 0.5);
+      ctx.stroke();
     }
   }
 }
