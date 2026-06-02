@@ -3318,6 +3318,7 @@ function handleCanvasCell(cellX, cellY) {
 // Mouse events (desktop) — support drag painting
 _canvas.addEventListener('mousedown', function(e) {
   if (!editMode) return;
+  e.preventDefault();
   isPainting = true;
   const { x, y } = getCellFromEvent(e, this);
   handleCanvasCell(x, y);
@@ -4262,8 +4263,6 @@ function toggleEditMode() {
   toolbar.classList.toggle('visible', editMode);
 
   if (editMode) {
-    // Clone grid for painting
-    paintGrid = new Int32Array(currentPattern.grid);
     updateCursor();
     // If no active color, pick the most-used one
     if (!activePaintIdx && shoppingData.length > 0) {
@@ -4339,23 +4338,7 @@ function openChangeColorForBrush() {
   renderCCChips();
 }
 
-// Override applyColorChange to handle brush pick mode
-const _origApplyColorChange = applyColorChange;
-function applyColorChange() {
-  if (ccDmcIdx === -999) {
-    // Brush pick mode — find or create a dmcIdx for this entry
-    // We need a stable key: use the index in the base catalog that's closest to this color
-    const [r,g,b] = hexToRgb(ccSelectedEntry.hex);
-    const baseIdx = findClosestInBrand(r,g,b, currentBrand, null);
-    // Store override so getEffectiveEntry works
-    colorBrandOverride[baseIdx] = { brand: ccBrand, idx: ccSelectedIdx, entry: ccSelectedEntry };
-    setActivePaintColor(baseIdx);
-    closeChangeColor();
-    showToast(`Brush: ${ccBrand.toUpperCase()} ${ccSelectedEntry.code}`);
-    return;
-  }
-  _origApplyColorChange();
-}
+// (applyColorChange handles brush pick mode via ccDmcIdx === -999 check inside it)
 
 // ---- CANVAS PAINT EVENTS ----
 function getCellFromEvent(e, canvas) {
@@ -4404,7 +4387,8 @@ function applyPaintAtCell(cellX, cellY) {
 
   // Brush
   if (activePaintIdx === null) { showToast('Select a color first'); return; }
-  if (currentIdx === activePaintIdx) return; // already this color
+  // Skip if cell already has exactly this color (same entry hex)
+  if (currentIdx === activePaintIdx && !colorBrandOverride[activePaintIdx]) return;
   pushUndo(key, currentIdx, activePaintIdx);
   paintOverride[key] = activePaintIdx;
   redrawCell(cellX, cellY);
@@ -4549,9 +4533,22 @@ function selectCCColor(idx, entry) {
 }
 
 function applyColorChange() {
-  if (ccDmcIdx === null || ccSelectedIdx === null) return;
+  if (ccSelectedIdx === null || !ccSelectedEntry) return;
 
-  // Store override with the explicitly chosen entry
+  // Brush pick mode (opened from paint editor)
+  if (ccDmcIdx === -999) {
+    const [r,g,b] = hexToRgb(ccSelectedEntry.hex);
+    const baseIdx = findClosestInBrand(r,g,b, currentBrand, null);
+    colorBrandOverride[baseIdx] = { brand: ccBrand, idx: ccSelectedIdx, entry: ccSelectedEntry };
+    setActivePaintColor(baseIdx);
+    closeChangeColor();
+    showToast(`Brush: ${ccBrand.toUpperCase()} ${ccSelectedEntry.code}`);
+    return;
+  }
+
+  if (ccDmcIdx === null) return;
+
+  // Normal color change mode
   colorBrandOverride[ccDmcIdx] = {
     brand: ccBrand,
     idx: ccSelectedIdx,
