@@ -3991,12 +3991,19 @@ _canvas.addEventListener('touchend', function(e) {
 }, { passive: false });
 
 function redrawCell(cellX, cellY) {
+  // Miyuki: beads overlap visually due to oval shape + brick/peyote offset
+  // A single-cell redraw leaves artefacts — do a full canvas redraw instead
+  // It's fast enough at typical pattern sizes
+  if (currentFormat === 'miyuki') {
+    drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+    return;
+  }
+
   const canvas = document.getElementById('patternCanvas');
   const ctx = canvas.getContext('2d');
   const { grid, W } = currentPattern;
-  const geo2 = getGeometry();
   const cW = zoom;
-  const cH = Math.round(zoom * geo2.cellH);
+  const cH = Math.round(zoom * getGeometry().cellH);
   const baseIdx = grid[cellY * W + cellX];
   const dmcIdx = paintOverride[`${cellX},${cellY}`] !== undefined
     ? paintOverride[`${cellX},${cellY}`] : baseIdx;
@@ -4010,17 +4017,15 @@ function redrawCell(cellX, cellY) {
   const isDone = doneStitches.has(`${cellX},${cellY}`);
 
   if (isDone) {
-    // Dim overlay
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillRect(cellX*cW, cellY*cH, cW, cH);
-    // Check mark
-    if (cs >= 6) {
+    if (cW >= 6) {
       const luma = 0.299*r + 0.587*g + 0.114*b;
       ctx.strokeStyle = luma > 180 ? 'rgba(40,120,60,0.9)' : 'rgba(60,180,80,0.95)';
-      ctx.lineWidth = Math.max(1, cs * 0.12);
+      ctx.lineWidth = Math.max(1, cW * 0.12);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      const pad = cs * 0.22;
+      const pad = cW * 0.22;
       ctx.beginPath();
       ctx.moveTo(cellX*cW + pad, cellY*cH + cH*0.52);
       ctx.lineTo(cellX*cW + cW*0.42, cellY*cH + cH - pad);
@@ -4029,15 +4034,13 @@ function redrawCell(cellX, cellY) {
     }
   }
 
-  // Redraw grid lines over cell
-  if (showGrid && cW >= 3 && currentFormat !== 'miyuki') {
+  if (showGrid && cW >= 3) {
     ctx.strokeStyle = 'rgba(0,0,0,0.12)';
     ctx.lineWidth = 0.5;
     ctx.strokeRect(cellX*cW + 0.5, cellY*cH + 0.5, cW, cH);
   }
 
-  // Bold 10-grid lines if on boundary
-  if (cW >= 4 && currentFormat !== 'miyuki') {
+  if (cW >= 4) {
     ctx.strokeStyle = 'rgba(0,0,0,0.3)';
     ctx.lineWidth = 1;
     if (cellX % 10 === 0) {
@@ -5114,7 +5117,9 @@ function setMiyukiTechnique(tech) {
   });
   updateMiyukiSizeHint();
   if (currentPattern && currentFormat === 'miyuki') {
+    const techNames = { loom: 'Loom', brick: 'Brick Stitch', peyote: 'Peyote' };
     drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+    showToast(techNames[tech]);
   }
 }
 
@@ -5134,6 +5139,17 @@ function setMiyukiShape(shape) {
     document.getElementById('miyukiH').value = (preset.h * DB11_H_MM / 10).toFixed(1);
   }
   updateMiyukiSizeHint();
+
+  // Auto-update pattern
+  if (currentPattern && currentFormat === 'miyuki') {
+    if (sourceImage) {
+      // Shape changes W×H — need full regenerate
+      generatePattern();
+    } else {
+      // Blank canvas — just redraw with new mask
+      drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+    }
+  }
 }
 
 function setSizeUnit(unit) {
@@ -5177,8 +5193,16 @@ function getMiyukiBeadDimensions() {
   return { w: wBeads, h: hBeads };
 }
 
+let _miyukiSizeTimer = null;
 function onMiyukiSizeChange() {
   updateMiyukiSizeHint();
+  // Debounce regeneration — wait 600ms after user stops typing
+  if (currentPattern && currentFormat === 'miyuki' && sourceImage) {
+    clearTimeout(_miyukiSizeTimer);
+    _miyukiSizeTimer = setTimeout(() => {
+      generatePattern();
+    }, 600);
+  }
 }
 
 function updateMiyukiSizeHint() {
