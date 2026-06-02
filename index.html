@@ -655,6 +655,90 @@
   .cbrand-btn.active.anchor  { background: #1a5276; border-color: #1a5276 !important; }
   .cbrand-btn.active.cosmo   { background: #196f3d; border-color: #196f3d !important; }
   .cbrand-btn.active.madeira { background: #7d6608; border-color: #7d6608 !important; }
+
+  /* CHANGE COLOR MODAL */
+  .cc-brand-tabs {
+    display: flex;
+    gap: 0;
+    padding: 12px 24px 0;
+    border-bottom: 1px solid var(--linen);
+    flex-shrink: 0;
+  }
+  .cc-brand-tab {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    color: var(--warm-gray);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    margin-bottom: -1px;
+  }
+  .cc-brand-tab:hover { color: var(--charcoal); }
+  .cc-brand-tab.active { color: var(--thread-red); border-bottom-color: var(--thread-red); font-weight: 500; }
+  .cc-brand-tab.active.dmc    { color: #8b2635; border-bottom-color: #8b2635; }
+  .cc-brand-tab.active.anchor { color: #1a5276; border-bottom-color: #1a5276; }
+  .cc-brand-tab.active.cosmo  { color: #196f3d; border-bottom-color: #196f3d; }
+  .cc-brand-tab.active.madeira{ color: #7d6608; border-bottom-color: #7d6608; }
+
+  .cc-current-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    background: var(--linen);
+    border-bottom: 1px solid var(--grid-line);
+    flex-shrink: 0;
+    font-size: 13px;
+    color: var(--warm-gray);
+  }
+  .cc-preview-swatch {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(0,0,0,0.15);
+    flex-shrink: 0;
+  }
+  .cc-preview-arrow {
+    font-size: 18px;
+    color: var(--grid-line);
+  }
+  .cc-preview-new {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cc-preview-new-swatch {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--gold);
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .cc-preview-new-label {
+    font-size: 13px;
+    color: var(--charcoal);
+  }
+  .cc-preview-new-label strong { display: block; font-size: 14px; }
+
+  /* Change color button in table */
+  .btn-change-color {
+    margin-top: 5px;
+    padding: 2px 8px;
+    border: 1px dashed var(--grid-line);
+    background: transparent;
+    font-family: 'Crimson Pro', serif;
+    font-size: 10px;
+    color: var(--warm-gray);
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .btn-change-color:hover { border-color: var(--gold); color: var(--gold); border-style: solid; }
   .td-stitches { color: var(--warm-gray); font-size: 12px; text-align: right; }
   .td-needed { text-align: center; font-weight: 700; color: var(--charcoal); }
 
@@ -1156,6 +1240,67 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- CHANGE COLOR MODAL -->
+<div class="modal-overlay" id="changeColorModal" onclick="closeCCOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Change <span>Color</span></div>
+      <button class="modal-close" onclick="closeChangeColor()">&times;</button>
+    </div>
+
+    <!-- Current → New preview -->
+    <div class="cc-current-preview" id="ccPreview">
+      <div>
+        <div style="font-size:11px;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Current</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="cc-preview-swatch" id="ccCurrentSwatch"></div>
+          <div>
+            <strong id="ccCurrentCode" style="font-size:13px;color:var(--charcoal)"></strong>
+            <div id="ccCurrentName" style="font-size:11px;color:var(--warm-gray)"></div>
+          </div>
+        </div>
+      </div>
+      <div class="cc-preview-arrow">→</div>
+      <div>
+        <div style="font-size:11px;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">New</div>
+        <div class="cc-preview-new">
+          <div class="cc-preview-new-swatch" id="ccNewSwatch"></div>
+          <div class="cc-preview-new-label">
+            <strong id="ccNewCode">—</strong>
+            <span id="ccNewName" style="font-size:11px;color:var(--warm-gray)"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Brand tabs -->
+    <div class="cc-brand-tabs">
+      <button class="cc-brand-tab dmc active" onclick="setCCBrand('dmc')">DMC</button>
+      <button class="cc-brand-tab anchor" onclick="setCCBrand('anchor')">Anchor</button>
+      <button class="cc-brand-tab cosmo" onclick="setCCBrand('cosmo')">Cosmo</button>
+      <button class="cc-brand-tab madeira" onclick="setCCBrand('madeira')">Madeira</button>
+    </div>
+
+    <!-- Search -->
+    <div class="modal-search-bar">
+      <input type="text" id="ccSearch" placeholder="Search by code or name…" oninput="renderCCChips()">
+      <span class="modal-stat" id="ccCount"></span>
+    </div>
+
+    <!-- Color grid -->
+    <div class="modal-color-list" id="ccChipGrid"></div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <span style="font-size:13px;color:var(--warm-gray)" id="ccFooterHint">Select a color to preview</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn-tiny" onclick="closeChangeColor()">Cancel</button>
+        <button class="btn-confirm" id="ccApplyBtn" onclick="applyColorChange()" disabled>Apply</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -3210,7 +3355,7 @@ function renderShoppingTable() {
     const brandBtns = brands.map(b => {
       const isActive = b === effectiveBrand;
       return `<button class="cbrand-btn ${b} ${isActive ? 'active' : ''}"
-        onclick="setColorBrand(${dmcIdx},'${b}')">${b.toUpperCase()}</button>`;
+        data-brand-idx="${dmcIdx}" data-brand-val="${b}">${b.toUpperCase()}</button>`;
     }).join('');
 
     const rowHTML = `
@@ -3221,6 +3366,7 @@ function renderShoppingTable() {
             <div class="td-code">${effectiveBrand.toUpperCase()} ${effectiveEntry.code}</div>
             <div class="td-name">${effectiveEntry.name}</div>
             <div class="color-brand-row">${brandBtns}</div>
+            <button class="btn-change-color" data-change-idx="${dmcIdx}">✎ change color</button>
           </div>
         </div>
       </td>
@@ -3228,9 +3374,9 @@ function renderShoppingTable() {
       <td class="td-needed">${needed}</td>
       <td>
         <div class="stock-stepper">
-          <button class="step-btn" onclick="changeStock(${dmcIdx}, -1)">−</button>
+          <button class="step-btn" data-stock-idx="${dmcIdx}" data-stock-delta="-1">−</button>
           <span class="step-val" id="stock-${dmcIdx}">${stock}</span>
-          <button class="step-btn" onclick="changeStock(${dmcIdx}, 1)">+</button>
+          <button class="step-btn" data-stock-idx="${dmcIdx}" data-stock-delta="1">+</button>
         </div>
       </td>
       <td class="td-need">
@@ -3264,6 +3410,9 @@ function renderShoppingTable() {
 
   // Buy tab badge
   document.getElementById('tabBuy').textContent = `${t('tab_buy')} (${buyCount})`;
+
+  // Re-init delegation after re-render (tables were cleared)
+  initTableDelegation();
 
   // Buy empty state
   document.getElementById('buyEmpty').style.display = buyCount === 0 ? '' : 'none';
@@ -3857,6 +4006,174 @@ function setLang(lang) {
 
   // Re-render shopping table if pattern exists (skein word changes)
   if (currentColors) renderShoppingTable();
+}
+
+// ============================================================
+// EVENT DELEGATION for shopping table buttons
+// (needed because rows are injected via innerHTML)
+// ============================================================
+function initTableDelegation() {
+  ['skeinTable','buyTable'].forEach(tableId => {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    table.addEventListener('click', function(e) {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+
+      // Change color button
+      if (btn.classList.contains('btn-change-color')) {
+        const idx = Number(btn.dataset.changeIdx);
+        openChangeColor(idx);
+        return;
+      }
+      // Brand selector buttons
+      if (btn.classList.contains('cbrand-btn')) {
+        const idx = Number(btn.dataset.brandIdx);
+        const brand = btn.dataset.brandVal;
+        setColorBrand(idx, brand);
+        return;
+      }
+      // Stock stepper
+      if (btn.classList.contains('step-btn')) {
+        const idx = Number(btn.dataset.stockIdx);
+        const delta = Number(btn.dataset.stockDelta);
+        changeStock(idx, delta);
+        return;
+      }
+    });
+  });
+}
+
+// ============================================================
+// CHANGE COLOR MODAL
+// ============================================================
+let ccDmcIdx = null;       // which base color we're replacing
+let ccBrand = 'dmc';       // currently browsed brand in the modal
+let ccSelectedIdx = null;  // selected catalog index in ccBrand
+let ccSelectedEntry = null;
+
+function openChangeColor(dmcIdx) {
+  ccDmcIdx = dmcIdx;
+  ccBrand = getEffectiveBrand(dmcIdx);
+  ccSelectedIdx = null;
+  ccSelectedEntry = null;
+
+  // Show current color info
+  const cur = getEffectiveEntry(dmcIdx);
+  const curBrand = getEffectiveBrand(dmcIdx);
+  document.getElementById('ccCurrentSwatch').style.background = cur.hex;
+  document.getElementById('ccCurrentCode').textContent = curBrand.toUpperCase() + ' ' + cur.code;
+  document.getElementById('ccCurrentName').textContent = cur.name;
+
+  // Reset new preview
+  document.getElementById('ccNewSwatch').style.background = 'transparent';
+  document.getElementById('ccNewCode').textContent = '—';
+  document.getElementById('ccNewName').textContent = '';
+  document.getElementById('ccApplyBtn').disabled = true;
+  document.getElementById('ccFooterHint').textContent = 'Select a color to preview';
+
+  // Set active brand tab
+  document.querySelectorAll('.cc-brand-tab').forEach(t => {
+    t.classList.toggle('active', t.classList.contains(ccBrand));
+  });
+
+  document.getElementById('ccSearch').value = '';
+  document.getElementById('changeColorModal').classList.add('open');
+  renderCCChips();
+}
+
+function closeChangeColor() {
+  document.getElementById('changeColorModal').classList.remove('open');
+  ccDmcIdx = null;
+}
+
+function closeCCOnOverlay(e) {
+  if (e.target.id === 'changeColorModal') closeChangeColor();
+}
+
+function setCCBrand(brand) {
+  ccBrand = brand;
+  ccSelectedIdx = null;
+  ccSelectedEntry = null;
+  document.getElementById('ccApplyBtn').disabled = true;
+  document.getElementById('ccNewCode').textContent = '—';
+  document.getElementById('ccNewName').textContent = '';
+  document.getElementById('ccNewSwatch').style.background = 'transparent';
+  document.getElementById('ccSearch').value = '';
+  document.querySelectorAll('.cc-brand-tab').forEach(t => {
+    t.classList.toggle('active', t.classList.contains(brand));
+  });
+  renderCCChips();
+}
+
+function renderCCChips() {
+  const query = document.getElementById('ccSearch').value.toLowerCase().trim();
+  const grid = document.getElementById('ccChipGrid');
+  const catalog = BRAND_CATALOG[ccBrand];
+
+  const filtered = catalog.filter(c =>
+    !query || c.code.toLowerCase().includes(query) || c.name.toLowerCase().includes(query)
+  );
+
+  document.getElementById('ccCount').textContent = filtered.length + ' colors';
+
+  grid.innerHTML = '';
+  filtered.forEach(c => {
+    const idx = catalog.indexOf(c);
+    const isSelected = idx === ccSelectedIdx;
+    const chip = document.createElement('div');
+    chip.className = 'color-chip' + (isSelected ? ' selected' : '');
+    chip.dataset.idx = idx;
+    chip.onclick = () => selectCCColor(idx, c);
+
+    const [r,g,b] = hexToRgb(c.hex);
+    const luma = 0.299*r + 0.587*g + 0.114*b;
+    const tc = luma > 128 ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)';
+
+    chip.innerHTML = `
+      <div class="chip-swatch" style="background:${c.hex}"></div>
+      <div class="chip-info">
+        <div class="chip-code">${ccBrand.toUpperCase()} ${c.code}</div>
+        <div class="chip-name">${c.name}</div>
+      </div>
+      <div class="chip-check">${isSelected ? '✓' : ''}</div>`;
+    grid.appendChild(chip);
+  });
+}
+
+function selectCCColor(idx, entry) {
+  ccSelectedIdx = idx;
+  ccSelectedEntry = entry;
+
+  // Update preview
+  document.getElementById('ccNewSwatch').style.background = entry.hex;
+  document.getElementById('ccNewCode').textContent = ccBrand.toUpperCase() + ' ' + entry.code;
+  document.getElementById('ccNewName').textContent = entry.name;
+  document.getElementById('ccApplyBtn').disabled = false;
+  document.getElementById('ccFooterHint').textContent = 'Click Apply to use this color';
+
+  // Update chip selection state
+  document.querySelectorAll('#ccChipGrid .color-chip').forEach(chip => {
+    const selected = Number(chip.dataset.idx) === idx;
+    chip.classList.toggle('selected', selected);
+    chip.querySelector('.chip-check').textContent = selected ? '✓' : '';
+  });
+}
+
+function applyColorChange() {
+  if (ccDmcIdx === null || ccSelectedIdx === null) return;
+
+  // Store override with the explicitly chosen entry
+  colorBrandOverride[ccDmcIdx] = {
+    brand: ccBrand,
+    idx: ccSelectedIdx,
+    entry: ccSelectedEntry
+  };
+
+  closeChangeColor();
+  renderShoppingTable();
+  if (currentPattern) drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+  showToast(`${ccBrand.toUpperCase()} ${ccSelectedEntry.code} applied`);
 }
 
 // ============================================================
