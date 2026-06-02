@@ -791,6 +791,119 @@
   .cbrand-btn.active.cosmo   { background: #196f3d; border-color: #196f3d !important; }
   .cbrand-btn.active.madeira { background: #7d6608; border-color: #7d6608 !important; }
 
+  /* MIYUKI OPTIONS PANEL */
+  .miyuki-options {
+    display: none;
+    margin-top: 14px;
+  }
+  .miyuki-options.visible { display: block; }
+
+  .miyuki-technique-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .tech-btn {
+    padding: 10px 6px 8px;
+    border: 1.5px solid var(--grid-line);
+    background: var(--cream);
+    cursor: pointer;
+    font-family: 'Crimson Pro', serif;
+    font-size: 13px;
+    color: var(--charcoal);
+    text-align: center;
+    transition: all 0.15s;
+    line-height: 1.3;
+  }
+  .tech-btn:hover { border-color: var(--warm-gray); }
+  .tech-btn.active { border-color: #196f3d; background: #f0faf4; color: #196f3d; font-weight: 500; }
+  .tech-btn .tech-icon { font-size: 18px; display: block; margin-bottom: 3px; }
+  .tech-btn .tech-sub { font-size: 10px; color: var(--warm-gray); display: block; }
+  .tech-btn.active .tech-sub { color: #196f3d; }
+
+  .shape-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .shape-btn {
+    padding: 8px 6px;
+    border: 1.5px solid var(--grid-line);
+    background: var(--cream);
+    cursor: pointer;
+    font-family: 'Crimson Pro', serif;
+    font-size: 12px;
+    color: var(--charcoal);
+    text-align: center;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .shape-btn:hover { border-color: var(--warm-gray); }
+  .shape-btn.active { border-color: #196f3d; background: #f0faf4; color: #196f3d; font-weight: 500; }
+  .shape-btn .shape-icon { font-size: 16px; }
+
+  .size-input-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .size-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .size-field label {
+    font-size: 11px;
+    color: var(--warm-gray);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .size-field input[type="number"] {
+    width: 100%;
+    padding: 7px 8px;
+    border: 1.5px solid var(--grid-line);
+    background: var(--cream);
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    color: var(--charcoal);
+    outline: none;
+    text-align: center;
+  }
+  .size-field input:focus { border-color: #196f3d; }
+  .size-unit-toggle {
+    display: flex;
+    gap: 0;
+    margin-bottom: 10px;
+  }
+  .unit-btn {
+    flex: 1;
+    padding: 6px;
+    border: 1.5px solid var(--grid-line);
+    background: var(--cream);
+    font-family: 'Crimson Pro', serif;
+    font-size: 13px;
+    color: var(--warm-gray);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .unit-btn:first-child { border-radius: 3px 0 0 3px; border-right: none; }
+  .unit-btn:last-child  { border-radius: 0 3px 3px 0; }
+  .unit-btn.active { background: #196f3d; color: white; border-color: #196f3d; font-weight: 500; }
+
+  .size-hint {
+    font-size: 11px;
+    color: var(--warm-gray);
+    font-style: italic;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
   /* CHANGE COLOR MODAL */
   .cc-brand-tabs {
     display: flex;
@@ -1204,9 +1317,75 @@
           </button>
         </div>
         <!-- Miyuki brand (shown when Miyuki format selected) -->
-        <div id="miyukiBrandInfo" style="display:none;padding:10px 12px;background:var(--linen);border:1px solid var(--grid-line);font-size:13px;color:var(--warm-gray)">
-          🪡 <strong style="color:var(--charcoal)">Miyuki Delica DB-11</strong><br>
-          <span style="font-size:11px">300 colors · 11/0 size · ~1100 beads/tube</span>
+        <div id="miyukiBrandInfo" style="display:none">
+          <div style="padding:8px 10px;background:var(--linen);border:1px solid var(--grid-line);font-size:13px;color:var(--warm-gray);margin-bottom:12px">
+            🪡 <strong style="color:var(--charcoal)">Miyuki Delica DB-11</strong> &nbsp;·&nbsp;
+            <span style="font-size:11px">300 colors · ~1100 beads/tube</span>
+          </div>
+
+          <!-- Miyuki Options -->
+          <div class="miyuki-options visible" id="miyukiOptions">
+
+            <!-- Technique -->
+            <div class="section-label" style="margin-bottom:10px">Technique</div>
+            <div class="miyuki-technique-grid">
+              <button class="tech-btn active" id="techLoom" onclick="setMiyukiTechnique('loom')">
+                <span class="tech-icon">⊞</span>
+                Loom
+                <span class="tech-sub">Grid · bracelets</span>
+              </button>
+              <button class="tech-btn" id="techBrick" onclick="setMiyukiTechnique('brick')">
+                <span class="tech-icon">⧉</span>
+                Brick
+                <span class="tech-sub">Offset · earrings</span>
+              </button>
+              <button class="tech-btn" id="techPeyote" onclick="setMiyukiTechnique('peyote')">
+                <span class="tech-icon">⬡</span>
+                Peyote
+                <span class="tech-sub">Staggered · tubes</span>
+              </button>
+            </div>
+
+            <!-- Shape -->
+            <div class="section-label" style="margin-bottom:10px">Shape</div>
+            <div class="shape-grid">
+              <button class="shape-btn active" id="shapeFree" onclick="setMiyukiShape('free')">
+                <span class="shape-icon">⬜</span>
+                Free
+              </button>
+              <button class="shape-btn" id="shapeEarring" onclick="setMiyukiShape('earring')">
+                <span class="shape-icon">🔻</span>
+                Earring
+              </button>
+              <button class="shape-btn" id="shapeBracelet" onclick="setMiyukiShape('bracelet')">
+                <span class="shape-icon">◯</span>
+                Bracelet
+              </button>
+              <button class="shape-btn" id="shapeNecklace" onclick="setMiyukiShape('necklace')">
+                <span class="shape-icon">⌒</span>
+                Necklace
+              </button>
+            </div>
+
+            <!-- Size -->
+            <div class="section-label" style="margin-bottom:8px">Size</div>
+            <div class="size-unit-toggle">
+              <button class="unit-btn active" id="unitBeads" onclick="setSizeUnit('beads')">beads</button>
+              <button class="unit-btn" id="unitCm" onclick="setSizeUnit('cm')">cm</button>
+            </div>
+            <div class="size-input-group">
+              <div class="size-field">
+                <label id="sizeWLabel">Width</label>
+                <input type="number" id="miyukiW" value="20" min="4" max="120" oninput="onMiyukiSizeChange()">
+              </div>
+              <div class="size-field">
+                <label id="sizeHLabel">Height</label>
+                <input type="number" id="miyukiH" value="30" min="4" max="200" oninput="onMiyukiSizeChange()">
+              </div>
+            </div>
+            <div class="size-hint" id="miyukiSizeHint">20 × 30 beads · ~3.2 × 5.7 cm</div>
+
+          </div>
         </div>
       </div>
 
@@ -3308,6 +3487,8 @@ function selectFormat(fmt) {
     // Switch to Miyuki catalog
     currentBrand = 'miyuki';
     document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
+    // Init Miyuki size hint
+    setTimeout(updateMiyukiSizeHint, 50);
   } else {
     // Restore previous thread brand (default DMC)
     currentBrand = 'dmc';
@@ -3360,7 +3541,15 @@ function showLockedMsg() {
 async function generatePattern() {
   if (!sourceImage) return;
 
-  const W = parseInt(document.getElementById('widthSlider').value);
+  // For Miyuki, use the bead dimensions from the options panel
+  let W, H_override = null;
+  if (currentFormat === 'miyuki') {
+    const dims = getMiyukiPatternDimensions();
+    W = dims.W;
+    H_override = dims.H;
+  } else {
+    W = parseInt(document.getElementById('widthSlider').value);
+  }
   const numColors = parseInt(document.getElementById('colorsSlider').value);
   const antiStrength = parseInt(document.getElementById('antiSlider').value);
 
@@ -3368,7 +3557,7 @@ async function generatePattern() {
 
   // Scale image to pattern size
   const ratio = sourceImage.height / sourceImage.width;
-  const H = Math.round(W * ratio);
+  const H = H_override !== null ? H_override : Math.round(W * ratio);
 
   // Draw at 2x for portrait preprocessing, then downscale for quality
   const preW = currentMode === 'portrait' ? Math.min(W * 3, 900) : W;
@@ -3511,6 +3700,13 @@ async function generatePattern() {
 // ============================================================
 function drawPattern(grid, W, H, colorCounts) {
   const canvas = document.getElementById('patternCanvas');
+
+  // Miyuki uses dedicated draw engine
+  if (currentFormat === 'miyuki') {
+    drawMiyukiPattern(canvas, grid, W, H, colorCounts);
+    return;
+  }
+
   const geo = getGeometry();
   const cellSize = zoom;
   const cellW = cellSize;
@@ -4871,12 +5067,263 @@ function initTableDelegation() {
 }
 
 // ============================================================
+// MIYUKI TECHNIQUE & SHAPE SYSTEM
+// ============================================================
+
+// DB-11 bead dimensions (mm)
+const DB11_W_MM = 1.6;  // bead width
+const DB11_H_MM = 1.9;  // bead height
+
+let miyukiTechnique = 'loom';   // 'loom' | 'brick' | 'peyote'
+let miyukiShape = 'free';       // 'free' | 'earring' | 'bracelet' | 'necklace'
+let miyukiSizeUnit = 'beads';   // 'beads' | 'cm'
+
+// Shape presets (in beads)
+const SHAPE_PRESETS = {
+  free:      { w: 20,  h: 30  },
+  earring:   { w: 15,  h: 25  },  // triangle base 15, height 25
+  bracelet:  { w: 150, h: 8   },  // ~24cm long, 8 beads wide (typical wrist)
+  necklace:  { w: 200, h: 5   },  // long narrow strip
+};
+
+function setMiyukiTechnique(tech) {
+  miyukiTechnique = tech;
+  ['loom','brick','peyote'].forEach(t => {
+    document.getElementById('tech' + t.charAt(0).toUpperCase() + t.slice(1))
+      .classList.toggle('active', t === tech);
+  });
+  updateMiyukiSizeHint();
+  if (currentPattern && currentFormat === 'miyuki') {
+    drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+  }
+}
+
+function setMiyukiShape(shape) {
+  miyukiShape = shape;
+  ['free','earring','bracelet','necklace'].forEach(s => {
+    document.getElementById('shape' + s.charAt(0).toUpperCase() + s.slice(1))
+      .classList.toggle('active', s === shape);
+  });
+  // Apply preset dimensions
+  const preset = SHAPE_PRESETS[shape];
+  if (miyukiSizeUnit === 'beads') {
+    document.getElementById('miyukiW').value = preset.w;
+    document.getElementById('miyukiH').value = preset.h;
+  } else {
+    document.getElementById('miyukiW').value = (preset.w * DB11_W_MM / 10).toFixed(1);
+    document.getElementById('miyukiH').value = (preset.h * DB11_H_MM / 10).toFixed(1);
+  }
+  updateMiyukiSizeHint();
+}
+
+function setSizeUnit(unit) {
+  const oldUnit = miyukiSizeUnit;
+  miyukiSizeUnit = unit;
+  document.getElementById('unitBeads').classList.toggle('active', unit === 'beads');
+  document.getElementById('unitCm').classList.toggle('active', unit === 'cm');
+
+  // Convert current values
+  const wEl = document.getElementById('miyukiW');
+  const hEl = document.getElementById('miyukiH');
+  if (oldUnit === 'beads' && unit === 'cm') {
+    wEl.value = (parseFloat(wEl.value) * DB11_W_MM / 10).toFixed(1);
+    hEl.value = (parseFloat(hEl.value) * DB11_H_MM / 10).toFixed(1);
+    wEl.step = '0.1'; hEl.step = '0.1';
+    wEl.min = '0.5'; hEl.min = '0.5';
+    document.getElementById('sizeWLabel').textContent = 'Width (cm)';
+    document.getElementById('sizeHLabel').textContent = 'Height (cm)';
+  } else if (oldUnit === 'cm' && unit === 'beads') {
+    wEl.value = Math.round(parseFloat(wEl.value) * 10 / DB11_W_MM);
+    hEl.value = Math.round(parseFloat(hEl.value) * 10 / DB11_H_MM);
+    wEl.step = '1'; hEl.step = '1';
+    wEl.min = '4'; hEl.min = '4';
+    document.getElementById('sizeWLabel').textContent = 'Width';
+    document.getElementById('sizeHLabel').textContent = 'Height';
+  }
+  updateMiyukiSizeHint();
+}
+
+function getMiyukiBeadDimensions() {
+  let wBeads, hBeads;
+  if (miyukiSizeUnit === 'beads') {
+    wBeads = parseInt(document.getElementById('miyukiW').value) || 20;
+    hBeads = parseInt(document.getElementById('miyukiH').value) || 30;
+  } else {
+    const wCm = parseFloat(document.getElementById('miyukiW').value) || 3.0;
+    const hCm = parseFloat(document.getElementById('miyukiH').value) || 5.0;
+    wBeads = Math.max(4, Math.round(wCm * 10 / DB11_W_MM));
+    hBeads = Math.max(4, Math.round(hCm * 10 / DB11_H_MM));
+  }
+  return { w: wBeads, h: hBeads };
+}
+
+function onMiyukiSizeChange() {
+  updateMiyukiSizeHint();
+}
+
+function updateMiyukiSizeHint() {
+  const { w, h } = getMiyukiBeadDimensions();
+  const wCm = (w * DB11_W_MM / 10).toFixed(1);
+  const hCm = (h * DB11_H_MM / 10).toFixed(1);
+  const techLabel = { loom: 'Loom', brick: 'Brick Stitch', peyote: 'Peyote' }[miyukiTechnique];
+  document.getElementById('miyukiSizeHint').textContent =
+    `${w} × ${h} beads · ~${wCm} × ${hCm} cm · ${techLabel}`;
+}
+
+// Override width slider for Miyuki — use miyukiW/H instead
+function getMiyukiPatternDimensions() {
+  const { w, h } = getMiyukiBeadDimensions();
+  // Brick stitch: add half-bead column for offset rendering
+  // Peyote: add half-bead row for offset
+  return { W: w, H: h };
+}
+
+// ============================================================
+// MIYUKI DRAW ENGINE
+// Handles Loom (grid), Brick Stitch (row offset), Peyote (col offset)
+// ============================================================
+function drawMiyukiPattern(canvas, grid, W, H, colorCounts) {
+  const ctx = canvas.getContext('2d');
+  const bW = zoom;           // bead width in px
+  const bH = Math.round(zoom * 1.5);  // bead height in px (DB-11 ratio)
+  const halfW = bW / 2;
+  const halfH = bH / 2;
+
+  // Extra space for brick/peyote offset
+  const isBrick  = miyukiTechnique === 'brick';
+  const isPeyote = miyukiTechnique === 'peyote';
+  const extraX = (isBrick) ? halfW : 0;
+  const extraY = (isPeyote) ? halfH : 0;
+
+  canvas.width  = W * bW + extraX + 1;
+  canvas.height = H * bH + extraY + 1;
+
+  // Background
+  ctx.fillStyle = '#f5f0e8';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const sortedColors = Object.keys(colorCounts).map(Number);
+
+  // Earring shape mask — triangular for brick stitch
+  function isInShape(col, row) {
+    if (miyukiShape === 'free') return true;
+    if (miyukiShape === 'earring') {
+      // Triangle: full width at bottom, narrows to 1 at top
+      const progress = row / H; // 0=top, 1=bottom
+      const halfW2 = Math.floor(W / 2);
+      const allowedHalf = Math.round(progress * halfW2);
+      const center = Math.floor(W / 2);
+      return Math.abs(col - center) <= allowedHalf;
+    }
+    return true; // bracelet, necklace = free rectangle
+  }
+
+  for (let row = 0; row < H; row++) {
+    for (let col = 0; col < W; col++) {
+      // Offset calculation
+      let ox = 0, oy = 0;
+      if (isBrick)  oy = (col % 2 === 0) ? halfH : 0;
+      if (isPeyote) ox = (row % 2 === 0) ? 0 : halfW;
+
+      const cx = col * bW + ox;
+      const cy = row * bH + oy;
+
+      // Skip beads outside shape mask
+      if (!isInShape(col, row)) continue;
+
+      const key = `${col},${row}`;
+      const baseIdx = grid[row * W + col];
+      const dmcIdx = paintOverride[key] !== undefined ? paintOverride[key] : baseIdx;
+      const entry = getEffectiveEntry(dmcIdx);
+      const [r,g,b] = hexToRgb(entry.hex);
+
+      // Draw bead oval
+      ctx.fillStyle = entry.hex;
+      ctx.beginPath();
+      ctx.ellipse(cx + bW/2, cy + bH/2, bW*0.44, bH*0.44, 0, 0, Math.PI*2);
+      ctx.fill();
+
+      // Bead highlight (top-left glint)
+      if (zoom >= 6) {
+        const glint = ctx.createRadialGradient(
+          cx + bW*0.35, cy + bH*0.32, 0,
+          cx + bW/2, cy + bH/2, bW*0.44
+        );
+        glint.addColorStop(0, 'rgba(255,255,255,0.35)');
+        glint.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = glint;
+        ctx.beginPath();
+        ctx.ellipse(cx + bW/2, cy + bH/2, bW*0.44, bH*0.44, 0, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      // Bead outline
+      const luma = 0.299*r + 0.587*g + 0.114*b;
+      ctx.strokeStyle = luma > 200 ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.35)';
+      ctx.lineWidth = zoom >= 6 ? 0.8 : 0.4;
+      ctx.beginPath();
+      ctx.ellipse(cx + bW/2, cy + bH/2, bW*0.44, bH*0.44, 0, 0, Math.PI*2);
+      ctx.stroke();
+
+      // Symbol at high zoom
+      if (zoom >= 12) {
+        const colorPos = sortedColors.indexOf(dmcIdx) % SYMBOLS.length;
+        ctx.fillStyle = luma > 128 ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)';
+        ctx.font = `${Math.floor(bW * 0.5)}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(SYMBOLS[colorPos], cx + bW/2, cy + bH/2);
+      }
+
+      // Progress overlay
+      if (progressMode && doneStitches.has(key)) {
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.beginPath();
+        ctx.ellipse(cx + bW/2, cy + bH/2, bW*0.44, bH*0.44, 0, 0, Math.PI*2);
+        ctx.fill();
+        if (zoom >= 6) {
+          ctx.strokeStyle = 'rgba(40,150,60,0.9)';
+          ctx.lineWidth = Math.max(1, zoom * 0.12);
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          const pad = bW * 0.25;
+          ctx.moveTo(cx + pad, cy + bH*0.52);
+          ctx.lineTo(cx + bW*0.42, cy + bH - pad);
+          ctx.lineTo(cx + bW - pad, cy + pad);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  // 10-bead grid markers (dots at intersections every 10)
+  if (zoom >= 4) {
+    ctx.fillStyle = 'rgba(100,80,60,0.5)';
+    for (let row = 0; row <= H; row += 10) {
+      for (let col = 0; col <= W; col += 10) {
+        let ox = 0, oy = 0;
+        if (isBrick)  oy = (col % 2 === 0) ? halfH : 0;
+        if (isPeyote) ox = (row % 2 === 0) ? 0 : halfW;
+        ctx.beginPath();
+        ctx.arc(col * bW + ox, row * bH + oy, 1.5, 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+  }
+}
+
+// ============================================================
 // BLANK CANVAS
 // ============================================================
 function startBlankCanvas() {
-  const W = parseInt(document.getElementById('widthSlider').value);
-  // Use a square-ish canvas — ask user for height or default to W
-  const H = Math.round(W * 1.2); // default portrait ratio
+  let W, H;
+  if (currentFormat === 'miyuki') {
+    const dims = getMiyukiPatternDimensions();
+    W = dims.W; H = dims.H;
+  } else {
+    W = parseInt(document.getElementById('widthSlider').value);
+    H = Math.round(W * 1.2);
+  }
 
   // Find the White/Ecru index in current brand
   const catalog = BRAND_CATALOG[currentBrand];
@@ -5043,10 +5490,11 @@ function getCellFromEvent(e, canvas) {
   const scaleY = canvas.height / rect.height;
   const canvasX = (e.clientX - rect.left) * scaleX;
   const canvasY = (e.clientY - rect.top) * scaleY;
-  const cH2 = Math.round(zoom * getGeometry().cellH);
+  const bH = Math.round(zoom * 1.5);
+  const cellH = currentFormat === 'miyuki' ? bH : Math.round(zoom * getGeometry().cellH);
   return {
     x: Math.floor(canvasX / zoom),
-    y: Math.floor(canvasY / cH2)
+    y: Math.floor(canvasY / cellH)
   };
 }
 
