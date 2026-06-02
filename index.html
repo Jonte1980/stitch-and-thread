@@ -619,6 +619,37 @@
   .td-color { display: flex; align-items: center; gap: 8px; }
   .td-code { font-weight: 500; color: var(--charcoal); }
   .td-name { font-size: 11px; color: var(--warm-gray); }
+
+  /* PER-COLOR BRAND SELECTOR */
+  .color-brand-row {
+    display: flex;
+    gap: 3px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+  }
+  .cbrand-btn {
+    padding: 2px 6px;
+    border: 1px solid var(--grid-line);
+    background: transparent;
+    font-family: 'Crimson Pro', serif;
+    font-size: 10px;
+    color: var(--warm-gray);
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.12s;
+    line-height: 1.4;
+  }
+  .cbrand-btn:hover { border-color: var(--charcoal); color: var(--charcoal); }
+  .cbrand-btn.active {
+    background: var(--charcoal);
+    border-color: var(--charcoal);
+    color: white;
+    font-weight: 500;
+  }
+  .cbrand-btn.active.dmc  { background: #8b2635; border-color: #8b2635; }
+  .cbrand-btn.active.anchor { background: #1a5276; border-color: #1a5276; }
+  .cbrand-btn.active.cosmo  { background: #196f3d; border-color: #196f3d; }
+  .cbrand-btn.active.madeira { background: #7d6608; border-color: #7d6608; }
   .td-stitches { color: var(--warm-gray); font-size: 12px; text-align: right; }
   .td-needed { text-align: center; font-weight: 700; color: var(--charcoal); }
 
@@ -2746,6 +2777,9 @@ async function generatePattern() {
     finalColors[c] = (finalColors[c]||0) + 1;
   }
 
+  // Clear per-color brand overrides for new pattern
+  Object.keys(colorBrandOverride).forEach(k => delete colorBrandOverride[k]);
+
   // Reset progress for new pattern (different key = different pattern)
   const newKey = `${W}x${H}_${currentBrand}`;
   if (newKey !== progressPatternKey) {
@@ -2802,7 +2836,7 @@ function drawPattern(grid, W, H, colorCounts) {
   for (let y=0; y<H; y++) {
     for (let x=0; x<W; x++) {
       const dmcIdx = grid[y*W+x];
-      ctx.fillStyle = getBrandEntry(currentBrand, dmcIdx).hex;
+      ctx.fillStyle = getEffectiveEntry(dmcIdx).hex;
       ctx.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
     }
   }
@@ -2854,7 +2888,7 @@ function drawPattern(grid, W, H, colorCounts) {
         const dmcIdx = grid[y*W+x];
         const colorPos = sortedColors.indexOf(dmcIdx) % SYMBOLS.length;
         const sym = SYMBOLS[colorPos];
-        const [r,g,b] = hexToRgb(getBrandEntry(currentBrand, dmcIdx).hex);
+        const [r,g,b] = hexToRgb(getEffectiveEntry(dmcIdx).hex);
         const luma = 0.299*r + 0.587*g + 0.114*b;
         ctx.fillStyle = luma > 128 ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)';
         ctx.fillText(sym, x*cellSize + cellSize/2, y*cellSize + cellSize/2);
@@ -2870,7 +2904,7 @@ function drawPattern(grid, W, H, colorCounts) {
       const [cx, cy] = key.split(',').map(Number);
       if (cx >= W || cy >= H) continue;
       const dmcIdx = grid[cy*W+cx];
-      const [r,g,b] = hexToRgb(getBrandEntry(currentBrand, dmcIdx).hex);
+      const [r,g,b] = hexToRgb(getEffectiveEntry(dmcIdx).hex);
       // White dim overlay
       ctx.fillStyle = 'rgba(255,255,255,0.55)';
       ctx.fillRect(cx*cellSize, cy*cellSize, cellSize, cellSize);
@@ -3016,7 +3050,7 @@ function redrawCell(cellX, cellY) {
   const { grid, W } = currentPattern;
   const cs = zoom;
   const dmcIdx = grid[cellY * W + cellX];
-  const entry = getBrandEntry(currentBrand, dmcIdx);
+  const entry = getEffectiveEntry(dmcIdx);
   const [r,g,b] = hexToRgb(entry.hex);
 
   // Base color
@@ -3089,6 +3123,38 @@ function calcSkeinsNeeded(stitchCount) {
 
 let shoppingData = []; // [{dmcIdx, dmc, count, needed, sym}]
 
+// Per-color brand overrides: dmcIdx (base catalog index) -> {brand, idx, entry}
+// When set, this color is shown/exported using the override brand instead of currentBrand
+const colorBrandOverride = {};
+
+// Get the effective entry for a color (override or global brand)
+function getEffectiveEntry(dmcIdx) {
+  if (colorBrandOverride[dmcIdx]) return colorBrandOverride[dmcIdx].entry;
+  return getBrandEntry(currentBrand, dmcIdx);
+}
+
+// Get effective brand label for a color
+function getEffectiveBrand(dmcIdx) {
+  if (colorBrandOverride[dmcIdx]) return colorBrandOverride[dmcIdx].brand;
+  return currentBrand;
+}
+
+// Set brand for a specific color — finds closest match in that brand
+function setColorBrand(dmcIdx, brand) {
+  const baseEntry = getBrandEntry(currentBrand, dmcIdx);
+  const [r,g,b] = hexToRgb(baseEntry.hex);
+  if (brand === currentBrand) {
+    // Remove override — back to global brand
+    delete colorBrandOverride[dmcIdx];
+  } else {
+    const newIdx = findClosestInBrand(r, g, b, brand, null);
+    colorBrandOverride[dmcIdx] = { brand, idx: newIdx, entry: getBrandEntry(brand, newIdx) };
+  }
+  // Re-render shopping table and redraw pattern
+  renderShoppingTable();
+  if (currentPattern) drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+}
+
 function buildLegend(colorCounts) {
   const sorted = Object.entries(colorCounts).sort((a,b) => b[1]-a[1]);
   shoppingData = sorted.map(([idx, count], i) => {
@@ -3116,7 +3182,7 @@ function renderShoppingTable() {
   let totalNeeded = 0, totalOwned = 0, totalBuy = 0;
   let buyCount = 0;
 
-  shoppingData.forEach(({ dmcIdx, dmc, count, needed, sym }) => {
+  shoppingData.forEach(({ dmcIdx, count, needed, sym }) => {
     const stock = userStock[dmcIdx] || 0;
     const toBuy = Math.max(0, needed - stock);
     const complete = toBuy === 0;
@@ -3126,19 +3192,30 @@ function renderShoppingTable() {
     totalBuy += toBuy;
     if (toBuy > 0) buyCount++;
 
-    const [r,g,b] = hexToRgb(dmc.hex);
+    // Use effective entry (override or global)
+    const effectiveEntry = getEffectiveEntry(dmcIdx);
+    const effectiveBrand = getEffectiveBrand(dmcIdx);
+    const [r,g,b] = hexToRgb(effectiveEntry.hex);
     const luma = 0.299*r + 0.587*g + 0.114*b;
     const textColor = luma > 128 ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)';
-
     const badgeClass = toBuy === 0 ? 'zero' : stock > 0 ? 'partial' : '';
+
+    // Brand selector mini-buttons
+    const brands = ['dmc','anchor','cosmo','madeira'];
+    const brandBtns = brands.map(b => {
+      const isActive = b === effectiveBrand;
+      return `<button class="cbrand-btn ${b} ${isActive ? 'active' : ''}"
+        onclick="setColorBrand(${dmcIdx},'${b}')">${b.toUpperCase()}</button>`;
+    }).join('');
 
     const rowHTML = `
       <td>
         <div class="td-color">
-          <div class="swatch-sym" style="background:${dmc.hex};color:${textColor}">${sym}</div>
+          <div class="swatch-sym" style="background:${effectiveEntry.hex};color:${textColor}">${sym}</div>
           <div>
-            <div class="td-code">${currentBrand.toUpperCase()} ${dmc.code}</div>
-            <div class="td-name">${dmc.name}</div>
+            <div class="td-code">${effectiveBrand.toUpperCase()} ${effectiveEntry.code}</div>
+            <div class="td-name">${effectiveEntry.name}</div>
+            <div class="color-brand-row">${brandBtns}</div>
           </div>
         </div>
       </td>
@@ -3253,7 +3330,9 @@ function exportShoppingList() {
     const stock = userStock[dmcIdx] || 0;
     const toBuy = Math.max(0, needed - stock);
     if (toBuy > 0) {
-      lines.push(`${currentBrand.toUpperCase()} ${dmc.code.padEnd(8)} ${dmc.name.padEnd(30)} ${toBuy} ${toBuy>1 ? t('skein_plural') : t('skein_singular')}`);
+      const effEntry = getEffectiveEntry(dmcIdx);
+      const effBrand = getEffectiveBrand(dmcIdx);
+      lines.push(`${effBrand.toUpperCase()} ${effEntry.code.padEnd(8)} ${effEntry.name.padEnd(30)} ${toBuy} ${toBuy>1 ? t('skein_plural') : t('skein_singular')}`);
       totalBuy += toBuy;
     }
   });
@@ -4058,8 +4137,9 @@ async function exportPDF() {
 
   sortedColorEntries.forEach(([idx, count], i) => {
     const dmcIdx = Number(idx);
-    const dmc = getBrandEntry(currentBrand, dmcIdx);
+    const dmc = getEffectiveEntry(dmcIdx);
     const [r,g,b] = hexToRgb(dmc.hex);
+    const effBrandPDF = getEffectiveBrand(dmcIdx);
     const col = i % 3;
     const row = Math.floor(i / 3);
 
@@ -4086,7 +4166,7 @@ async function exportPDF() {
     doc.setTextColor(43, 36, 32);
     doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
-    doc.text(`${currentBrand.toUpperCase()} ${dmc.code}`, lx + swatchSize + 2, ly + 3.2);
+    doc.text(`${effBrandPDF.toUpperCase()} ${dmc.code}`, lx + swatchSize + 2, ly + 3.2);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6);
     doc.setTextColor(100, 90, 80);
