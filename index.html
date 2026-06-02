@@ -1144,7 +1144,7 @@
 
       <!-- Blank Canvas -->
       <button class="btn-blank-canvas" id="blankCanvasBtn" onclick="startBlankCanvas()">
-        + Start blank canvas
+        <span data-i18n="btn_blank">+ Start blank canvas</span>
       </button>
 
       <!-- Upload -->
@@ -1310,13 +1310,13 @@
       <div class="paint-toolbar" id="paintToolbar">
         <div class="paint-tool-group">
           <button class="paint-tool-btn active" id="toolBrush" onclick="setTool('brush')" title="Brush — paint with active color">
-            🖌 Brush
+            🖌 <span data-i18n="tool_brush">Brush</span>
           </button>
           <button class="paint-tool-btn eraser" id="toolEraser" onclick="setTool('eraser')" title="Eraser — restore original color">
-            ⌫ Eraser
+            ⌫ <span data-i18n="tool_eraser">Eraser</span>
           </button>
           <button class="paint-tool-btn eyedrop" id="toolEyedrop" onclick="setTool('eyedrop')" title="Eyedropper — pick color from canvas">
-            💧 Pick
+            💧 <span data-i18n="tool_eyedrop">Pick</span>
           </button>
         </div>
 
@@ -1324,11 +1324,11 @@
           <div class="active-color-swatch" id="activeColorSwatch" style="background:#888"></div>
           <div class="active-color-label">
             <span id="activeColorCode">—</span>
-            <small id="activeColorName">No color selected</small>
+            <small id="activeColorName" data-i18n="active_color_none">No color selected</small>
           </div>
         </div>
 
-        <button class="btn-undo" id="undoBtn" onclick="undoPaint()" disabled title="Undo last paint action">↩ Undo</button>
+        <button class="btn-undo" id="undoBtn" onclick="undoPaint()" disabled title="Undo last paint action"><span data-i18n="btn_undo">↩ Undo</span></button>
 
         <span class="paint-hint" id="paintHint">Click cells to paint · Drag to paint multiple</span>
       </div>
@@ -1337,15 +1337,15 @@
       <div class="progress-mode-bar" id="progressModeBar">
         <label class="progress-toggle" onclick="toggleProgressMode()">
           <div class="toggle-switch" id="progressToggle"></div>
-          <span>✅ Progress mode</span>
+          <span data-i18n="progress_mode">✅ Progress mode</span>
         </label>
         <div class="progress-stats" id="progressStats" style="display:none">
-          <div class="pstat done"><strong id="pDone">0</strong> done</div>
-          <div class="pstat"><strong id="pLeft">0</strong> left</div>
+          <div class="pstat done"><strong id="pDone">0</strong> <span data-i18n="pstat_done">done</span></div>
+          <div class="pstat"><strong id="pLeft">0</strong> <span data-i18n="pstat_left">left</span></div>
           <div class="pstat pct"><strong id="pPct">0%</strong></div>
           <div class="progress-track"><div class="progress-track-fill" id="pTrack"></div></div>
         </div>
-        <button class="btn-reset-progress" id="resetProgressBtn" onclick="resetProgress()" style="display:none">↺ Reset</button>
+        <button class="btn-reset-progress" id="resetProgressBtn" onclick="resetProgress()" style="display:none"><span data-i18n="btn_reset_progress">↺ Reset</span></button>
       </div>
 
       <div class="canvas-wrapper" id="canvasWrapper">
@@ -1423,7 +1423,7 @@
     <!-- Current → New preview -->
     <div class="cc-current-preview" id="ccPreview">
       <div>
-        <div style="font-size:11px;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Current</div>
+        <div style="font-size:11px;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em" data-i18n="cc_current">Current</div>
         <div style="display:flex;align-items:center;gap:8px">
           <div class="cc-preview-swatch" id="ccCurrentSwatch"></div>
           <div>
@@ -1434,7 +1434,7 @@
       </div>
       <div class="cc-preview-arrow">→</div>
       <div>
-        <div style="font-size:11px;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">New</div>
+        <div style="font-size:11px;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em" data-i18n="cc_new">New</div>
         <div class="cc-preview-new">
           <div class="cc-preview-new-swatch" id="ccNewSwatch"></div>
           <div class="cc-preview-new-label">
@@ -1455,7 +1455,7 @@
 
     <!-- Search -->
     <div class="modal-search-bar">
-      <input type="text" id="ccSearch" placeholder="Search by code or name…" oninput="renderCCChips()">
+      <input type="text" id="ccSearch" placeholder="Search by code or name…" data-i18n-placeholder="cc_search_placeholder" oninput="renderCCChips()">
       <span class="modal-stat" id="ccCount"></span>
     </div>
 
@@ -1464,10 +1464,10 @@
 
     <!-- Footer -->
     <div class="modal-footer">
-      <span style="font-size:13px;color:var(--warm-gray)" id="ccFooterHint">Select a color to preview</span>
+      <span style="font-size:13px;color:var(--warm-gray)" id="ccFooterHint" data-i18n="cc_footer_hint">Select a color to preview</span>
       <div style="display:flex;gap:8px">
-        <button class="btn-tiny" onclick="closeChangeColor()">Cancel</button>
-        <button class="btn-confirm" id="ccApplyBtn" onclick="applyColorChange()" disabled>Apply</button>
+        <button class="btn-tiny" onclick="closeChangeColor()" data-i18n="cc_cancel">Cancel</button>
+        <button class="btn-confirm" id="ccApplyBtn" onclick="applyColorChange()" disabled data-i18n="cc_apply">Apply</button>
       </div>
     </div>
   </div>
@@ -2988,7 +2988,7 @@ function selectBrand(btn) {
 
   // Auto-regenerate if a pattern already exists
   if (currentPattern && sourceImage) {
-    showToast(btn.textContent.trim().split('\n')[0] + ' — regenerating…');
+    showToast(btn.textContent.trim().split('\n')[0] + ' — ' + t('toast_regenerating'));
     generatePattern();
   }
 }
@@ -3299,7 +3299,7 @@ function toggleProgressMode() {
 }
 
 function resetProgress() {
-  if (!confirm('Reset all progress for this pattern?')) return;
+  if (!confirm(t('confirm_reset_progress'))) return;
   doneStitches.clear();
   saveProgress();
   updateProgressStats();
@@ -3951,6 +3951,39 @@ const TRANSLATIONS = {
     skein_plural: 'skeins',
     mode_label: '🐾 Portrait mode',
     img_loaded: 'Image loaded',
+    img_loaded: 'Image loaded',
+    // Paint editor
+    btn_blank: '+ Start blank canvas',
+    btn_edit: '✏️ Edit',
+    btn_editing: '✏️ Editing',
+    tool_brush: 'Brush',
+    tool_eraser: 'Eraser',
+    tool_eyedrop: 'Pick',
+    btn_undo: '↩ Undo',
+    active_color_none: 'No color selected',
+    paint_hint_brush: 'Click or drag to paint · Click color to change',
+    paint_hint_eraser: 'Click or drag to erase (restore original)',
+    paint_hint_eyedrop: 'Click a cell to pick its color',
+    toast_brush_set: 'Brush color set',
+    toast_select_color: 'Select a color first',
+    toast_blank: 'Blank canvas {w}×{h} — start painting!',
+    blank_canvas_info: 'blank canvas — paint freely',
+    confirm_reset_progress: 'Reset all progress for this pattern?',
+    // Progress mode
+    progress_mode: '✅ Progress mode',
+    pstat_done: 'done',
+    pstat_left: 'left',
+    btn_reset_progress: '↺ Reset',
+    // Change color modal
+    cc_current: 'Current',
+    cc_new: 'New',
+    cc_footer_hint: 'Select a color to preview',
+    cc_footer_brush: 'Select a color for the brush',
+    cc_cancel: 'Cancel',
+    cc_apply: 'Apply',
+    cc_search_placeholder: 'Search by code or name…',
+    // Regenerating toast
+    toast_regenerating: 'regenerating…',
   },
   es: {
     tagline: 'Generador de Patrones de Punto de Cruz',
@@ -4015,6 +4048,38 @@ const TRANSLATIONS = {
     skein_plural: 'madejas',
     mode_label: '🐾 Modo retrato',
     img_loaded: 'Imagen cargada',
+    img_loaded: 'Imagen cargada',
+    // Editor de pintura
+    btn_blank: '+ Lienzo en blanco',
+    btn_edit: '✏️ Editar',
+    btn_editing: '✏️ Editando',
+    tool_brush: 'Pincel',
+    tool_eraser: 'Borrador',
+    tool_eyedrop: 'Cuentagotas',
+    btn_undo: '↩ Deshacer',
+    active_color_none: 'Sin color seleccionado',
+    paint_hint_brush: 'Clic o arrastrar para pintar · Clic en color para cambiar',
+    paint_hint_eraser: 'Clic o arrastrar para borrar (restaurar original)',
+    paint_hint_eyedrop: 'Clic en una celda para coger su color',
+    toast_brush_set: 'Color de pincel establecido',
+    toast_select_color: 'Selecciona un color primero',
+    toast_blank: 'Lienzo en blanco {w}×{h} — ¡empieza a pintar!',
+    blank_canvas_info: 'lienzo en blanco — pinta libremente',
+    confirm_reset_progress: '¿Reiniciar todo el progreso de este patrón?',
+    // Modo progreso
+    progress_mode: '✅ Modo progreso',
+    pstat_done: 'hechos',
+    pstat_left: 'restantes',
+    btn_reset_progress: '↺ Reiniciar',
+    // Modal cambio de color
+    cc_current: 'Actual',
+    cc_new: 'Nuevo',
+    cc_footer_hint: 'Selecciona un color para previsualizar',
+    cc_footer_brush: 'Selecciona un color para el pincel',
+    cc_cancel: 'Cancelar',
+    cc_apply: 'Aplicar',
+    cc_search_placeholder: 'Buscar por código o nombre…',
+    toast_regenerating: 'regenerando…',
   },
   pt: {
     tagline: 'Gerador de Padrões de Ponto Cruz',
@@ -4079,6 +4144,38 @@ const TRANSLATIONS = {
     skein_plural: 'meadas',
     mode_label: '🐾 Modo retrato',
     img_loaded: 'Imagem carregada',
+    img_loaded: 'Imagem carregada',
+    // Editor de pintura
+    btn_blank: '+ Tela em branco',
+    btn_edit: '✏️ Editar',
+    btn_editing: '✏️ Editando',
+    tool_brush: 'Pincel',
+    tool_eraser: 'Borracha',
+    tool_eyedrop: 'Conta-gotas',
+    btn_undo: '↩ Desfazer',
+    active_color_none: 'Nenhuma cor selecionada',
+    paint_hint_brush: 'Clique ou arraste para pintar · Clique na cor para mudar',
+    paint_hint_eraser: 'Clique ou arraste para apagar (restaurar original)',
+    paint_hint_eyedrop: 'Clique numa célula para pegar sua cor',
+    toast_brush_set: 'Cor do pincel definida',
+    toast_select_color: 'Selecione uma cor primeiro',
+    toast_blank: 'Tela em branco {w}×{h} — comece a pintar!',
+    blank_canvas_info: 'tela em branco — pinte livremente',
+    confirm_reset_progress: 'Redefinir todo o progresso deste padrão?',
+    // Modo progresso
+    progress_mode: '✅ Modo progresso',
+    pstat_done: 'feitos',
+    pstat_left: 'restantes',
+    btn_reset_progress: '↺ Redefinir',
+    // Modal troca de cor
+    cc_current: 'Atual',
+    cc_new: 'Novo',
+    cc_footer_hint: 'Selecione uma cor para pré-visualizar',
+    cc_footer_brush: 'Selecione uma cor para o pincel',
+    cc_cancel: 'Cancelar',
+    cc_apply: 'Aplicar',
+    cc_search_placeholder: 'Buscar por código ou nome…',
+    toast_regenerating: 'regenerando…',
   },
   de: {
     tagline: 'Kreuzstich-Muster-Generator',
@@ -4143,6 +4240,38 @@ const TRANSLATIONS = {
     skein_plural: 'Stränge',
     mode_label: '🐾 Porträt-Modus',
     img_loaded: 'Bild geladen',
+    img_loaded: 'Bild geladen',
+    // Mal-Editor
+    btn_blank: '+ Leere Leinwand',
+    btn_edit: '✏️ Bearbeiten',
+    btn_editing: '✏️ Bearbeitung',
+    tool_brush: 'Pinsel',
+    tool_eraser: 'Radierer',
+    tool_eyedrop: 'Farbpipette',
+    btn_undo: '↩ Rückgängig',
+    active_color_none: 'Keine Farbe ausgewählt',
+    paint_hint_brush: 'Klicken oder ziehen zum Malen · Klick auf Farbe zum Ändern',
+    paint_hint_eraser: 'Klicken oder ziehen zum Löschen (Original wiederherstellen)',
+    paint_hint_eyedrop: 'Klicken Sie auf eine Zelle, um ihre Farbe aufzunehmen',
+    toast_brush_set: 'Pinselfarbe festgelegt',
+    toast_select_color: 'Wählen Sie zuerst eine Farbe',
+    toast_blank: 'Leere Leinwand {w}×{h} — fangen Sie an zu malen!',
+    blank_canvas_info: 'leere Leinwand — malen Sie frei',
+    confirm_reset_progress: 'Gesamten Fortschritt für dieses Muster zurücksetzen?',
+    // Fortschrittsmodus
+    progress_mode: '✅ Fortschrittsmodus',
+    pstat_done: 'fertig',
+    pstat_left: 'übrig',
+    btn_reset_progress: '↺ Zurücksetzen',
+    // Farbe-ändern-Modal
+    cc_current: 'Aktuell',
+    cc_new: 'Neu',
+    cc_footer_hint: 'Wählen Sie eine Farbe zur Vorschau',
+    cc_footer_brush: 'Farbe für den Pinsel auswählen',
+    cc_cancel: 'Abbrechen',
+    cc_apply: 'Anwenden',
+    cc_search_placeholder: 'Nach Code oder Name suchen…',
+    toast_regenerating: 'wird neu erstellt…',
   }
 };
 
@@ -4237,7 +4366,7 @@ function initTableDelegation() {
         const idx = Number(swatch.dataset.brushIdx);
         if (editMode) {
           setActivePaintColor(idx);
-          showToast('Brush color set');
+          showToast(t('toast_brush_set'));
         }
         return;
       }
@@ -4310,7 +4439,7 @@ function startBlankCanvas() {
 
   // Update info bar
   document.getElementById('canvasInfo').innerHTML =
-    `<strong>${W}×${H}</strong> blank canvas — paint freely`;
+    `<strong>${W}×${H}</strong> ${t('blank_canvas_info')}`;
 
   // Draw the blank grid
   drawPattern(grid, W, H, currentColors);
@@ -4330,7 +4459,7 @@ function startBlankCanvas() {
   // Auto-enter edit mode
   if (!editMode) toggleEditMode();
 
-  showToast(`Blank canvas ${W}×${H} — start painting!`);
+  showToast(t('toast_blank', {w: W, h: H}));
 }
 
 // ============================================================
@@ -4352,7 +4481,7 @@ function toggleEditMode() {
   const btn = document.getElementById('editToggleBtn');
   const toolbar = document.getElementById('paintToolbar');
   btn.classList.toggle('active', editMode);
-  btn.textContent = editMode ? '✏️ Editing' : '✏️ Edit';
+  btn.textContent = editMode ? t('btn_editing') : t('btn_edit');
   toolbar.classList.toggle('visible', editMode);
 
   if (editMode) {
@@ -4390,7 +4519,8 @@ function updatePaintHint() {
     eraser: 'Click or drag to erase (restore original color)',
     eyedrop: 'Click a cell to pick its color as the active brush'
   };
-  document.getElementById('paintHint').textContent = hints[activeTool];
+  const hintKeys = { brush: 'paint_hint_brush', eraser: 'paint_hint_eraser', eyedrop: 'paint_hint_eyedrop' };
+  document.getElementById('paintHint').textContent = t(hintKeys[activeTool]);
 }
 
 function setActivePaintColor(dmcIdx) {
@@ -4422,7 +4552,7 @@ function openChangeColorForBrush() {
   document.getElementById('ccNewCode').textContent = '—';
   document.getElementById('ccNewName').textContent = '';
   document.getElementById('ccApplyBtn').disabled = true;
-  document.getElementById('ccFooterHint').textContent = 'Select a color for the brush';
+  document.getElementById('ccFooterHint').textContent = t('cc_footer_brush');
 
   document.querySelectorAll('.cc-brand-tab').forEach(t =>
     t.classList.toggle('active', t.classList.contains(ccBrand)));
@@ -4479,7 +4609,7 @@ function applyPaintAtCell(cellX, cellY) {
   }
 
   // Brush
-  if (activePaintIdx === null) { showToast('Select a color first'); return; }
+  if (activePaintIdx === null) { showToast(t('toast_select_color')); return; }
   if (currentIdx === activePaintIdx && !colorBrandOverride[activePaintIdx]) return;
   pushUndo(key, currentIdx, activePaintIdx);
   paintOverride[key] = activePaintIdx;
@@ -4574,7 +4704,7 @@ function openChangeColor(dmcIdx) {
   document.getElementById('ccNewCode').textContent = '—';
   document.getElementById('ccNewName').textContent = '';
   document.getElementById('ccApplyBtn').disabled = true;
-  document.getElementById('ccFooterHint').textContent = 'Select a color to preview';
+  document.getElementById('ccFooterHint').textContent = t('cc_footer_hint');
 
   // Set active brand tab
   document.querySelectorAll('.cc-brand-tab').forEach(t => {
@@ -4654,7 +4784,7 @@ function selectCCColor(idx, entry) {
   document.getElementById('ccNewCode').textContent = ccBrand.toUpperCase() + ' ' + entry.code;
   document.getElementById('ccNewName').textContent = entry.name;
   document.getElementById('ccApplyBtn').disabled = false;
-  document.getElementById('ccFooterHint').textContent = 'Click Apply to use this color';
+  document.getElementById('ccFooterHint').textContent = t('cc_footer_hint');
 
   // Update chip selection state
   document.querySelectorAll('#ccChipGrid .color-chip').forEach(chip => {
