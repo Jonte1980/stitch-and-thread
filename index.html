@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Stitch & Thread — Cross-Stitch Pattern Generator</title>
+<meta name="description" content="Convert any image into a cross-stitch or Miyuki bead pattern. Free online generator with DMC, Anchor, Cosmo and Madeira thread support.">
+<meta name="theme-color" content="#8b2635">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Stitch &amp; Thread">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <!-- VERSION: Beta 0.1 — Full feature build -->
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1117,6 +1125,28 @@
   }
   .export-shopping-btn:hover { background: var(--gold); color: white; }
 
+  /* AMAZON BUY BUTTON */
+  .btn-buy-amazon {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    padding: 3px 8px;
+    background: #FF9900;
+    color: #111;
+    border: none;
+    border-radius: 3px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .btn-buy-amazon:hover { background: #e68900; transform: scale(1.04); }
+  .btn-buy-amazon svg { flex-shrink: 0; }
+
   /* PROGRESS BAR */
   .progress-bar {
     height: 3px;
@@ -1200,6 +1230,41 @@
     .panel { position: static; }
   }
 
+  /* MOBILE IMPROVEMENTS */
+  @media (max-width: 600px) {
+    body { font-size: 16px; }
+    .app { padding: 0 12px 40px; }
+    header { padding: 20px 0 16px; flex-wrap: wrap; gap: 10px; }
+    .logo { font-size: 22px; }
+    .lang-selector { margin-left: 0; }
+    .panel { padding: 16px; }
+    .canvas-wrapper { padding: 12px; }
+    .brand-grid { grid-template-columns: 1fr 1fr; }
+    .mode-toggle-row { grid-template-columns: 1fr 1fr; }
+    .size-wh-input { font-size: 22px; padding: 10px 4px; }
+    .btn-generate { padding: 16px; font-size: 18px; }
+    .btn-blank-canvas { padding: 14px; font-size: 16px; }
+    .legend-grid { grid-template-columns: 1fr; }
+    .skein-table { font-size: 12px; }
+    .modal { max-height: 92vh; }
+    .tester-banner { font-size: 12px; padding: 8px 12px; }
+    /* Make canvas scrollable on mobile */
+    .canvas-wrapper { overflow: scroll; -webkit-overflow-scrolling: touch; }
+    /* Bigger touch targets */
+    .step-btn { width: 32px; height: 32px; font-size: 18px; }
+    .zoom-btn { width: 36px; height: 36px; font-size: 20px; }
+    .cbrand-btn { padding: 4px 8px; font-size: 11px; }
+    .paint-tool-btn { padding: 10px 10px; }
+    /* Progress toggle bigger */
+    .toggle-switch { width: 44px; height: 24px; }
+    .toggle-switch::after { width: 18px; height: 18px; }
+    .toggle-switch.on::after { left: 22px; }
+  }
+
+  /* Prevent double-tap zoom on buttons */
+  button { touch-action: manipulation; }
+  input[type="range"] { touch-action: manipulation; }
+
   .thread-box-toggle {
     width: 100%; padding: 10px 12px; border: 1.5px dashed var(--grid-line);
     background: transparent; font-family: "Crimson Pro", serif; font-size: 14px;
@@ -1240,6 +1305,263 @@
   .btn-confirm { padding: 10px 24px; background: var(--gold); color: white; border: none; font-family: "Playfair Display", serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
   .btn-confirm:hover { background: #a8843a; }
   .btn-confirm:disabled { background: var(--warm-gray); cursor: not-allowed; }
+
+  /* ============================================================
+     LICENSE SYSTEM — UI styles
+     ============================================================ */
+
+  /* Header PRO badge + activate button */
+  .license-header-zone {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 12px;
+  }
+  .license-status-badge {
+    font-family: 'Crimson Pro', serif;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    font-weight: 500;
+    cursor: default;
+  }
+  .license-status-badge.free {
+    background: var(--linen);
+    color: var(--warm-gray);
+    border: 1px solid var(--grid-line);
+  }
+  .license-status-badge.pro {
+    background: var(--thread-red);
+    color: #fff;
+    border: 1px solid var(--thread-red);
+  }
+  .btn-activate-license {
+    padding: 5px 14px;
+    background: transparent;
+    border: 1.5px solid var(--gold);
+    color: var(--gold);
+    font-family: 'Crimson Pro', serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-activate-license:hover { background: var(--gold); color: white; }
+
+  /* License activation modal */
+  .license-modal {
+    background: var(--warm-white);
+    width: 480px;
+    max-width: 96vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    display: flex;
+    flex-direction: column;
+  }
+  .license-modal-body {
+    padding: 24px 28px 20px;
+  }
+  .license-code-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--grid-line);
+    background: var(--cream);
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    color: var(--charcoal);
+    letter-spacing: .08em;
+    outline: none;
+    margin-top: 8px;
+    text-transform: uppercase;
+  }
+  .license-code-input:focus { border-color: var(--gold); }
+  .license-code-input::placeholder { text-transform: none; letter-spacing: 0; color: var(--warm-gray); }
+  .license-msg {
+    margin-top: 10px;
+    font-size: 13px;
+    min-height: 20px;
+    padding: 0 2px;
+  }
+  .license-msg.error { color: var(--thread-red); }
+  .license-msg.success { color: #3a7a3a; }
+  .license-msg.verifying { color: var(--warm-gray); font-style: italic; }
+  .license-backup-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .license-backup-row .btn-tiny { font-size: 12px; }
+  .license-deactivate {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--linen);
+    font-size: 12px;
+    color: var(--warm-gray);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-deactivate {
+    background: none;
+    border: 1px solid var(--grid-line);
+    color: var(--warm-gray);
+    font-family: 'Crimson Pro', serif;
+    font-size: 12px;
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-deactivate:hover { border-color: var(--thread-red); color: var(--thread-red); }
+
+  /* Upgrade modal */
+  .upgrade-modal {
+    background: var(--warm-white);
+    width: 660px;
+    max-width: 97vw;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  }
+  .upgrade-modal-header {
+    padding: 28px 32px 0;
+    text-align: center;
+  }
+  .upgrade-modal-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--charcoal);
+    margin-bottom: 6px;
+  }
+  .upgrade-modal-header p {
+    font-size: 15px;
+    color: var(--warm-gray);
+    margin-bottom: 24px;
+  }
+  .upgrade-feature-blocked {
+    display: inline-block;
+    background: #fdf5f5;
+    border: 1px solid #e8c5c7;
+    color: var(--thread-red);
+    font-size: 13px;
+    padding: 4px 12px;
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+  .upgrade-packs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    padding: 0 28px 28px;
+  }
+  @media (max-width: 600px) {
+    .upgrade-packs { grid-template-columns: 1fr; }
+  }
+  .upgrade-pack {
+    border: 1.5px solid var(--grid-line);
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--cream);
+    transition: border-color 0.15s;
+    position: relative;
+  }
+  .upgrade-pack:hover { border-color: var(--gold); }
+  .upgrade-pack.featured {
+    border-color: var(--thread-red);
+    background: #fdf9f5;
+  }
+  .upgrade-pack.featured::before {
+    content: attr(data-badge);
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--thread-red);
+    color: white;
+    font-family: 'Crimson Pro', serif;
+    font-size: 11px;
+    padding: 2px 12px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .upgrade-pack-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--charcoal);
+  }
+  .upgrade-pack-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--thread-red);
+    line-height: 1;
+  }
+  .upgrade-pack-price span {
+    font-size: 14px;
+    color: var(--warm-gray);
+    font-family: 'Crimson Pro', serif;
+    font-weight: 400;
+  }
+  .upgrade-pack-features {
+    list-style: none;
+    font-size: 13px;
+    color: var(--warm-gray);
+    line-height: 1.7;
+    flex: 1;
+  }
+  .upgrade-pack-features li::before { content: '✓ '; color: var(--gold); font-weight: 700; }
+  .upgrade-pack-features li.no::before { content: '✗ '; color: var(--grid-line); }
+  .btn-upgrade-pack {
+    width: 100%;
+    padding: 10px;
+    background: var(--charcoal);
+    color: white;
+    border: none;
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-align: center;
+  }
+  .btn-upgrade-pack:hover { background: var(--thread-red); }
+  .upgrade-pack.featured .btn-upgrade-pack { background: var(--thread-red); }
+  .upgrade-pack.featured .btn-upgrade-pack:hover { background: #6e1e29; }
+  .upgrade-already-have {
+    text-align: center;
+    padding: 8px 28px 24px;
+    font-size: 13px;
+    color: var(--warm-gray);
+  }
+  .upgrade-already-have button {
+    background: none;
+    border: none;
+    color: var(--gold);
+    cursor: pointer;
+    font-family: 'Crimson Pro', serif;
+    font-size: 13px;
+    text-decoration: underline;
+  }
+
+  /* Free tier visual limit on sliders */
+  .free-limit-indicator {
+    position: relative;
+    display: inline-block;
+    font-size: 11px;
+    color: var(--thread-red);
+    background: #fdf5f5;
+    border: 1px solid #e8c5c7;
+    padding: 1px 7px;
+    margin-left: 6px;
+    vertical-align: middle;
+    cursor: pointer;
+  }
 
   /* PORTRAIT MODE */
   .mode-toggle-row {
@@ -1312,6 +1634,10 @@
       <button class="lang-btn" onclick="setLang('es')" title="Español">ES</button>
       <button class="lang-btn" onclick="setLang('pt')" title="Português">PT</button>
       <button class="lang-btn" onclick="setLang('de')" title="Deutsch">DE</button>
+    </div>
+    <div class="license-header-zone">
+      <span class="license-status-badge free" id="licenseStatusBadge" data-i18n="lic_badge_free">Free</span>
+      <button class="btn-activate-license" id="licenseBtn" onclick="openLicenseModal()" data-i18n="lic_btn_activate">Activate license</button>
     </div>
   </header>
 
@@ -1694,6 +2020,113 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- LICENSE ACTIVATION MODAL -->
+<div class="modal-overlay" id="licenseModal" onclick="closeLicenseOnOverlay(event)">
+  <div class="license-modal">
+    <div class="modal-header">
+      <div class="modal-title">Stitch &amp; Thread <span data-i18n="lic_modal_title">License</span></div>
+      <button class="modal-close" onclick="closeLicenseModal()">&times;</button>
+    </div>
+    <div class="license-modal-body">
+      <!-- Active license view -->
+      <div id="licenseActiveView" style="display:none">
+        <div style="font-size:14px;color:var(--warm-gray);margin-bottom:10px" data-i18n="lic_active_intro">Your license is active:</div>
+        <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--charcoal);margin-bottom:4px" id="licActivePackName"></div>
+        <div style="font-size:12px;color:var(--warm-gray);font-style:italic;margin-bottom:16px" id="licActiveCode"></div>
+        <div class="license-deactivate">
+          <span data-i18n="lic_deactivate_hint">Remove license from this device:</span>
+          <button class="btn-deactivate" onclick="deactivateLicense()" data-i18n="lic_btn_deactivate">Remove</button>
+        </div>
+        <div class="license-backup-row">
+          <button class="btn-tiny" onclick="downloadLicenseBackup()">⬇ <span data-i18n="lic_btn_backup">Save license file</span></button>
+        </div>
+      </div>
+      <!-- Enter code view -->
+      <div id="licenseEnterView">
+        <label style="font-size:13px;color:var(--warm-gray);text-transform:uppercase;letter-spacing:.06em" data-i18n="lic_code_label">License code</label>
+        <input type="text" id="licenseCodeInput" class="license-code-input"
+          placeholder="STITCH-XXXX-XXXX-XXXX" maxlength="23"
+          oninput="formatLicenseInput(this)" onkeydown="if(event.key==='Enter')activateLicense()">
+        <div class="license-msg" id="licenseMsg"></div>
+        <div class="license-backup-row">
+          <button class="btn-tiny" onclick="triggerRestoreBackup()">↑ <span data-i18n="lic_btn_restore">Restore from file</span></button>
+          <input type="file" id="restoreBackupInput" accept=".json" style="display:none" onchange="restoreLicenseFromFile(this)">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span style="font-size:12px;color:var(--warm-gray)">
+        <a href="https://stitchandthread.lemonsqueezy.com" target="_blank" rel="noopener"
+          style="color:var(--gold);text-decoration:none" data-i18n="lic_buy_link">Get a license →</a>
+      </span>
+      <div style="display:flex;gap:8px">
+        <button class="btn-tiny" onclick="closeLicenseModal()" data-i18n="cc_cancel">Cancel</button>
+        <button class="btn-confirm" id="licenseActivateBtn" onclick="activateLicense()" data-i18n="lic_btn_activate_confirm">Activate</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div class="modal-overlay" id="upgradeModal" onclick="closeUpgradeOnOverlay(event)">
+  <div class="upgrade-modal">
+    <div class="upgrade-modal-header">
+      <h2 data-i18n="upg_title">Unlock PRO Features</h2>
+      <p data-i18n="upg_subtitle">Choose the pack that fits your craft</p>
+      <div class="upgrade-feature-blocked" id="upgradeFeatureLabel"></div>
+    </div>
+    <div class="upgrade-packs">
+      <!-- Cross-Stitch PRO -->
+      <div class="upgrade-pack" id="upgPackCS">
+        <div class="upgrade-pack-name">Cross-Stitch PRO</div>
+        <div class="upgrade-pack-price">10€ <span data-i18n="upg_once">one-time</span></div>
+        <ul class="upgrade-pack-features">
+          <li data-i18n="upg_cs_f1">Anchor, Cosmo &amp; Madeira brands</li>
+          <li data-i18n="upg_cs_f2">Patterns up to 400×600 stitches</li>
+          <li data-i18n="upg_cs_f3">Up to 40 colors</li>
+          <li data-i18n="upg_cs_f4">PDF export (chart + shopping list)</li>
+          <li data-i18n="upg_cs_f5">Paint editor &amp; Thread Box</li>
+          <li data-i18n="upg_cs_f6">Change color &amp; Progress mode</li>
+          <li data-i18n="upg_cs_f7">Shopping list .txt export</li>
+          <li class="no" data-i18n="upg_cs_f8">Miyuki Brick/Peyote</li>
+        </ul>
+        <button class="btn-upgrade-pack" onclick="openCheckout('cs')" data-i18n="upg_btn_get">Get this pack →</button>
+      </div>
+      <!-- Miyuki PRO -->
+      <div class="upgrade-pack" id="upgPackMiyuki">
+        <div class="upgrade-pack-name">Miyuki PRO</div>
+        <div class="upgrade-pack-price">10€ <span data-i18n="upg_once">one-time</span></div>
+        <ul class="upgrade-pack-features">
+          <li data-i18n="upg_my_f1">Brick &amp; Peyote techniques</li>
+          <li data-i18n="upg_my_f2">All shapes (Earring, Bracelet…)</li>
+          <li data-i18n="upg_my_f3">Free size up to 120×200 beads</li>
+          <li data-i18n="upg_my_f4">PDF export (Miyuki)</li>
+          <li data-i18n="upg_my_f5">Paint editor Miyuki</li>
+          <li data-i18n="upg_my_f6">Shopping list Miyuki export</li>
+          <li class="no" data-i18n="upg_my_f7">Cross-stitch brands</li>
+          <li class="no" data-i18n="upg_my_f8">Large cross-stitch patterns</li>
+        </ul>
+        <button class="btn-upgrade-pack" onclick="openCheckout('miyuki')" data-i18n="upg_btn_get">Get this pack →</button>
+      </div>
+      <!-- Complete -->
+      <div class="upgrade-pack featured" id="upgPackComplete" data-badge="Best value">
+        <div class="upgrade-pack-name">Complete Pack</div>
+        <div class="upgrade-pack-price">15€ <span data-i18n="upg_once">one-time</span></div>
+        <ul class="upgrade-pack-features">
+          <li data-i18n="upg_all_f1">Everything in Cross-Stitch PRO</li>
+          <li data-i18n="upg_all_f2">Everything in Miyuki PRO</li>
+          <li data-i18n="upg_all_f3">All future updates included</li>
+        </ul>
+        <button class="btn-upgrade-pack" onclick="openCheckout('complete')" data-i18n="upg_btn_best">Get Complete Pack →</button>
+      </div>
+    </div>
+    <div class="upgrade-already-have">
+      <span data-i18n="upg_have_license">Already have a license?</span>
+      <button onclick="closeUpgradeModal(); openLicenseModal();" data-i18n="upg_activate_here">Activate it here</button>
+    </div>
   </div>
 </div>
 
@@ -3504,6 +3937,418 @@ function antiConfetti(grid, W, H, strength) {
 const SYMBOLS = ['·','×','○','◆','▲','★','♦','░','▪','◇','●','▸','♣','◉','▫','♠','╋','≡','∞','◘','±','※','♥','⊕','▓'];
 
 // ============================================================
+// AMAZON ASSOCIATES
+// Replace with your real tracking ID once approved.
+// Format: 'yourstore-20'  (US), 'yourstore-21' (UK/EU), etc.
+// ============================================================
+const AMAZON_TAG = 'stitchandthread-20';
+
+// ============================================================
+// LEMONSQUEEZY — License configuration
+// Replace placeholders when you have your LS account set up.
+// ============================================================
+const LEMON_STORE_SLUG   = 'stitchandthread';          // your LS store slug
+const LEMON_CS_PRO_ID    = 'LEMON_CS_PRO_ID';         // product variant ID — Cross-Stitch PRO
+const LEMON_MIYUKI_PRO_ID = 'LEMON_MIYUKI_PRO_ID';    // product variant ID — Miyuki PRO
+const LEMON_COMPLETO_ID  = 'LEMON_COMPLETO_ID';        // product variant ID — Complete Pack
+
+// Checkout URLs (replace # with real LemonSqueezy checkout links)
+const CHECKOUT_URLS = {
+  cs:       '#cs-pro',
+  miyuki:   '#miyuki-pro',
+  complete: '#completo'
+};
+
+// ============================================================
+// LICENSE STATE
+// ============================================================
+// license = null (free) | { code, pack, activatedAt, lastVerified }
+// pack: 'cs' | 'miyuki' | 'complete'
+
+let _license = null;   // current validated license object
+const LS_KEY = 'stitch_license_v1';
+const REVERIFY_DAYS  = 30;   // re-call API after N days
+const OFFLINE_GRACE  = 7;    // trust localStorage for N days if API unreachable
+
+function loadLicenseFromStorage() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+
+function saveLicenseToStorage(lic) {
+  localStorage.setItem(LS_KEY, JSON.stringify(lic));
+}
+
+function clearLicenseFromStorage() {
+  localStorage.removeItem(LS_KEY);
+}
+
+// Returns true if the given license object is still within offline grace period
+function isWithinGrace(lic) {
+  if (!lic || !lic.lastVerified) return false;
+  const diffDays = (Date.now() - lic.lastVerified) / 86400000;
+  return diffDays <= OFFLINE_GRACE;
+}
+
+// Resolve effective pack from license object
+function getLicensePack(lic) {
+  return lic ? lic.pack : null;
+}
+
+// Check if current license covers a feature pack
+// requiredPack: 'cs' | 'miyuki' | 'any'
+function hasAccess(requiredPack) {
+  if (!_license) return false;
+  const p = _license.pack;
+  if (p === 'complete') return true;
+  if (requiredPack === 'any') return true;
+  return p === requiredPack;
+}
+
+// ── Slider limits ────────────────────────────────────────────
+const FREE_MAX_WIDTH  = 80;
+const FREE_MAX_COLORS = 15;
+const FREE_MAX_MIYUKI_W = 20;
+const FREE_MAX_MIYUKI_H = 20;
+const PRO_MAX_WIDTH   = 400;
+const PRO_MAX_COLORS  = 40;
+
+// ── Startup: load + maybe reverify ──────────────────────────
+async function initLicense() {
+  const stored = loadLicenseFromStorage();
+  if (!stored) { _license = null; applyLicenseUI(); return; }
+
+  const daysSince = (Date.now() - (stored.lastVerified || 0)) / 86400000;
+  if (daysSince < REVERIFY_DAYS) {
+    // Still fresh — trust it
+    _license = stored;
+    applyLicenseUI();
+    return;
+  }
+
+  // Needs re-verification
+  try {
+    const result = await callLemonSqueezyValidate(stored.code);
+    if (result.valid) {
+      stored.lastVerified = Date.now();
+      saveLicenseToStorage(stored);
+      _license = stored;
+    } else {
+      // License revoked remotely
+      clearLicenseFromStorage();
+      _license = null;
+    }
+  } catch {
+    // Offline / API error — apply grace period
+    if (isWithinGrace(stored)) {
+      _license = stored;
+    } else {
+      _license = null;
+    }
+  }
+  applyLicenseUI();
+}
+
+// ── LemonSqueezy API call ────────────────────────────────────
+async function callLemonSqueezyValidate(code) {
+  const resp = await fetch('https://api.lemonsqueezy.com/v1/licenses/validate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({ license_key: code })
+  });
+  const data = await resp.json();
+  // LS returns { valid: bool, license_key: { status, product_id, ... } }
+  const valid = data.valid === true && data.license_key && data.license_key.status === 'active';
+  const productId = data.license_key ? String(data.license_key.variant_id || data.license_key.product_id || '') : '';
+  // Determine pack from product ID
+  let pack = 'complete'; // default fallback
+  if (productId === String(LEMON_CS_PRO_ID)) pack = 'cs';
+  else if (productId === String(LEMON_MIYUKI_PRO_ID)) pack = 'miyuki';
+  else if (productId === String(LEMON_COMPLETO_ID)) pack = 'complete';
+  return { valid, pack };
+}
+
+// ── Apply license to UI ──────────────────────────────────────
+function applyLicenseUI() {
+  const badge = document.getElementById('licenseStatusBadge');
+  const btn   = document.getElementById('licenseBtn');
+  if (!badge) return;
+
+  if (_license) {
+    const packKey = {cs: 'lic_badge_cs', miyuki: 'lic_badge_miyuki', complete: 'lic_badge_complete'}[_license.pack] || 'lic_badge_cs';
+    badge.textContent = t(packKey);
+    badge.className = 'license-status-badge pro';
+    btn.textContent  = '✓ ' + t(packKey);
+  } else {
+    badge.textContent = t('lic_badge_free');
+    badge.className = 'license-status-badge free';
+    btn.textContent  = t('lic_btn_activate');
+  }
+
+  // Apply slider limits
+  applySliderLimits();
+  // Apply brand button states
+  applyBrandButtonStates();
+}
+
+function applySliderLimits() {
+  const wSlider = document.getElementById('patternWSlider');
+  const cSlider = document.getElementById('colorsSlider');
+  if (!wSlider || !cSlider) return;
+
+  const hasCS = hasAccess('cs');
+
+  // Width slider
+  if (hasCS) {
+    wSlider.max = PRO_MAX_WIDTH;
+    document.getElementById('freeLimitW') && document.getElementById('freeLimitW').remove();
+  } else {
+    wSlider.max = FREE_MAX_WIDTH;
+    if (parseInt(wSlider.value) > FREE_MAX_WIDTH) {
+      wSlider.value = FREE_MAX_WIDTH;
+      syncSize('w', FREE_MAX_WIDTH);
+    }
+    // Show free limit indicator if not already there
+    if (!document.getElementById('freeLimitW')) {
+      const ind = document.createElement('span');
+      ind.id = 'freeLimitW';
+      ind.className = 'free-limit-indicator';
+      ind.title = t('gate_size');
+      ind.textContent = t('free_limit_width');
+      ind.onclick = () => openUpgradeModal('gate_size', 'cs');
+      wSlider.parentNode.appendChild(ind);
+    }
+  }
+
+  // Colors slider
+  if (hasCS) {
+    cSlider.max = PRO_MAX_COLORS;
+    document.getElementById('freeLimitC') && document.getElementById('freeLimitC').remove();
+  } else {
+    cSlider.max = FREE_MAX_COLORS;
+    if (parseInt(cSlider.value) > FREE_MAX_COLORS) {
+      cSlider.value = FREE_MAX_COLORS;
+      document.getElementById('colorsVal').textContent = FREE_MAX_COLORS;
+    }
+    if (!document.getElementById('freeLimitC')) {
+      const ind2 = document.createElement('span');
+      ind2.id = 'freeLimitC';
+      ind2.className = 'free-limit-indicator';
+      ind2.title = t('gate_colors');
+      ind2.textContent = t('free_limit_colors');
+      ind2.onclick = () => openUpgradeModal('gate_colors', 'cs');
+      cSlider.parentNode.appendChild(ind2);
+    }
+  }
+}
+
+function applyBrandButtonStates() {
+  const hasCS = hasAccess('cs');
+  ['anchor','cosmo','madeira'].forEach(brand => {
+    const btn = document.querySelector(`[data-brand="${brand}"]`);
+    if (!btn) return;
+    btn.style.opacity = hasCS ? '' : '0.5';
+    btn.title = hasCS ? '' : t('gate_brand');
+  });
+}
+
+// ── Feature gate ─────────────────────────────────────────────
+// Returns true if access is granted, false if blocked (and shows modal)
+function requirePack(requiredPack, gateKey, highlightPack) {
+  if (hasAccess(requiredPack)) return true;
+  openUpgradeModal(gateKey, highlightPack || requiredPack);
+  return false;
+}
+
+// ── Upgrade modal ────────────────────────────────────────────
+function openUpgradeModal(gateKey, highlightPack) {
+  const label = document.getElementById('upgradeFeatureLabel');
+  if (label) label.textContent = t(gateKey || 'gate_size');
+
+  // Highlight the recommended pack
+  ['CS','Miyuki','Complete'].forEach(p => {
+    document.getElementById('upgPack' + p).style.borderColor = '';
+  });
+  if (highlightPack === 'cs') {
+    document.getElementById('upgPackCS').style.borderColor = 'var(--thread-red)';
+  } else if (highlightPack === 'miyuki') {
+    document.getElementById('upgPackMiyuki').style.borderColor = 'var(--thread-red)';
+  } else {
+    document.getElementById('upgPackComplete').style.borderColor = 'var(--thread-red)';
+  }
+
+  document.getElementById('upgradeModal').classList.add('open');
+}
+
+function closeUpgradeModal() {
+  document.getElementById('upgradeModal').classList.remove('open');
+}
+
+function closeUpgradeOnOverlay(e) {
+  if (e.target === document.getElementById('upgradeModal')) closeUpgradeModal();
+}
+
+function openCheckout(pack) {
+  const url = CHECKOUT_URLS[pack] || '#';
+  if (url.startsWith('#')) {
+    showToast('Checkout coming soon — stay tuned!');
+  } else {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+}
+
+// ── License activation modal ─────────────────────────────────
+function openLicenseModal() {
+  const modal = document.getElementById('licenseModal');
+  const activeView = document.getElementById('licenseActiveView');
+  const enterView  = document.getElementById('licenseEnterView');
+  const activateBtn = document.getElementById('licenseActivateBtn');
+  const msgEl = document.getElementById('licenseMsg');
+
+  msgEl.textContent = '';
+  msgEl.className = 'license-msg';
+
+  if (_license) {
+    activeView.style.display = '';
+    enterView.style.display  = 'none';
+    activateBtn.style.display = 'none';
+    document.getElementById('licActivePackName').textContent =
+      t({cs:'lic_badge_cs', miyuki:'lic_badge_miyuki', complete:'lic_badge_complete'}[_license.pack] || 'lic_badge_cs');
+    document.getElementById('licActiveCode').textContent = _license.code;
+  } else {
+    activeView.style.display = 'none';
+    enterView.style.display  = '';
+    activateBtn.style.display = '';
+    document.getElementById('licenseCodeInput').value = '';
+  }
+
+  modal.classList.add('open');
+}
+
+function closeLicenseModal() {
+  document.getElementById('licenseModal').classList.remove('open');
+}
+
+function closeLicenseOnOverlay(e) {
+  if (e.target === document.getElementById('licenseModal')) closeLicenseModal();
+}
+
+function formatLicenseInput(input) {
+  // Auto-format as STITCH-XXXX-XXXX-XXXX while typing
+  let val = input.value.replace(/[^A-Z0-9-]/gi, '').toUpperCase();
+  // Remove all dashes first, then re-insert
+  const raw = val.replace(/-/g, '');
+  // Prefix must be STITCH (6 chars), then groups of 4
+  let formatted = '';
+  if (raw.length <= 6) {
+    formatted = raw;
+  } else {
+    formatted = raw.slice(0,6);
+    const rest = raw.slice(6);
+    for (let i=0; i<rest.length && i<12; i++) {
+      if (i % 4 === 0) formatted += '-';
+      formatted += rest[i];
+    }
+  }
+  input.value = formatted;
+}
+
+async function activateLicense() {
+  const code = (document.getElementById('licenseCodeInput').value || '').trim().toUpperCase();
+  const msgEl = document.getElementById('licenseMsg');
+
+  // Basic format check
+  if (!/^STITCH-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code)) {
+    msgEl.textContent = t('lic_err_format');
+    msgEl.className = 'license-msg error';
+    return;
+  }
+
+  msgEl.textContent = t('lic_verifying');
+  msgEl.className = 'license-msg verifying';
+  document.getElementById('licenseActivateBtn').disabled = true;
+
+  try {
+    const result = await callLemonSqueezyValidate(code);
+    if (result.valid) {
+      _license = { code, pack: result.pack, activatedAt: Date.now(), lastVerified: Date.now() };
+      saveLicenseToStorage(_license);
+      msgEl.textContent = t('lic_success');
+      msgEl.className = 'license-msg success';
+      applyLicenseUI();
+      setTimeout(() => { closeLicenseModal(); }, 1200);
+    } else {
+      msgEl.textContent = t('lic_err_invalid');
+      msgEl.className = 'license-msg error';
+    }
+  } catch {
+    // Network error — check if we already have a stored license that matches
+    msgEl.textContent = t('lic_err_network');
+    msgEl.className = 'license-msg error';
+  }
+
+  document.getElementById('licenseActivateBtn').disabled = false;
+}
+
+function deactivateLicense() {
+  clearLicenseFromStorage();
+  _license = null;
+  applyLicenseUI();
+  closeLicenseModal();
+  showToast(t('lic_removed'));
+}
+
+function downloadLicenseBackup() {
+  if (!_license) return;
+  const data = JSON.stringify({ code: _license.code, pack: _license.pack, savedAt: new Date().toISOString() }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'stitch-licencia.json';
+  a.click();
+}
+
+function triggerRestoreBackup() {
+  document.getElementById('restoreBackupInput').click();
+}
+
+function restoreLicenseFromFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    try {
+      const obj = JSON.parse(ev.target.result);
+      if (!obj.code || !obj.pack) throw new Error('missing fields');
+      // Try to verify online
+      const msgEl = document.getElementById('licenseMsg');
+      msgEl.textContent = t('lic_verifying');
+      msgEl.className = 'license-msg verifying';
+      try {
+        const result = await callLemonSqueezyValidate(obj.code);
+        if (!result.valid) throw new Error('invalid');
+        _license = { code: obj.code, pack: result.pack, activatedAt: Date.now(), lastVerified: Date.now() };
+      } catch {
+        // Offline — trust the file's pack claim within grace
+        _license = { code: obj.code, pack: obj.pack, activatedAt: Date.now(), lastVerified: Date.now() - (REVERIFY_DAYS * 86400000) };
+      }
+      saveLicenseToStorage(_license);
+      applyLicenseUI();
+      closeLicenseModal();
+      showToast(t('lic_restored'));
+    } catch {
+      document.getElementById('licenseMsg').textContent = t('lic_err_restore');
+      document.getElementById('licenseMsg').className = 'license-msg error';
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ============================================================
 // STATE
 // ============================================================
 let sourceImage = null;
@@ -3598,6 +4443,7 @@ function selectFormat(fmt) {
 function selectBrand(btn) {
   const newBrand = btn.dataset.brand;
   if (newBrand === currentBrand) return; // already selected
+  if (['anchor','cosmo','madeira'].includes(newBrand) && !requirePack('cs', 'gate_brand', 'cs')) return;
   document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   currentBrand = newBrand;
@@ -3651,8 +4497,31 @@ async function _generatePatternImpl() {
     // H_override from patternH input (respects lock)
     H_override = parseInt(document.getElementById('patternH').value) || null;
   }
-  const numColors = parseInt(document.getElementById('colorsSlider').value);
+  let numColors = parseInt(document.getElementById('colorsSlider').value);
   const antiStrength = parseInt(document.getElementById('antiSlider').value);
+
+  // ── Free tier enforcement at generation time ──────────────
+  if (!hasAccess('cs') && currentFormat !== 'miyuki') {
+    if (W > FREE_MAX_WIDTH) {
+      showToast(t('gate_size'));
+      openUpgradeModal('gate_size', 'cs');
+      _generating = false;
+      return;
+    }
+    if (numColors > FREE_MAX_COLORS) {
+      numColors = FREE_MAX_COLORS;
+    }
+  }
+  if (!hasAccess('miyuki') && currentFormat === 'miyuki') {
+    const miyW = parseInt(document.getElementById('miyukiW').value) || 20;
+    const miyH = parseInt(document.getElementById('miyukiH').value) || 30;
+    if (miyW > FREE_MAX_MIYUKI_W || miyH > FREE_MAX_MIYUKI_H) {
+      showToast(t('gate_miyuki_size'));
+      openUpgradeModal('gate_miyuki_size', 'miyuki');
+      _generating = false;
+      return;
+    }
+  }
 
   setProgress(5);
 
@@ -3962,6 +4831,7 @@ function saveProgress() {
 }
 
 function toggleProgressMode() {
+  if (!progressMode && !requirePack('any', 'gate_progress', currentFormat === 'miyuki' ? 'miyuki' : 'cs')) return;
   progressMode = !progressMode;
   const toggle = document.getElementById('progressToggle');
   const stats = document.getElementById('progressStats');
@@ -4259,6 +5129,7 @@ function renderShoppingTable() {
             <div class="td-name">${effectiveEntry.name}</div>
             <div class="color-brand-row">${brandBtns}</div>
             <button class="btn-change-color" data-change-idx="${dmcIdx}">✎ change color</button>
+            <button class="btn-buy-amazon" data-amazon-idx="${dmcIdx}" title="${t('btn_buy_amazon')}">🛒 Amazon</button>
           </div>
         </div>
       </td>
@@ -4369,7 +5240,25 @@ function switchTab(tab) {
   document.getElementById('buyList').classList.toggle('active', tab === 'buy');
 }
 
+// ============================================================
+// AMAZON ASSOCIATES — build affiliate search URL
+// ============================================================
+function buildAmazonUrl(dmcIdx) {
+  const entry = getEffectiveEntry(dmcIdx);
+  const brand = getEffectiveBrand(dmcIdx);
+  // Build a search query: "DMC 321 Red embroidery floss" etc.
+  const brandName = brand === 'miyuki' ? 'Miyuki Delica' : brand.toUpperCase();
+  const query = encodeURIComponent(`${brandName} ${entry.code} ${entry.name} embroidery`);
+  const tag = AMAZON_TAG ? `&tag=${AMAZON_TAG}` : '';
+  return `https://www.amazon.com/s?k=${query}${tag}`;
+}
+
+function openAmazonLink(dmcIdx) {
+  window.open(buildAmazonUrl(dmcIdx), '_blank', 'noopener,noreferrer');
+}
+
 function exportShoppingList() {
+  if (!requirePack('any', 'gate_export_txt', currentFormat === 'miyuki' ? 'miyuki' : 'cs')) return;
   const lines = [t('export_header'), '='.repeat(40), ''];
   let totalBuy = 0;
   shoppingData.forEach(({ dmcIdx, dmc, count, needed }) => {
@@ -4424,11 +5313,37 @@ function toggleGrid() {
 
 function downloadPattern() {
   const canvas = document.getElementById('patternCanvas');
+  let exportCanvas = canvas;
+
+  // Free tier: apply subtle watermark
+  if (!_license) {
+    exportCanvas = document.createElement('canvas');
+    exportCanvas.width  = canvas.width;
+    exportCanvas.height = canvas.height;
+    const ctx = exportCanvas.getContext('2d');
+    ctx.drawImage(canvas, 0, 0);
+    // Watermark text — bottom-right corner
+    const fontSize = Math.max(11, Math.round(canvas.width * 0.018));
+    ctx.font = `italic ${fontSize}px 'Georgia', serif`;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    const pad = Math.max(6, fontSize * 0.5);
+    const text = 'stitch-and-thread.app — Free';
+    const textW = ctx.measureText(text).width;
+    // Background pill
+    ctx.fillStyle = 'rgba(245,240,232,0.82)';
+    ctx.fillRect(canvas.width - textW - pad*2, canvas.height - fontSize - pad*2, textW + pad*2, fontSize + pad*2);
+    // Text
+    ctx.fillStyle = 'rgba(139,38,53,0.75)';
+    ctx.fillText(text, canvas.width - pad, canvas.height - pad);
+    showToast(t('free_watermark_note'));
+  }
+
   const a = document.createElement('a');
   a.download = 'cross-stitch-pattern.png';
-  a.href = canvas.toDataURL();
+  a.href = exportCanvas.toDataURL();
   a.click();
-  showToast(t('toast_png'));
+  if (_license) showToast(t('toast_png'));
 }
 
 function showToast(msg) {
@@ -4699,6 +5614,7 @@ const TRANSLATIONS = {
     th_tobuy: 'To buy',
     buy_empty: '✓ You have everything you need!',
     btn_export: '↓ Export shopping list as text',
+    btn_buy_amazon: '🛒 Buy on Amazon',
     modal_title: 'My Thread',
     tb_search_placeholder: 'Search by code or name… e.g. 321, Red, Blue',
     tb_selected: 'selected',
@@ -4757,6 +5673,73 @@ const TRANSLATIONS = {
     cc_search_placeholder: 'Search by code or name…',
     // Regenerating toast
     toast_regenerating: 'regenerating…',
+    // License system
+    lic_badge_free: 'Free',
+    lic_badge_cs: 'Cross-Stitch PRO',
+    lic_badge_miyuki: 'Miyuki PRO',
+    lic_badge_complete: 'Complete PRO',
+    lic_btn_activate: 'Activate license',
+    lic_modal_title: 'License',
+    lic_active_intro: 'Your license is active:',
+    lic_deactivate_hint: 'Remove license from this device:',
+    lic_btn_deactivate: 'Remove',
+    lic_btn_backup: 'Save license file',
+    lic_btn_restore: 'Restore from file',
+    lic_code_label: 'License code',
+    lic_btn_activate_confirm: 'Activate',
+    lic_buy_link: 'Get a license →',
+    lic_verifying: 'Verifying…',
+    lic_success: '✓ License activated!',
+    lic_err_invalid: 'Invalid license code. Please check and try again.',
+    lic_err_network: 'Could not reach the server. Using cached license.',
+    lic_err_format: 'Code format should be STITCH-XXXX-XXXX-XXXX',
+    lic_err_restore: 'Could not read the backup file.',
+    lic_restored: 'License restored from backup.',
+    lic_removed: 'License removed from this device.',
+    // Upgrade modal
+    upg_title: 'Unlock PRO Features',
+    upg_subtitle: 'Choose the pack that fits your craft',
+    upg_once: 'one-time',
+    upg_cs_f1: 'Anchor, Cosmo & Madeira brands',
+    upg_cs_f2: 'Patterns up to 400×600 stitches',
+    upg_cs_f3: 'Up to 40 colors',
+    upg_cs_f4: 'PDF export (chart + shopping list)',
+    upg_cs_f5: 'Paint editor & Thread Box',
+    upg_cs_f6: 'Change color & Progress mode',
+    upg_cs_f7: 'Shopping list .txt export',
+    upg_cs_f8: 'Miyuki Brick/Peyote',
+    upg_my_f1: 'Brick & Peyote techniques',
+    upg_my_f2: 'All shapes (Earring, Bracelet…)',
+    upg_my_f3: 'Free size up to 120×200 beads',
+    upg_my_f4: 'PDF export (Miyuki)',
+    upg_my_f5: 'Paint editor Miyuki',
+    upg_my_f6: 'Shopping list Miyuki export',
+    upg_my_f7: 'Cross-stitch brands',
+    upg_my_f8: 'Large cross-stitch patterns',
+    upg_all_f1: 'Everything in Cross-Stitch PRO',
+    upg_all_f2: 'Everything in Miyuki PRO',
+    upg_all_f3: 'All future updates included',
+    upg_btn_get: 'Get this pack →',
+    upg_btn_best: 'Get Complete Pack →',
+    upg_have_license: 'Already have a license?',
+    upg_activate_here: 'Activate it here',
+    // Free tier labels
+    free_limit_width: '80 free · PRO unlocks 400',
+    free_limit_colors: '15 free · PRO unlocks 40',
+    free_watermark_note: 'Free tier — watermark applied',
+    // Feature gate messages
+    gate_brand: 'Anchor, Cosmo and Madeira brands require a Cross-Stitch PRO or Complete license.',
+    gate_size: 'Patterns larger than 80 stitches wide require a Cross-Stitch PRO or Complete license.',
+    gate_colors: 'More than 15 colors requires a Cross-Stitch PRO or Complete license.',
+    gate_pdf_cs: 'PDF export requires a Cross-Stitch PRO or Complete license.',
+    gate_pdf_miyuki: 'PDF export for Miyuki requires a Miyuki PRO or Complete license.',
+    gate_edit: 'The paint editor requires a PRO license.',
+    gate_thread_box: 'Thread Box requires a Cross-Stitch PRO or Complete license.',
+    gate_progress: 'Progress mode requires a PRO license.',
+    gate_export_txt: 'Shopping list export requires a PRO license.',
+    gate_miyuki_tech: 'Brick and Peyote techniques require a Miyuki PRO or Complete license.',
+    gate_miyuki_shape: 'This shape requires a Miyuki PRO or Complete license.',
+    gate_miyuki_size: 'Miyuki patterns larger than 20×20 require a Miyuki PRO or Complete license.',
   },
   es: {
     tagline: 'Generador de Patrones de Punto de Cruz',
@@ -4801,6 +5784,7 @@ const TRANSLATIONS = {
     th_tobuy: 'Comprar',
     buy_empty: '✓ ¡Tienes todo lo que necesitas!',
     btn_export: '↓ Exportar lista de compra',
+    btn_buy_amazon: '🛒 Comprar en Amazon',
     modal_title: 'Mis Hilos',
     tb_search_placeholder: 'Buscar por código o nombre… ej: 321, Rojo',
     tb_selected: 'seleccionados',
@@ -4858,6 +5842,70 @@ const TRANSLATIONS = {
     cc_apply: 'Aplicar',
     cc_search_placeholder: 'Buscar por código o nombre…',
     toast_regenerating: 'regenerando…',
+    // Sistema de licencias
+    lic_badge_free: 'Gratis',
+    lic_badge_cs: 'Cross-Stitch PRO',
+    lic_badge_miyuki: 'Miyuki PRO',
+    lic_badge_complete: 'Completo PRO',
+    lic_btn_activate: 'Activar licencia',
+    lic_modal_title: 'Licencia',
+    lic_active_intro: 'Tu licencia está activa:',
+    lic_deactivate_hint: 'Eliminar licencia de este dispositivo:',
+    lic_btn_deactivate: 'Eliminar',
+    lic_btn_backup: 'Guardar archivo de licencia',
+    lic_btn_restore: 'Restaurar desde archivo',
+    lic_code_label: 'Código de licencia',
+    lic_btn_activate_confirm: 'Activar',
+    lic_buy_link: 'Obtener una licencia →',
+    lic_verifying: 'Verificando…',
+    lic_success: '✓ ¡Licencia activada!',
+    lic_err_invalid: 'Código de licencia inválido. Por favor verifica e inténtalo de nuevo.',
+    lic_err_network: 'No se pudo conectar al servidor. Usando licencia en caché.',
+    lic_err_format: 'El formato debe ser STITCH-XXXX-XXXX-XXXX',
+    lic_err_restore: 'No se pudo leer el archivo de respaldo.',
+    lic_restored: 'Licencia restaurada desde el respaldo.',
+    lic_removed: 'Licencia eliminada de este dispositivo.',
+    upg_title: 'Desbloquear funciones PRO',
+    upg_subtitle: 'Elige el pack que mejor se adapta a tu craft',
+    upg_once: 'pago único',
+    upg_cs_f1: 'Marcas Anchor, Cosmo y Madeira',
+    upg_cs_f2: 'Patrones hasta 400×600 puntos',
+    upg_cs_f3: 'Hasta 40 colores',
+    upg_cs_f4: 'Exportar PDF (patrón + lista)',
+    upg_cs_f5: 'Editor de pincel y Caja de hilos',
+    upg_cs_f6: 'Cambiar color y Modo progreso',
+    upg_cs_f7: 'Exportar lista de compra .txt',
+    upg_cs_f8: 'Miyuki Brick/Peyote',
+    upg_my_f1: 'Técnicas Brick y Peyote',
+    upg_my_f2: 'Todas las formas (Pendiente, Pulsera…)',
+    upg_my_f3: 'Tamaño libre hasta 120×200 cuentas',
+    upg_my_f4: 'PDF Miyuki',
+    upg_my_f5: 'Editor de pincel Miyuki',
+    upg_my_f6: 'Exportar lista de compra Miyuki',
+    upg_my_f7: 'Marcas de hilo',
+    upg_my_f8: 'Patrones grandes de punto de cruz',
+    upg_all_f1: 'Todo lo de Cross-Stitch PRO',
+    upg_all_f2: 'Todo lo de Miyuki PRO',
+    upg_all_f3: 'Todas las actualizaciones futuras',
+    upg_btn_get: 'Obtener este pack →',
+    upg_btn_best: 'Obtener Pack Completo →',
+    upg_have_license: '¿Ya tienes una licencia?',
+    upg_activate_here: 'Actívala aquí',
+    free_limit_width: '80 gratis · PRO desbloquea 400',
+    free_limit_colors: '15 gratis · PRO desbloquea 40',
+    free_watermark_note: 'Versión gratuita — marca de agua aplicada',
+    gate_brand: 'Anchor, Cosmo y Madeira requieren licencia Cross-Stitch PRO o Completo.',
+    gate_size: 'Patrones mayores de 80 puntos requieren licencia Cross-Stitch PRO o Completo.',
+    gate_colors: 'Más de 15 colores requiere licencia Cross-Stitch PRO o Completo.',
+    gate_pdf_cs: 'Exportar PDF requiere licencia Cross-Stitch PRO o Completo.',
+    gate_pdf_miyuki: 'Exportar PDF Miyuki requiere licencia Miyuki PRO o Completo.',
+    gate_edit: 'El editor de pincel requiere licencia PRO.',
+    gate_thread_box: 'La caja de hilos requiere licencia Cross-Stitch PRO o Completo.',
+    gate_progress: 'El modo progreso requiere licencia PRO.',
+    gate_export_txt: 'Exportar lista requiere licencia PRO.',
+    gate_miyuki_tech: 'Brick y Peyote requieren licencia Miyuki PRO o Completo.',
+    gate_miyuki_shape: 'Esta forma requiere licencia Miyuki PRO o Completo.',
+    gate_miyuki_size: 'Patrones Miyuki mayores de 20×20 requieren licencia Miyuki PRO o Completo.',
   },
   pt: {
     tagline: 'Gerador de Padrões de Ponto Cruz',
@@ -4902,6 +5950,7 @@ const TRANSLATIONS = {
     th_tobuy: 'Comprar',
     buy_empty: '✓ Você tem tudo que precisa!',
     btn_export: '↓ Exportar lista de compras',
+    btn_buy_amazon: '🛒 Comprar na Amazon',
     modal_title: 'Meus Fios',
     tb_search_placeholder: 'Buscar por código ou nome… ex: 321, Vermelho',
     tb_selected: 'selecionados',
@@ -4959,6 +6008,70 @@ const TRANSLATIONS = {
     cc_apply: 'Aplicar',
     cc_search_placeholder: 'Buscar por código ou nome…',
     toast_regenerating: 'regenerando…',
+    // Sistema de licenças
+    lic_badge_free: 'Grátis',
+    lic_badge_cs: 'Cross-Stitch PRO',
+    lic_badge_miyuki: 'Miyuki PRO',
+    lic_badge_complete: 'Completo PRO',
+    lic_btn_activate: 'Ativar licença',
+    lic_modal_title: 'Licença',
+    lic_active_intro: 'Sua licença está ativa:',
+    lic_deactivate_hint: 'Remover licença deste dispositivo:',
+    lic_btn_deactivate: 'Remover',
+    lic_btn_backup: 'Salvar arquivo de licença',
+    lic_btn_restore: 'Restaurar de arquivo',
+    lic_code_label: 'Código de licença',
+    lic_btn_activate_confirm: 'Ativar',
+    lic_buy_link: 'Obter uma licença →',
+    lic_verifying: 'Verificando…',
+    lic_success: '✓ Licença ativada!',
+    lic_err_invalid: 'Código de licença inválido. Verifique e tente novamente.',
+    lic_err_network: 'Não foi possível conectar ao servidor. Usando licença em cache.',
+    lic_err_format: 'O formato deve ser STITCH-XXXX-XXXX-XXXX',
+    lic_err_restore: 'Não foi possível ler o arquivo de backup.',
+    lic_restored: 'Licença restaurada do backup.',
+    lic_removed: 'Licença removida deste dispositivo.',
+    upg_title: 'Desbloquear Recursos PRO',
+    upg_subtitle: 'Escolha o pacote que combina com seu craft',
+    upg_once: 'pagamento único',
+    upg_cs_f1: 'Marcas Anchor, Cosmo e Madeira',
+    upg_cs_f2: 'Padrões até 400×600 pontos',
+    upg_cs_f3: 'Até 40 cores',
+    upg_cs_f4: 'Exportar PDF (padrão + lista)',
+    upg_cs_f5: 'Editor de pincel e Caixa de fios',
+    upg_cs_f6: 'Trocar cor e Modo progresso',
+    upg_cs_f7: 'Exportar lista de compras .txt',
+    upg_cs_f8: 'Miyuki Brick/Peyote',
+    upg_my_f1: 'Técnicas Brick e Peyote',
+    upg_my_f2: 'Todas as formas (Brinco, Pulseira…)',
+    upg_my_f3: 'Tamanho livre até 120×200 contas',
+    upg_my_f4: 'PDF Miyuki',
+    upg_my_f5: 'Editor de pincel Miyuki',
+    upg_my_f6: 'Exportar lista Miyuki',
+    upg_my_f7: 'Marcas de fio',
+    upg_my_f8: 'Padrões grandes de ponto cruz',
+    upg_all_f1: 'Tudo do Cross-Stitch PRO',
+    upg_all_f2: 'Tudo do Miyuki PRO',
+    upg_all_f3: 'Todas as atualizações futuras',
+    upg_btn_get: 'Obter este pacote →',
+    upg_btn_best: 'Obter Pacote Completo →',
+    upg_have_license: 'Já tem uma licença?',
+    upg_activate_here: 'Ative aqui',
+    free_limit_width: '80 grátis · PRO libera até 400',
+    free_limit_colors: '15 grátis · PRO libera até 40',
+    free_watermark_note: 'Versão grátis — marca d\'água aplicada',
+    gate_brand: 'Anchor, Cosmo e Madeira requerem licença Cross-Stitch PRO ou Completo.',
+    gate_size: 'Padrões maiores que 80 pontos requerem licença Cross-Stitch PRO ou Completo.',
+    gate_colors: 'Mais de 15 cores requer licença Cross-Stitch PRO ou Completo.',
+    gate_pdf_cs: 'Exportar PDF requer licença Cross-Stitch PRO ou Completo.',
+    gate_pdf_miyuki: 'Exportar PDF Miyuki requer licença Miyuki PRO ou Completo.',
+    gate_edit: 'O editor de pincel requer licença PRO.',
+    gate_thread_box: 'A caixa de fios requer licença Cross-Stitch PRO ou Completo.',
+    gate_progress: 'O modo progresso requer licença PRO.',
+    gate_export_txt: 'Exportar lista requer licença PRO.',
+    gate_miyuki_tech: 'Brick e Peyote requerem licença Miyuki PRO ou Completo.',
+    gate_miyuki_shape: 'Esta forma requer licença Miyuki PRO ou Completo.',
+    gate_miyuki_size: 'Padrões Miyuki maiores que 20×20 requerem licença Miyuki PRO ou Completo.',
   },
   de: {
     tagline: 'Kreuzstich-Muster-Generator',
@@ -5003,6 +6116,7 @@ const TRANSLATIONS = {
     th_tobuy: 'Kaufen',
     buy_empty: '✓ Sie haben alles, was Sie brauchen!',
     btn_export: '↓ Einkaufsliste exportieren',
+    btn_buy_amazon: '🛒 Bei Amazon kaufen',
     modal_title: 'Meine Garne',
     tb_search_placeholder: 'Nach Code oder Name suchen… z.B. 321, Rot',
     tb_selected: 'ausgewählt',
@@ -5060,6 +6174,70 @@ const TRANSLATIONS = {
     cc_apply: 'Anwenden',
     cc_search_placeholder: 'Nach Code oder Name suchen…',
     toast_regenerating: 'wird neu erstellt…',
+    // Lizenzsystem
+    lic_badge_free: 'Kostenlos',
+    lic_badge_cs: 'Cross-Stitch PRO',
+    lic_badge_miyuki: 'Miyuki PRO',
+    lic_badge_complete: 'Komplett PRO',
+    lic_btn_activate: 'Lizenz aktivieren',
+    lic_modal_title: 'Lizenz',
+    lic_active_intro: 'Ihre Lizenz ist aktiv:',
+    lic_deactivate_hint: 'Lizenz von diesem Gerät entfernen:',
+    lic_btn_deactivate: 'Entfernen',
+    lic_btn_backup: 'Lizenzdatei speichern',
+    lic_btn_restore: 'Aus Datei wiederherstellen',
+    lic_code_label: 'Lizenzcode',
+    lic_btn_activate_confirm: 'Aktivieren',
+    lic_buy_link: 'Lizenz erwerben →',
+    lic_verifying: 'Wird geprüft…',
+    lic_success: '✓ Lizenz aktiviert!',
+    lic_err_invalid: 'Ungültiger Lizenzcode. Bitte prüfen Sie die Eingabe.',
+    lic_err_network: 'Server nicht erreichbar. Zwischengespeicherte Lizenz wird verwendet.',
+    lic_err_format: 'Format muss STITCH-XXXX-XXXX-XXXX sein',
+    lic_err_restore: 'Backup-Datei konnte nicht gelesen werden.',
+    lic_restored: 'Lizenz aus Backup wiederhergestellt.',
+    lic_removed: 'Lizenz von diesem Gerät entfernt.',
+    upg_title: 'PRO-Funktionen freischalten',
+    upg_subtitle: 'Wählen Sie das passende Paket für Ihr Handwerk',
+    upg_once: 'einmalig',
+    upg_cs_f1: 'Marken Anchor, Cosmo & Madeira',
+    upg_cs_f2: 'Muster bis 400×600 Stiche',
+    upg_cs_f3: 'Bis zu 40 Farben',
+    upg_cs_f4: 'PDF-Export (Muster + Einkaufsliste)',
+    upg_cs_f5: 'Pinsel-Editor & Fadenkasten',
+    upg_cs_f6: 'Farbe ändern & Fortschrittsmodus',
+    upg_cs_f7: 'Einkaufsliste .txt exportieren',
+    upg_cs_f8: 'Miyuki Brick/Peyote',
+    upg_my_f1: 'Brick- und Peyote-Technik',
+    upg_my_f2: 'Alle Formen (Ohrring, Armband…)',
+    upg_my_f3: 'Freie Größe bis 120×200 Perlen',
+    upg_my_f4: 'PDF-Export (Miyuki)',
+    upg_my_f5: 'Pinsel-Editor Miyuki',
+    upg_my_f6: 'Miyuki-Einkaufsliste exportieren',
+    upg_my_f7: 'Garnmarken',
+    upg_my_f8: 'Große Kreuzstich-Muster',
+    upg_all_f1: 'Alles aus Cross-Stitch PRO',
+    upg_all_f2: 'Alles aus Miyuki PRO',
+    upg_all_f3: 'Alle zukünftigen Updates',
+    upg_btn_get: 'Dieses Paket holen →',
+    upg_btn_best: 'Komplettpaket holen →',
+    upg_have_license: 'Haben Sie bereits eine Lizenz?',
+    upg_activate_here: 'Hier aktivieren',
+    free_limit_width: '80 kostenlos · PRO bis 400',
+    free_limit_colors: '15 kostenlos · PRO bis 40',
+    free_watermark_note: 'Kostenlose Version — Wasserzeichen hinzugefügt',
+    gate_brand: 'Anchor, Cosmo und Madeira erfordern eine Cross-Stitch PRO- oder Komplett-Lizenz.',
+    gate_size: 'Muster größer als 80 Stiche erfordern eine Cross-Stitch PRO- oder Komplett-Lizenz.',
+    gate_colors: 'Mehr als 15 Farben erfordert eine Cross-Stitch PRO- oder Komplett-Lizenz.',
+    gate_pdf_cs: 'PDF-Export erfordert eine Cross-Stitch PRO- oder Komplett-Lizenz.',
+    gate_pdf_miyuki: 'Miyuki-PDF-Export erfordert eine Miyuki PRO- oder Komplett-Lizenz.',
+    gate_edit: 'Der Pinsel-Editor erfordert eine PRO-Lizenz.',
+    gate_thread_box: 'Der Fadenkasten erfordert eine Cross-Stitch PRO- oder Komplett-Lizenz.',
+    gate_progress: 'Der Fortschrittsmodus erfordert eine PRO-Lizenz.',
+    gate_export_txt: 'Listenexport erfordert eine PRO-Lizenz.',
+    gate_miyuki_tech: 'Brick und Peyote erfordern eine Miyuki PRO- oder Komplett-Lizenz.',
+    gate_miyuki_shape: 'Diese Form erfordert eine Miyuki PRO- oder Komplett-Lizenz.',
+    gate_miyuki_size: 'Miyuki-Muster größer als 20×20 erfordern eine Miyuki PRO- oder Komplett-Lizenz.',
   }
 };
 
@@ -5129,6 +6307,7 @@ function setLang(lang) {
     btn.classList.toggle('active', btn.getAttribute('onclick').includes(`'${lang}'`));
   });
   applyTranslations();
+  applyLicenseUI(); // Refresh license badge text in new language
 
   // Re-render shopping table if pattern exists (skein word changes)
   if (currentColors) renderShoppingTable();
@@ -5172,6 +6351,12 @@ function initTableDelegation() {
         const idx = Number(btn.dataset.brandIdx);
         const brand = btn.dataset.brandVal;
         setColorBrand(idx, brand);
+        return;
+      }
+      // Amazon buy button
+      if (btn.classList.contains('btn-buy-amazon')) {
+        const idx = Number(btn.dataset.amazonIdx);
+        openAmazonLink(idx);
         return;
       }
       // Stock stepper
@@ -5277,6 +6462,7 @@ const SHAPE_PRESETS = {
 };
 
 function setMiyukiTechnique(tech) {
+  if (['brick','peyote'].includes(tech) && !requirePack('miyuki', 'gate_miyuki_tech', 'miyuki')) return;
   miyukiTechnique = tech;
   ['loom','brick','peyote'].forEach(t => {
     document.getElementById('tech' + t.charAt(0).toUpperCase() + t.slice(1))
@@ -5291,6 +6477,7 @@ function setMiyukiTechnique(tech) {
 }
 
 function setMiyukiShape(shape) {
+  if (['earring','bracelet','necklace'].includes(shape) && !requirePack('miyuki', 'gate_miyuki_shape', 'miyuki')) return;
   miyukiShape = shape;
   ['free','earring','bracelet','necklace'].forEach(s => {
     document.getElementById('shape' + s.charAt(0).toUpperCase() + s.slice(1))
@@ -5618,6 +6805,7 @@ let isPainting = false;            // mouse drag state
 const MAX_UNDO = 50;
 
 function toggleEditMode() {
+  if (!editMode && !requirePack('any', currentFormat === 'miyuki' ? 'gate_edit' : 'gate_edit', currentFormat === 'miyuki' ? 'miyuki' : 'cs')) return;
   editMode = !editMode;
   const btn = document.getElementById('editToggleBtn');
   const toolbar = document.getElementById('paintToolbar');
@@ -5973,6 +7161,7 @@ function applyColorChange() {
 let myThreadBox = new Set(); // Set of DMC indices selected by user
 
 function openThreadBox() {
+  if (!requirePack('cs', 'gate_thread_box', 'cs')) return;
   document.getElementById('threadBoxModal').classList.add('open');
   document.getElementById('tbSearch').value = '';
   renderChips();
@@ -6076,6 +7265,11 @@ function confirmThreadBox() {
 // PDF EXPORT — printable chart with grid, symbols, legend
 // ============================================================
 async function exportPDF() {
+  if (currentFormat === 'miyuki') {
+    if (!requirePack('miyuki', 'gate_pdf_miyuki', 'miyuki')) return;
+  } else {
+    if (!requirePack('cs', 'gate_pdf_cs', 'cs')) return;
+  }
   if (!currentPattern) return;
 
   showToast('Building PDF chart…');
@@ -6315,6 +7509,17 @@ async function exportPDF() {
   doc.save(`cross-stitch-pattern-${W}x${H}.pdf`);
   showToast(t('toast_pdf', {n: totalPages}));
 }
+</script>
+<script>
+if ('serviceWorker' in navigator && !location.hostname.includes('claudeusercontent.com')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('SW registered'))
+      .catch(err => console.log('SW error', err));
+  });
+}
+// Initialize license system on page load
+window.addEventListener('load', () => { initLicense(); });
 </script>
 </body>
 </html>
