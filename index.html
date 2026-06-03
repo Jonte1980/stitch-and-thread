@@ -4094,66 +4094,9 @@ function applyLicenseUI() {
   applyBrandButtonStates();
 }
 
-function applySliderLimits() {
-  const wSlider = document.getElementById('patternWSlider');
-  const cSlider = document.getElementById('colorsSlider');
-  if (!wSlider || !cSlider) return;
+function applySliderLimits() { /* limits disabled */ }
 
-  const hasCS = hasAccess('cs');
-
-  // Width slider
-  if (hasCS) {
-    wSlider.max = PRO_MAX_WIDTH;
-    document.getElementById('freeLimitW') && document.getElementById('freeLimitW').remove();
-  } else {
-    wSlider.max = FREE_MAX_WIDTH;
-    if (parseInt(wSlider.value) > FREE_MAX_WIDTH) {
-      wSlider.value = FREE_MAX_WIDTH;
-      syncSize('w', FREE_MAX_WIDTH);
-    }
-    // Show free limit indicator if not already there
-    if (!document.getElementById('freeLimitW')) {
-      const ind = document.createElement('span');
-      ind.id = 'freeLimitW';
-      ind.className = 'free-limit-indicator';
-      ind.title = t('gate_size');
-      ind.textContent = t('free_limit_width');
-      ind.onclick = () => openUpgradeModal('gate_size', 'cs');
-      wSlider.parentNode.appendChild(ind);
-    }
-  }
-
-  // Colors slider
-  if (hasCS) {
-    cSlider.max = PRO_MAX_COLORS;
-    document.getElementById('freeLimitC') && document.getElementById('freeLimitC').remove();
-  } else {
-    cSlider.max = FREE_MAX_COLORS;
-    if (parseInt(cSlider.value) > FREE_MAX_COLORS) {
-      cSlider.value = FREE_MAX_COLORS;
-      document.getElementById('colorsVal').textContent = FREE_MAX_COLORS;
-    }
-    if (!document.getElementById('freeLimitC')) {
-      const ind2 = document.createElement('span');
-      ind2.id = 'freeLimitC';
-      ind2.className = 'free-limit-indicator';
-      ind2.title = t('gate_colors');
-      ind2.textContent = t('free_limit_colors');
-      ind2.onclick = () => openUpgradeModal('gate_colors', 'cs');
-      cSlider.parentNode.appendChild(ind2);
-    }
-  }
-}
-
-function applyBrandButtonStates() {
-  const hasCS = hasAccess('cs');
-  ['anchor','cosmo','madeira'].forEach(brand => {
-    const btn = document.querySelector(`[data-brand="${brand}"]`);
-    if (!btn) return;
-    btn.style.opacity = hasCS ? '' : '0.5';
-    btn.title = hasCS ? '' : t('gate_brand');
-  });
-}
+function applyBrandButtonStates() { /* limits disabled */ }
 
 // ── Feature gate ─────────────────────────────────────────────
 // Returns true if access is granted, false if blocked (and shows modal)
@@ -4443,7 +4386,6 @@ function selectFormat(fmt) {
 function selectBrand(btn) {
   const newBrand = btn.dataset.brand;
   if (newBrand === currentBrand) return; // already selected
-  if (['anchor','cosmo','madeira'].includes(newBrand) && !requirePack('cs', 'gate_brand', 'cs')) return;
   document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   currentBrand = newBrand;
@@ -4499,29 +4441,6 @@ async function _generatePatternImpl() {
   }
   let numColors = parseInt(document.getElementById('colorsSlider').value);
   const antiStrength = parseInt(document.getElementById('antiSlider').value);
-
-  // ── Free tier enforcement at generation time ──────────────
-  if (!hasAccess('cs') && currentFormat !== 'miyuki') {
-    if (W > FREE_MAX_WIDTH) {
-      showToast(t('gate_size'));
-      openUpgradeModal('gate_size', 'cs');
-      _generating = false;
-      return;
-    }
-    if (numColors > FREE_MAX_COLORS) {
-      numColors = FREE_MAX_COLORS;
-    }
-  }
-  if (!hasAccess('miyuki') && currentFormat === 'miyuki') {
-    const miyW = parseInt(document.getElementById('miyukiW').value) || 20;
-    const miyH = parseInt(document.getElementById('miyukiH').value) || 30;
-    if (miyW > FREE_MAX_MIYUKI_W || miyH > FREE_MAX_MIYUKI_H) {
-      showToast(t('gate_miyuki_size'));
-      openUpgradeModal('gate_miyuki_size', 'miyuki');
-      _generating = false;
-      return;
-    }
-  }
 
   setProgress(5);
 
@@ -4831,7 +4750,6 @@ function saveProgress() {
 }
 
 function toggleProgressMode() {
-  if (!progressMode && !requirePack('any', 'gate_progress', currentFormat === 'miyuki' ? 'miyuki' : 'cs')) return;
   progressMode = !progressMode;
   const toggle = document.getElementById('progressToggle');
   const stats = document.getElementById('progressStats');
@@ -5258,7 +5176,6 @@ function openAmazonLink(dmcIdx) {
 }
 
 function exportShoppingList() {
-  if (!requirePack('any', 'gate_export_txt', currentFormat === 'miyuki' ? 'miyuki' : 'cs')) return;
   const lines = [t('export_header'), '='.repeat(40), ''];
   let totalBuy = 0;
   shoppingData.forEach(({ dmcIdx, dmc, count, needed }) => {
@@ -5313,37 +5230,11 @@ function toggleGrid() {
 
 function downloadPattern() {
   const canvas = document.getElementById('patternCanvas');
-  let exportCanvas = canvas;
-
-  // Free tier: apply subtle watermark
-  if (!_license) {
-    exportCanvas = document.createElement('canvas');
-    exportCanvas.width  = canvas.width;
-    exportCanvas.height = canvas.height;
-    const ctx = exportCanvas.getContext('2d');
-    ctx.drawImage(canvas, 0, 0);
-    // Watermark text — bottom-right corner
-    const fontSize = Math.max(11, Math.round(canvas.width * 0.018));
-    ctx.font = `italic ${fontSize}px 'Georgia', serif`;
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'bottom';
-    const pad = Math.max(6, fontSize * 0.5);
-    const text = 'stitch-and-thread.app — Free';
-    const textW = ctx.measureText(text).width;
-    // Background pill
-    ctx.fillStyle = 'rgba(245,240,232,0.82)';
-    ctx.fillRect(canvas.width - textW - pad*2, canvas.height - fontSize - pad*2, textW + pad*2, fontSize + pad*2);
-    // Text
-    ctx.fillStyle = 'rgba(139,38,53,0.75)';
-    ctx.fillText(text, canvas.width - pad, canvas.height - pad);
-    showToast(t('free_watermark_note'));
-  }
-
   const a = document.createElement('a');
   a.download = 'cross-stitch-pattern.png';
-  a.href = exportCanvas.toDataURL();
+  a.href = canvas.toDataURL();
   a.click();
-  if (_license) showToast(t('toast_png'));
+  showToast(t('toast_png'));
 }
 
 function showToast(msg) {
@@ -6462,7 +6353,6 @@ const SHAPE_PRESETS = {
 };
 
 function setMiyukiTechnique(tech) {
-  if (['brick','peyote'].includes(tech) && !requirePack('miyuki', 'gate_miyuki_tech', 'miyuki')) return;
   miyukiTechnique = tech;
   ['loom','brick','peyote'].forEach(t => {
     document.getElementById('tech' + t.charAt(0).toUpperCase() + t.slice(1))
@@ -6477,7 +6367,6 @@ function setMiyukiTechnique(tech) {
 }
 
 function setMiyukiShape(shape) {
-  if (['earring','bracelet','necklace'].includes(shape) && !requirePack('miyuki', 'gate_miyuki_shape', 'miyuki')) return;
   miyukiShape = shape;
   ['free','earring','bracelet','necklace'].forEach(s => {
     document.getElementById('shape' + s.charAt(0).toUpperCase() + s.slice(1))
@@ -6805,7 +6694,6 @@ let isPainting = false;            // mouse drag state
 const MAX_UNDO = 50;
 
 function toggleEditMode() {
-  if (!editMode && !requirePack('any', currentFormat === 'miyuki' ? 'gate_edit' : 'gate_edit', currentFormat === 'miyuki' ? 'miyuki' : 'cs')) return;
   editMode = !editMode;
   const btn = document.getElementById('editToggleBtn');
   const toolbar = document.getElementById('paintToolbar');
@@ -7161,7 +7049,6 @@ function applyColorChange() {
 let myThreadBox = new Set(); // Set of DMC indices selected by user
 
 function openThreadBox() {
-  if (!requirePack('cs', 'gate_thread_box', 'cs')) return;
   document.getElementById('threadBoxModal').classList.add('open');
   document.getElementById('tbSearch').value = '';
   renderChips();
@@ -7265,11 +7152,6 @@ function confirmThreadBox() {
 // PDF EXPORT — printable chart with grid, symbols, legend
 // ============================================================
 async function exportPDF() {
-  if (currentFormat === 'miyuki') {
-    if (!requirePack('miyuki', 'gate_pdf_miyuki', 'miyuki')) return;
-  } else {
-    if (!requirePack('cs', 'gate_pdf_cs', 'cs')) return;
-  }
   if (!currentPattern) return;
 
   showToast('Building PDF chart…');
