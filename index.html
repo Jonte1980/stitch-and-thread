@@ -15,7 +15,6 @@
 <!-- VERSION: Beta 0.1 — Full feature build -->
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root {
     --cream: #f5f0e8;
@@ -1312,100 +1311,19 @@
 
   .portrait-options {
     display: none;
-    margin-top: 14px;\n  }\n  .portrait-options.visible { display: block; }\n  .portrait-hint {\n    font-size: 12px;\n    color: var(--warm-gray);\n    font-style: italic;\n    line-height: 1.5;\n    padding: 10px 12px;\n    background: var(--linen);\n    border-left: 3px solid var(--thread-red);\n    margin-bottom: 14px;\n  }
-
-  /* ── Google Drive / Projects ── */
-  .drive-account-btn {
-    display: flex; align-items: center; gap: 7px;
-    background: transparent; border: 1px solid rgba(245,240,232,0.35);
-    border-radius: 20px; padding: 5px 12px 5px 8px;
-    color: var(--cream); font-family: 'Crimson Pro', Georgia, serif;
-    font-size: 13px; cursor: pointer; transition: all 0.2s;
-    white-space: nowrap;
+    margin-top: 14px;
   }
-  .drive-account-btn:hover { background: rgba(245,240,232,0.12); border-color: rgba(245,240,232,0.6); }
-  .drive-account-avatar {
-    width: 24px; height: 24px; border-radius: 50%;
-    background: var(--gold); display: flex; align-items: center;
-    justify-content: center; font-size: 11px; font-weight: 600;
-    color: var(--dark); flex-shrink: 0; overflow: hidden;
+  .portrait-options.visible { display: block; }
+  .portrait-hint {
+    font-size: 12px;
+    color: var(--warm-gray);
+    font-style: italic;
+    line-height: 1.5;
+    padding: 10px 12px;
+    background: var(--linen);
+    border-left: 3px solid var(--thread-red);
+    margin-bottom: 14px;
   }
-  .drive-account-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .btn-drive-save {
-    background: transparent; border: 1px solid #4285f4;
-    color: #4285f4; border-radius: var(--radius); padding: 6px 12px;
-    font-family: 'Crimson Pro', Georgia, serif; font-size: 13px;
-    cursor: pointer; transition: all 0.2s; display: none;
-  }
-  .btn-drive-save:hover { background: #4285f4; color: white; }
-  /* Projects modal */
-  .projects-modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(42,36,32,0.75); z-index: 1000;
-    align-items: center; justify-content: center;
-  }
-  .projects-modal-overlay.open { display: flex; }
-  .projects-modal {
-    background: var(--cream); border-radius: 12px;
-    width: min(680px, 95vw); max-height: 85vh;
-    display: flex; flex-direction: column;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-  }
-  .projects-modal-header {
-    padding: 20px 24px 16px; border-bottom: 1px solid var(--warm-border);
-    display: flex; align-items: center; gap: 12px;
-  }
-  .projects-modal-header h2 {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 20px; color: var(--dark); flex: 1; margin: 0;
-  }
-  .projects-modal-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
-  .projects-modal-footer { padding: 14px 24px; border-top: 1px solid var(--warm-border); display: flex; gap: 10px; justify-content: flex-end; }
-  .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
-  .project-card {
-    background: white; border: 1.5px solid var(--warm-border);
-    border-radius: 8px; overflow: hidden; cursor: pointer;
-    transition: all 0.18s; position: relative;
-  }
-  .project-card:hover { border-color: var(--thread-red); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
-  .project-card-thumb {
-    width: 100%; aspect-ratio: 1; background: #f0ebe3;
-    display: flex; align-items: center; justify-content: center; overflow: hidden;
-  }
-  .project-card-thumb img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
-  .project-card-thumb .no-thumb { font-size: 32px; }
-  .project-card-info { padding: 10px 12px; }
-  .project-card-name { font-size: 13px; font-weight: 600; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .project-card-meta { font-size: 11px; color: var(--warm-gray); margin-top: 3px; }
-  .project-card-del {
-    position: absolute; top: 6px; right: 6px; width: 22px; height: 22px;
-    background: rgba(139,38,53,0.85); color: white; border: none;
-    border-radius: 50%; font-size: 12px; cursor: pointer; display: none;
-    align-items: center; justify-content: center; line-height: 1;
-  }
-  .project-card:hover .project-card-del { display: flex; }
-  .projects-empty { text-align: center; padding: 48px 24px; color: var(--warm-gray); }
-  .projects-empty .empty-icon { font-size: 48px; margin-bottom: 12px; }
-  .projects-empty p { font-size: 15px; }
-  .project-name-input {
-    width: 100%; border: 1.5px solid var(--warm-border); border-radius: 6px;
-    padding: 8px 12px; font-family: 'Crimson Pro', Georgia, serif; font-size: 15px;
-    background: white; color: var(--dark); margin-bottom: 4px;
-  }
-  .project-name-input:focus { outline: none; border-color: var(--thread-red); }
-  .drive-signin-prompt { text-align: center; padding: 40px 24px; }
-  .drive-signin-prompt p { font-size: 15px; color: var(--warm-gray); margin-bottom: 20px; line-height: 1.6; }
-  .btn-google-signin {
-    display: inline-flex; align-items: center; gap: 10px;
-    background: white; border: 1.5px solid #dadce0; border-radius: 6px;
-    padding: 10px 20px; font-size: 15px; cursor: pointer;
-    font-family: 'Crimson Pro', Georgia, serif; color: var(--dark);
-    transition: box-shadow 0.2s;
-  }
-  .btn-google-signin:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-  .drive-loading { text-align: center; padding: 40px; color: var(--warm-gray); font-size: 14px; }
-  .projects-save-form { margin-bottom: 20px; padding: 16px; background: #faf6f0; border-radius: 8px; border: 1px solid var(--warm-border); }
-  .projects-save-form h3 { font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 10px; }
 </style>
 </head>
 <body>
@@ -1431,6 +1349,7 @@
 
   <header>
     <div class="logo">Stitch <span>&</span> Thread</div>
+    <button id="proBadge" onclick="showPaywall('')" style="background:#e8e0d5;border:1px solid #c8bfb0;border-radius:12px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Crimson Pro',Georgia,serif;color:#8b7355;letter-spacing:.04em;margin-left:8px">FREE</button>
     <div class="tagline" id="tagline">Cross-Stitch Pattern Generator</div>
     <div class="lang-selector" style="margin-left:auto;">
       <button class="lang-btn active" onclick="setLang('en')" title="English">EN</button>
@@ -1438,10 +1357,6 @@
       <button class="lang-btn" onclick="setLang('pt')" title="Português">PT</button>
       <button class="lang-btn" onclick="setLang('de')" title="Deutsch">DE</button>
     </div>
-    <button class="drive-account-btn" id="driveAccountBtn" onclick="openProjectsModal()" title="My projects">
-      <div class="drive-account-avatar" id="driveAvatar">☁</div>
-      <span id="driveAccountLabel" data-i18n="drive_projects">My Projects</span>
-    </button>
   </header>
 
   <div class="main">
@@ -1716,7 +1631,6 @@
             <button class="btn-edit-toggle" id="editToggleBtn" onclick="toggleEditMode()" style="display:none">✏️ Edit</button>
             <button class="btn-secondary" id="downloadBtn" onclick="downloadPattern()" style="display:none">↓ <span data-i18n="btn_png">PNG</span></button>
             <button class="btn-secondary" id="pdfBtn" onclick="exportPDF()" style="display:none;border-color:var(--gold);color:var(--gold)">↓ <span data-i18n="btn_pdf">PDF Chart</span></button>
-            <button class="btn-drive-save" id="driveSaveBtn" onclick="saveProjectToDrive()">☁ <span data-i18n="btn_drive_save">Save</span></button>
           </div>
         </div>
       </div>
@@ -1827,18 +1741,40 @@
   </div>
 </div>
 
-<!-- PROJECTS MODAL -->
-<div class="projects-modal-overlay" id="projectsModal">
-  <div class="projects-modal">
-    <div class="projects-modal-header">
-      <h2>🧵 <span data-i18n="drive_projects_title">My Projects</span></h2>
-      <button class="modal-close" onclick="closeProjectsModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--warm-gray);">&times;</button>
+<!-- PAYWALL MODAL -->
+<div id="paywallModal" style="display:none;position:fixed;inset:0;background:rgba(42,36,32,0.8);z-index:2000;align-items:center;justify-content:center;">
+  <div style="background:#f5f0e8;border-radius:14px;width:min(500px,95vw);max-height:90vh;overflow-y:auto;font-family:'Crimson Pro',Georgia,serif;padding:28px;">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:32px">🧵</div>
+      <h2 id="paywallTitle" style="font-family:'Playfair Display',serif;font-size:22px;color:#2a2420;margin:8px 0 4px"></h2>
+      <p id="paywallMsg" style="font-size:14px;color:#8b7355;margin:0"></p>
     </div>
-    <div class="projects-modal-body" id="projectsModalBody">
-      <!-- Filled by JS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div style="border:2px solid #e8e0d5;border-radius:8px;padding:16px;text-align:center">
+        <div style="font-weight:700;color:#2a2420;margin-bottom:4px">Cross-Stitch PRO</div>
+        <div style="font-size:24px;font-weight:700;color:#8b2635">10€</div>
+        <div id="paywallCSFeatures" style="font-size:11px;color:#8b7355;margin-top:8px;text-align:left;line-height:1.8"></div>
+      </div>
+      <div style="border:2px solid #e8e0d5;border-radius:8px;padding:16px;text-align:center">
+        <div style="font-weight:700;color:#2a2420;margin-bottom:4px">Miyuki PRO</div>
+        <div style="font-size:24px;font-weight:700;color:#8b2635">10€</div>
+        <div id="paywallMYFeatures" style="font-size:11px;color:#8b7355;margin-top:8px;text-align:left;line-height:1.8"></div>
+      </div>
     </div>
-    <div class="projects-modal-footer">
-      <button class="btn-secondary" onclick="closeProjectsModal()" data-i18n="cc_cancel">Cancel</button>
+    <div style="border:2px solid #b8974a;border-radius:8px;padding:16px;text-align:center;margin-bottom:20px;background:#fdf8f0">
+      <div id="paywallPackName" style="font-weight:700;color:#2a2420;font-size:15px"></div>
+      <div style="font-size:28px;font-weight:700;color:#8b2635">15€</div>
+      <div id="paywallSavings" style="font-size:12px;color:#b8974a;font-weight:600"></div>
+    </div>
+    <div style="border-top:1px solid #e8e0d5;padding-top:16px;margin-bottom:16px">
+      <div style="font-size:12px;color:#8b7355;margin-bottom:8px;text-align:center" id="paywallBetaLabel"></div>
+      <div style="display:flex;gap:8px">
+        <input id="betaCodeInput" type="text" placeholder="Código beta" style="flex:1;border:1.5px solid #e8e0d5;border-radius:6px;padding:8px 12px;font-family:inherit;font-size:14px;text-transform:uppercase;letter-spacing:.1em;background:white">
+        <button onclick="submitBetaCode()" id="paywallApplyBtn" style="background:#2a2420;color:white;border:none;border-radius:6px;padding:8px 16px;font-family:inherit;font-size:14px;cursor:pointer"></button>
+      </div>
+    </div>
+    <div style="text-align:center">
+      <button onclick="closePaywall()" id="paywallContinueBtn" style="background:none;border:none;color:#8b7355;font-size:13px;cursor:pointer;font-family:inherit;text-decoration:underline"></button>
     </div>
   </div>
 </div>
@@ -3518,6 +3454,16 @@ const FORMAT_GEOMETRY = {
 };
 
 let currentFormat = 'crossstitch'; // 'crossstitch' | 'miyuki'
+// FREEMIUM
+const BETA_CODE = 'VETA80';
+const PRO_STORAGE_KEY = 'st_pro_flags';
+const _proFlags = JSON.parse(localStorage.getItem(PRO_STORAGE_KEY) || '{}');
+let hasCSPro = !!_proFlags.cs;
+let hasMiyukiPro = !!_proFlags.miyuki;
+function saveProFlags() { localStorage.setItem(PRO_STORAGE_KEY, JSON.stringify({cs: hasCSPro, miyuki: hasMiyukiPro})); }
+function unlockWithCode(code) { if ((code||'').trim().toUpperCase() === BETA_CODE) { hasCSPro = true; hasMiyukiPro = true; saveProFlags(); return true; } return false; }
+function isPro() { return hasCSPro || hasMiyukiPro; }
+function canUseBrand(b) { return b === 'dmc' || (hasCSPro && ['anchor','cosmo','madeira'].includes(b)); }
 
 function getGeometry() {
   return FORMAT_GEOMETRY[currentFormat] || FORMAT_GEOMETRY.crossstitch;
@@ -3743,6 +3689,7 @@ function selectFormat(fmt) {
 
 function selectBrand(btn) {
   const newBrand = btn.dataset.brand;
+  if (!canUseBrand(newBrand)) { showPaywall('Esta marca requiere PRO.'); return; }
   if (newBrand === currentBrand) return; // already selected
   document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -3934,7 +3881,6 @@ async function _generatePatternImpl() {
   document.getElementById('editToggleBtn').style.display = '';
   document.getElementById('downloadBtn').style.display = '';
   document.getElementById('pdfBtn').style.display = '';
-  document.getElementById('driveSaveBtn').style.display = '';
   document.getElementById('progressModeBar').classList.add('visible');
 
   // Load saved progress for this pattern
@@ -4109,6 +4055,7 @@ function saveProgress() {
 }
 
 function toggleProgressMode() {
+  const np2 = currentFormat==='crossstitch'?!hasCSPro:!hasMiyukiPro; if(np2){showPaywall('El modo progreso requiere PRO.');return;}
   progressMode = !progressMode;
   const toggle = document.getElementById('progressToggle');
   const stats = document.getElementById('progressStats');
@@ -4517,6 +4464,7 @@ function switchTab(tab) {
 }
 
 function exportShoppingList() {
+  const np3 = currentFormat==='crossstitch'?!hasCSPro:!hasMiyukiPro; if(np3){showPaywall('El export requiere PRO.');return;}
   const lines = [t('export_header'), '='.repeat(40), ''];
   let totalBuy = 0;
   shoppingData.forEach(({ dmcIdx, dmc, count, needed }) => {
@@ -4573,11 +4521,50 @@ function downloadPattern() {
   const canvas = document.getElementById('patternCanvas');
   const a = document.createElement('a');
   a.download = 'cross-stitch-pattern.png';
-  a.href = canvas.toDataURL();
+  if (!isPro()) {
+    const wm = document.createElement('canvas');
+    wm.width = canvas.width; wm.height = canvas.height;
+    const ctx = wm.getContext('2d');
+    ctx.drawImage(canvas, 0, 0);
+    ctx.save();
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = '#2a2420';
+    ctx.font = 'bold ' + Math.max(18, Math.round(canvas.width/18)) + 'px Arial';
+    ctx.translate(canvas.width/2, canvas.height/2);
+    ctx.rotate(-Math.PI/4);
+    const txt = 'stitch-and-thread.app';
+    const step = Math.round(canvas.width*0.55);
+    for (let r=-canvas.height; r<canvas.height; r+=step)
+      for (let c=-canvas.width; c<canvas.width; c+=step)
+        ctx.fillText(txt, c, r);
+    ctx.restore();
+    a.href = wm.toDataURL();
+  } else {
+    a.href = canvas.toDataURL();
+  }
   a.click();
   showToast(t('toast_png'));
 }
 
+function showPaywall(reason) {
+  const m=document.getElementById('paywallModal');
+  document.getElementById('paywallMsg').textContent=reason||'';
+  document.getElementById('paywallTitle').textContent=t('paywall_title');
+  document.getElementById('paywallBetaLabel').textContent=t('paywall_beta');
+  document.getElementById('paywallContinueBtn').textContent=t('paywall_continue');
+  document.getElementById('paywallApplyBtn').textContent=t('paywall_apply');
+  document.getElementById('paywallPackName').textContent=t('paywall_pack');
+  document.getElementById('paywallSavings').textContent=t('paywall_savings');
+  document.getElementById('betaCodeInput').placeholder=t('paywall_beta');
+  const csF='✓ '+t('paywall_cs_features').split(' · ').join('<br>✓ ');
+  const myF='✓ '+t('paywall_my_features').split(' · ').join('<br>✓ ');
+  document.getElementById('paywallCSFeatures').innerHTML=csF;
+  document.getElementById('paywallMYFeatures').innerHTML=myF;
+  m.style.display='flex';
+}
+function closePaywall() { document.getElementById('paywallModal').style.display='none'; }
+function submitBetaCode() { const input=document.getElementById('betaCodeInput'); if(unlockWithCode(input.value)) { closePaywall(); showToast(t('paywall_unlocked')); updateProBadge(); } else { input.style.outline='2px solid #8b2635'; setTimeout(()=>input.style.outline='',1200); } }
+function updateProBadge() { const b=document.getElementById('proBadge'); if(b) b.textContent=isPro()?'⭐ PRO':'FREE'; }
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -4904,26 +4891,23 @@ const TRANSLATIONS = {
     cc_search_placeholder: 'Search by code or name…',
     // Regenerating toast
     toast_regenerating: 'regenerating…',
-    drive_projects: 'My Projects',
-    drive_projects_title: 'My Projects',
-    drive_signin_desc: 'Sign in with Google to save your patterns to Drive and access them from any device.',
-    drive_signin_btn: 'Sign in with Google',
-    drive_save_current: 'Save current pattern',
-    drive_name_placeholder: 'Project name…',
-    drive_save_btn: 'Save to Drive',
-    drive_saving: 'Saving…',
-    drive_saved_ok: 'Project saved to Drive ✓',
-    drive_save_error: 'Error saving. Please try again.',
-    drive_no_pattern: 'Generate a pattern first.',
-    drive_loading: 'Loading your projects…',
-    drive_loading_project: 'Loading project…',
-    drive_loaded_ok: 'Project "{name}" loaded ✓',
-    drive_load_error: 'Error loading project.',
-    drive_no_projects: 'No saved projects yet. Generate a pattern and save it!',
-    drive_saved_projects: 'Saved projects',
-    drive_delete: 'Delete project',
-    drive_confirm_delete: 'Delete this project? This cannot be undone.',
-    btn_drive_save: 'Save',
+    paywall_title: 'Unlock PRO',
+    paywall_brand: 'This thread brand requires a PRO plan.',
+    paywall_editor: 'The brush editor requires a PRO plan.',
+    paywall_progress: 'Progress mode requires a PRO plan.',
+    paywall_shopping: 'Shopping list export requires a PRO plan.',
+    paywall_pdf: 'PDF export requires a PRO plan.',
+    paywall_size: 'Pattern size exceeds the free limit (max 80pt wide).',
+    paywall_colors: 'Free plan supports up to 15 colors.',
+    paywall_miyuki_size: 'Free Miyuki patterns are limited to 20×20 beads.',
+    paywall_beta: 'Have a beta code?',
+    paywall_apply: 'Apply',
+    paywall_continue: 'Continue with free version',
+    paywall_unlocked: '🎉 PRO access activated!',
+    paywall_cs_features: 'Anchor, Cosmo, Madeira · Up to 400×600pt · 40 colors · PDF export · Brush editor · Progress mode · Drive projects',
+    paywall_my_features: 'Brick + Peyote · All shapes · Unlimited size · PDF export · Brush editor · Progress mode · Drive projects',
+    paywall_pack: 'Complete Pack',
+    paywall_savings: 'Cross-Stitch + Miyuki — save 5€',
   },
   es: {
     tagline: 'Generador de Patrones de Punto de Cruz',
@@ -5025,27 +5009,25 @@ const TRANSLATIONS = {
     cc_apply: 'Aplicar',
     cc_search_placeholder: 'Buscar por código o nombre…',
     toast_regenerating: 'regenerando…',
-    drive_projects: 'Mis Proyectos',
-    drive_projects_title: 'Mis Proyectos',
-    drive_signin_desc: 'Inicia sesión con Google para guardar tus patrones en Drive y acceder desde cualquier dispositivo.',
-    drive_signin_btn: 'Entrar con Google',
-    drive_save_current: 'Guardar patrón actual',
-    drive_name_placeholder: 'Nombre del proyecto…',
-    drive_save_btn: 'Guardar en Drive',
-    drive_saving: 'Guardando…',
-    drive_saved_ok: 'Proyecto guardado en Drive ✓',
-    drive_save_error: 'Error al guardar. Inténtalo de nuevo.',
-    drive_no_pattern: 'Genera un patrón primero.',
-    drive_loading: 'Cargando tus proyectos…',
-    drive_loading_project: 'Cargando proyecto…',
-    drive_loaded_ok: 'Proyecto "{name}" cargado ✓',
-    drive_load_error: 'Error al cargar el proyecto.',
-    drive_no_projects: 'Sin proyectos guardados. ¡Genera un patrón y guárdalo!',
-    drive_saved_projects: 'Proyectos guardados',
-    drive_delete: 'Eliminar proyecto',
-    drive_confirm_delete: '¿Eliminar este proyecto? Esta acción no se puede deshacer.',
-    btn_drive_save: 'Guardar',
+    paywall_title: 'Desbloquear PRO',
+    paywall_brand: 'Esta marca requiere un plan PRO.',
+    paywall_editor: 'El editor de pincel requiere PRO.',
+    paywall_progress: 'El modo progreso requiere PRO.',
+    paywall_shopping: 'El export de lista requiere PRO.',
+    paywall_pdf: 'El export PDF requiere PRO.',
+    paywall_size: 'El patrón supera el límite gratuito (máx. 80pt de ancho).',
+    paywall_colors: 'El plan gratuito permite hasta 15 colores.',
+    paywall_miyuki_size: 'Miyuki gratuito limitado a 20×20 cuentas.',
+    paywall_beta: '¿Tienes un código beta?',
+    paywall_apply: 'Aplicar',
+    paywall_continue: 'Continuar con versión gratuita',
+    paywall_unlocked: '🎉 ¡Acceso PRO activado!',
+    paywall_cs_features: 'Anchor, Cosmo, Madeira · Hasta 400×600pt · 40 colores · PDF export · Editor pincel · Progress mode · Proyectos en Drive',
+    paywall_my_features: 'Brick + Peyote · Todas las formas · Tamaño libre · PDF export · Editor pincel · Progress mode · Proyectos en Drive',
+    paywall_pack: 'Pack Completo',
+    paywall_savings: 'Cross-Stitch + Miyuki — ahorras 5€',
   },
+  pt: {
     tagline: 'Gerador de Padrões de Ponto Cruz',
     sec_image: 'Imagem',
     sec_brand: 'Marca do Fio',
@@ -5145,26 +5127,23 @@ const TRANSLATIONS = {
     cc_apply: 'Aplicar',
     cc_search_placeholder: 'Buscar por código ou nome…',
     toast_regenerating: 'regenerando…',
-    drive_projects: 'Meus Projetos',
-    drive_projects_title: 'Meus Projetos',
-    drive_signin_desc: 'Entre com o Google para salvar seus padrões no Drive e acessá-los de qualquer dispositivo.',
-    drive_signin_btn: 'Entrar com Google',
-    drive_save_current: 'Salvar padrão atual',
-    drive_name_placeholder: 'Nome do projeto…',
-    drive_save_btn: 'Salvar no Drive',
-    drive_saving: 'Salvando…',
-    drive_saved_ok: 'Projeto salvo no Drive ✓',
-    drive_save_error: 'Erro ao salvar. Tente novamente.',
-    drive_no_pattern: 'Gere um padrão primeiro.',
-    drive_loading: 'Carregando seus projetos…',
-    drive_loading_project: 'Carregando projeto…',
-    drive_loaded_ok: 'Projeto "{name}" carregado ✓',
-    drive_load_error: 'Erro ao carregar projeto.',
-    drive_no_projects: 'Nenhum projeto salvo. Gere um padrão e salve!',
-    drive_saved_projects: 'Projetos salvos',
-    drive_delete: 'Excluir projeto',
-    drive_confirm_delete: 'Excluir este projeto? Essa ação não pode ser desfeita.',
-    btn_drive_save: 'Salvar',
+    paywall_title: 'Desbloquear PRO',
+    paywall_brand: 'Esta marca requer um plano PRO.',
+    paywall_editor: 'O editor de pincel requer PRO.',
+    paywall_progress: 'O modo progresso requer PRO.',
+    paywall_shopping: 'O export da lista requer PRO.',
+    paywall_pdf: 'O export PDF requer PRO.',
+    paywall_size: 'O padrão excede o limite gratuito (máx. 80pt de largura).',
+    paywall_colors: 'O plano gratuito suporta até 15 cores.',
+    paywall_miyuki_size: 'Miyuki gratuito limitado a 20×20 contas.',
+    paywall_beta: 'Tem um código beta?',
+    paywall_apply: 'Aplicar',
+    paywall_continue: 'Continuar com versão gratuita',
+    paywall_unlocked: '🎉 Acesso PRO ativado!',
+    paywall_cs_features: 'Anchor, Cosmo, Madeira · Até 400×600pt · 40 cores · PDF export · Editor pincel · Modo progresso · Projetos no Drive',
+    paywall_my_features: 'Brick + Peyote · Todas as formas · Tamanho livre · PDF export · Editor pincel · Modo progresso · Projetos no Drive',
+    paywall_pack: 'Pack Completo',
+    paywall_savings: 'Cross-Stitch + Miyuki — poupa 5€',
   },
   de: {
     tagline: 'Kreuzstich-Muster-Generator',
@@ -5266,26 +5245,23 @@ const TRANSLATIONS = {
     cc_apply: 'Anwenden',
     cc_search_placeholder: 'Nach Code oder Name suchen…',
     toast_regenerating: 'wird neu erstellt…',
-    drive_projects: 'Meine Projekte',
-    drive_projects_title: 'Meine Projekte',
-    drive_signin_desc: 'Mit Google anmelden, um Muster in Drive zu speichern und von jedem Gerät darauf zuzugreifen.',
-    drive_signin_btn: 'Mit Google anmelden',
-    drive_save_current: 'Aktuelles Muster speichern',
-    drive_name_placeholder: 'Projektname…',
-    drive_save_btn: 'In Drive speichern',
-    drive_saving: 'Wird gespeichert…',
-    drive_saved_ok: 'Projekt in Drive gespeichert ✓',
-    drive_save_error: 'Fehler beim Speichern. Bitte erneut versuchen.',
-    drive_no_pattern: 'Zuerst ein Muster erstellen.',
-    drive_loading: 'Projekte werden geladen…',
-    drive_loading_project: 'Projekt wird geladen…',
-    drive_loaded_ok: 'Projekt „{name}" geladen ✓',
-    drive_load_error: 'Fehler beim Laden des Projekts.',
-    drive_no_projects: 'Noch keine gespeicherten Projekte. Erstellen Sie ein Muster und speichern Sie es!',
-    drive_saved_projects: 'Gespeicherte Projekte',
-    drive_delete: 'Projekt löschen',
-    drive_confirm_delete: 'Dieses Projekt löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
-    btn_drive_save: 'Speichern',
+    paywall_title: 'PRO freischalten',
+    paywall_brand: 'Diese Marke erfordert einen PRO-Plan.',
+    paywall_editor: 'Der Pinseleditor erfordert PRO.',
+    paywall_progress: 'Der Fortschrittsmodus erfordert PRO.',
+    paywall_shopping: 'Der Listen-Export erfordert PRO.',
+    paywall_pdf: 'Der PDF-Export erfordert PRO.',
+    paywall_size: 'Muster überschreitet das kostenlose Limit (max. 80pt Breite).',
+    paywall_colors: 'Der kostenlose Plan unterstützt bis zu 15 Farben.',
+    paywall_miyuki_size: 'Kostenloses Miyuki auf 20×20 Perlen begrenzt.',
+    paywall_beta: 'Haben Sie einen Beta-Code?',
+    paywall_apply: 'Anwenden',
+    paywall_continue: 'Mit kostenloser Version fortfahren',
+    paywall_unlocked: '🎉 PRO-Zugang aktiviert!',
+    paywall_cs_features: 'Anchor, Cosmo, Madeira · Bis 400×600pt · 40 Farben · PDF-Export · Pinseleditor · Fortschrittsmodus · Drive-Projekte',
+    paywall_my_features: 'Brick + Peyote · Alle Formen · Unbegrenzte Größe · PDF-Export · Pinseleditor · Fortschrittsmodus · Drive-Projekte',
+    paywall_pack: 'Komplett-Paket',
+    paywall_savings: 'Cross-Stitch + Miyuki — 5€ sparen',
   }
 };
 
@@ -5844,6 +5820,7 @@ let isPainting = false;            // mouse drag state
 const MAX_UNDO = 50;
 
 function toggleEditMode() {
+  if (!editMode) { const np = currentFormat==='crossstitch'?!hasCSPro:!hasMiyukiPro; if(np){showPaywall('El editor de pincel requiere PRO.');return;} }
   editMode = !editMode;
   const btn = document.getElementById('editToggleBtn');
   const toolbar = document.getElementById('paintToolbar');
@@ -6303,6 +6280,7 @@ function confirmThreadBox() {
 // ============================================================
 async function exportPDF() {
   if (!currentPattern) return;
+  const np4 = currentFormat==='crossstitch'?!hasCSPro:!hasMiyukiPro; if(np4){showPaywall('El PDF requiere PRO.');return;}
 
   showToast('Building PDF chart…');
   await new Promise(r => setTimeout(r, 60)); // let toast render
@@ -6550,383 +6528,6 @@ if ('serviceWorker' in navigator && !location.hostname.includes('claudeuserconte
       .catch(err => console.log('SW error', err));
   });
 }
-</script>
-
-<!-- ============================================================
-     GOOGLE DRIVE PROJECTS SYSTEM
-     OAuth 2.0 PKCE client-side — no backend required
-     ============================================================ -->
-<script>
-const DRIVE_CLIENT_ID = '851953645621-tlu1v5g0t70unme57ct4flea9rto88aj.apps.googleusercontent.com';
-const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
-const DRIVE_FOLDER_NAME = 'StitchAndThread';
-const STITCH_MIME = 'application/json';
-const STITCH_EXT = '.stitch';
-
-let driveAccessToken = null;
-let driveUserName = '';
-let driveUserPicture = '';
-let driveTokenClient = null;
-let _pendingDriveAction = null; // fn to call after auth
-
-// ── Init ──────────────────────────────────────────────────────
-window.addEventListener('load', () => {
-  // Google Identity Services loads async — wait for it
-  const tryInit = () => {
-    if (typeof google !== 'undefined' && google.accounts) {
-      driveTokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: DRIVE_CLIENT_ID,
-        scope: DRIVE_SCOPE + ' https://www.googleapis.com/auth/userinfo.profile',
-        callback: onDriveTokenReceived,
-      });
-      // Restore session if token in sessionStorage
-      const saved = sessionStorage.getItem('drive_token');
-      if (saved) {
-        const { token, name, picture, expiry } = JSON.parse(saved);
-        if (Date.now() < expiry) {
-          driveAccessToken = token;
-          driveUserName = name;
-          driveUserPicture = picture;
-          updateDriveUI();
-        }
-      }
-    } else {
-      setTimeout(tryInit, 200);
-    }
-  };
-  tryInit();
-});
-
-function onDriveTokenReceived(resp) {
-  if (resp.error) { console.error('Drive auth error', resp); return; }
-  driveAccessToken = resp.access_token;
-  // Fetch user profile
-  fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-    headers: { Authorization: `Bearer ${driveAccessToken}` }
-  }).then(r => r.json()).then(info => {
-    driveUserName = info.name || info.email || 'User';
-    driveUserPicture = info.picture || '';
-    // Save to session (expires in ~1h)
-    sessionStorage.setItem('drive_token', JSON.stringify({
-      token: driveAccessToken,
-      name: driveUserName,
-      picture: driveUserPicture,
-      expiry: Date.now() + 3500 * 1000
-    }));
-    updateDriveUI();
-    if (_pendingDriveAction) { _pendingDriveAction(); _pendingDriveAction = null; }
-  });
-}
-
-function requireDriveAuth(then) {
-  if (driveAccessToken) { then(); return; }
-  _pendingDriveAction = then;
-  driveTokenClient.requestAccessToken({ prompt: '' });
-}
-
-function updateDriveUI() {
-  const avatar = document.getElementById('driveAvatar');
-  const label = document.getElementById('driveAccountLabel');
-  if (driveAccessToken) {
-    if (driveUserPicture) {
-      avatar.innerHTML = `<img src="${driveUserPicture}" alt="">`;
-    } else {
-      avatar.textContent = (driveUserName[0] || '?').toUpperCase();
-    }
-    // Show first name only
-    const firstName = driveUserName.split(' ')[0];
-    label.textContent = firstName;
-  } else {
-    avatar.textContent = '☁';
-    label.setAttribute('data-i18n', 'drive_projects');
-    label.textContent = t('drive_projects');
-  }
-}
-
-// ── Drive API helpers ─────────────────────────────────────────
-async function driveReq(url, opts = {}) {
-  const headers = { Authorization: `Bearer ${driveAccessToken}`, ...(opts.headers || {}) };
-  const res = await fetch(url, { ...opts, headers });
-  if (res.status === 401) { driveAccessToken = null; sessionStorage.removeItem('drive_token'); updateDriveUI(); throw new Error('Token expired'); }
-  return res;
-}
-
-async function driveListProjects() {
-  // List files in appDataFolder with .stitch extension
-  const url = `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name,modifiedTime,appProperties)&q=name+contains+%27${STITCH_EXT}%27&orderBy=modifiedTime+desc&pageSize=50`;
-  const res = await driveReq(url);
-  const data = await res.json();
-  return data.files || [];
-}
-
-async function driveGetFile(fileId) {
-  const res = await driveReq(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
-  return res.json();
-}
-
-async function driveSaveFile(name, content, existingId = null) {
-  const metadata = { name: name + STITCH_EXT, parents: existingId ? undefined : ['appDataFolder'] };
-  const body = new FormData();
-  body.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-  body.append('file', new Blob([JSON.stringify(content)], { type: STITCH_MIME }));
-  const url = existingId
-    ? `https://www.googleapis.com/upload/drive/v3/files/${existingId}?uploadType=multipart`
-    : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-  const res = await driveReq(url, { method: existingId ? 'PATCH' : 'POST', body });
-  return res.json();
-}
-
-async function driveDeleteFile(fileId) {
-  await driveReq(`https://www.googleapis.com/drive/v3/files/${fileId}`, { method: 'DELETE' });
-}
-
-// ── Serialize / Deserialize project state ────────────────────
-function serializeProject(name) {
-  if (!currentPattern) return null;
-  // Thumbnail: tiny canvas 120px
-  let thumb = '';
-  try {
-    const tc = document.createElement('canvas');
-    tc.width = 120; tc.height = Math.round(120 * currentPattern.H / currentPattern.W);
-    tc.getContext('2d').drawImage(document.getElementById('stitchCanvas'), 0, 0, tc.width, tc.height);
-    thumb = tc.toDataURL('image/jpeg', 0.6);
-  } catch(e) {}
-
-  return {
-    version: 2,
-    name,
-    savedAt: new Date().toISOString(),
-    thumb,
-    // Pattern data
-    grid: Array.from(currentPattern.grid),
-    W: currentPattern.W,
-    H: currentPattern.H,
-    // State
-    currentBrand,
-    currentFormat,
-    currentMode,
-    currentLang,
-    miyukiTechnique,
-    miyukiShape,
-    // Overrides & stock
-    paintOverride: { ...paintOverride },
-    colorBrandOverride: JSON.parse(JSON.stringify(colorBrandOverride)),
-    userStock: { ...userStock },
-    myThreadBox: Array.from(myThreadBox),
-    // Slider values
-    sliders: {
-      W: parseInt(document.getElementById('patternW').value),
-      H: parseInt(document.getElementById('patternH').value),
-      colors: parseInt(document.getElementById('colorsSlider').value),
-      anti: parseInt(document.getElementById('antiSlider').value),
-    }
-  };
-}
-
-function deserializeProject(data) {
-  if (!data || !data.grid) return false;
-  // Restore pattern
-  currentPattern = {
-    grid: new Int32Array(data.grid),
-    W: data.W,
-    H: data.H
-  };
-  // Restore state variables
-  if (data.currentBrand) currentBrand = data.currentBrand;
-  if (data.currentFormat) currentFormat = data.currentFormat;
-  if (data.currentMode) currentMode = data.currentMode;
-  if (data.miyukiTechnique) miyukiTechnique = data.miyukiTechnique;
-  if (data.miyukiShape) miyukiShape = data.miyukiShape;
-  // Restore overrides
-  Object.assign(paintOverride, data.paintOverride || {});
-  Object.assign(userStock, data.userStock || {});
-  if (data.colorBrandOverride) Object.assign(colorBrandOverride, data.colorBrandOverride);
-  if (data.myThreadBox) { myThreadBox.clear(); data.myThreadBox.forEach(v => myThreadBox.add(v)); }
-  // Restore sliders
-  if (data.sliders) {
-    const s = data.sliders;
-    if (s.W) { document.getElementById('patternWSlider').value = s.W; document.getElementById('patternW').value = s.W; document.getElementById('patternWVal').textContent = s.W; }
-    if (s.H) { document.getElementById('patternHSlider').value = s.H; document.getElementById('patternH').value = s.H; document.getElementById('patternHVal').textContent = s.H; }
-    if (s.colors) { document.getElementById('colorsSlider').value = s.colors; document.querySelector('#colorsSlider + .control-value') && (document.querySelectorAll('.control-value')[2].textContent = s.colors); }
-    if (s.anti !== undefined) { document.getElementById('antiSlider').value = s.anti; }
-  }
-  return true;
-}
-
-// ── UI: Open/Close modal ──────────────────────────────────────
-function openProjectsModal() {
-  document.getElementById('projectsModal').classList.add('open');
-  renderProjectsModal();
-}
-function closeProjectsModal() {
-  document.getElementById('projectsModal').classList.remove('open');
-}
-document.getElementById('projectsModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('projectsModal')) closeProjectsModal();
-});
-
-function renderProjectsModal() {
-  const body = document.getElementById('projectsModalBody');
-  if (!driveAccessToken) {
-    body.innerHTML = `
-      <div class="drive-signin-prompt">
-        <div style="font-size:48px;margin-bottom:16px">☁️</div>
-        <p>${t('drive_signin_desc')}</p>
-        <button class="btn-google-signin" onclick="requireDriveAuth(()=>renderProjectsModal())">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-          ${t('drive_signin_btn')}
-        </button>
-      </div>`;
-    return;
-  }
-
-  // Save form (only if pattern loaded)
-  const saveFormHTML = currentPattern ? `
-    <div class="projects-save-form">
-      <h3>💾 ${t('drive_save_current')}</h3>
-      <input type="text" class="project-name-input" id="projectNameInput"
-        placeholder="${t('drive_name_placeholder')}"
-        value="${new Date().toLocaleDateString()} — ${currentPattern.W}×${currentPattern.H}">
-      <button class="btn-primary" style="margin-top:8px;width:100%" onclick="confirmSaveProject()">
-        ☁ ${t('drive_save_btn')}
-      </button>
-    </div>` : '';
-
-  body.innerHTML = `
-    ${saveFormHTML}
-    <div id="projectsListArea">
-      <div class="drive-loading">${t('drive_loading')}</div>
-    </div>`;
-
-  // Load project list async
-  driveListProjects().then(files => {
-    const area = document.getElementById('projectsListArea');
-    if (!area) return;
-    if (!files.length) {
-      area.innerHTML = `<div class="projects-empty">
-        <div class="empty-icon">🧵</div>
-        <p>${t('drive_no_projects')}</p>
-      </div>`;
-      return;
-    }
-    area.innerHTML = `
-      <h3 style="font-size:14px;font-weight:600;color:var(--warm-gray);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em">${t('drive_saved_projects')}</h3>
-      <div class="project-grid">${files.map(f => {
-        const meta = f.appProperties || {};
-        const displayName = f.name.replace(STITCH_EXT, '');
-        const date = new Date(f.modifiedTime).toLocaleDateString();
-        return `<div class="project-card" data-file-id="${f.id}">
-          <div class="project-card-thumb">
-            ${meta.thumb ? `<img src="${meta.thumb}" alt="">` : `<span class="no-thumb">🧵</span>`}
-          </div>
-          <div class="project-card-info">
-            <div class="project-card-name" title="${displayName}">${displayName}</div>
-            <div class="project-card-meta">${date}</div>
-          </div>
-          <button class="project-card-del" data-del-id="${f.id}" title="${t('drive_delete')}">×</button>
-        </div>`;
-      }).join('')}</div>`;
-
-    // Event delegation for load and delete
-    area.addEventListener('click', async e => {
-      const delBtn = e.target.closest('[data-del-id]');
-      if (delBtn) {
-        e.stopPropagation();
-        if (!confirm(t('drive_confirm_delete'))) return;
-        await driveDeleteFile(delBtn.dataset.delId);
-        renderProjectsModal();
-        return;
-      }
-      const card = e.target.closest('.project-card');
-      if (card) {
-        await loadProjectFromDrive(card.dataset.fileId);
-      }
-    });
-  }).catch(() => {
-    const area = document.getElementById('projectsListArea');
-    if (area) area.innerHTML = `<p style="color:var(--thread-red);text-align:center">${t('drive_load_error')}</p>`;
-  });
-}
-
-// ── Save ──────────────────────────────────────────────────────
-async function saveProjectToDrive() {
-  requireDriveAuth(async () => {
-    // Open modal with save form
-    openProjectsModal();
-  });
-}
-
-async function confirmSaveProject() {
-  const nameInput = document.getElementById('projectNameInput');
-  const name = (nameInput?.value || '').trim() || new Date().toLocaleDateString();
-  const data = serializeProject(name);
-  if (!data) { showToast(t('drive_no_pattern')); return; }
-
-  const btn = document.querySelector('.projects-save-form button');
-  if (btn) { btn.disabled = true; btn.textContent = t('drive_saving'); }
-
-  try {
-    await driveSaveFile(name, data);
-    showToast(t('drive_saved_ok'));
-    closeProjectsModal();
-    // Update save button label
-    document.getElementById('driveSaveBtn').innerHTML = `☁ <span>${name}</span>`;
-  } catch(e) {
-    showToast(t('drive_save_error'));
-    console.error(e);
-    if (btn) { btn.disabled = false; btn.textContent = `☁ ${t('drive_save_btn')}`; }
-  }
-}
-
-// ── Load ──────────────────────────────────────────────────────
-async function loadProjectFromDrive(fileId) {
-  const body = document.getElementById('projectsModalBody');
-  body.innerHTML = `<div class="drive-loading">⏳ ${t('drive_loading_project')}</div>`;
-
-  try {
-    const data = await driveGetFile(fileId);
-    const ok = deserializeProject(data);
-    if (!ok) { showToast(t('drive_load_error')); renderProjectsModal(); return; }
-
-    // Rebuild everything from restored state
-    rebuildShoppingFromPaint();
-    // Recount colors
-    const counts = {};
-    const { grid, W, H } = currentPattern;
-    for (let i = 0; i < grid.length; i++) counts[grid[i]] = (counts[grid[i]] || 0) + 1;
-    // Apply paint overrides to counts
-    for (const [key, idx] of Object.entries(paintOverride)) {
-      const [x, y] = key.split(',').map(Number);
-      const orig = grid[y * W + x];
-      counts[orig] = Math.max(0, (counts[orig] || 0) - 1);
-      counts[idx] = (counts[idx] || 0) + 1;
-    }
-    currentColors = counts;
-
-    // Render
-    drawPattern(grid, W, H, counts);
-    renderShoppingTable();
-    // Show buttons
-    document.getElementById('showGridBtn').style.display = '';
-    document.getElementById('editToggleBtn').style.display = '';
-    document.getElementById('downloadBtn').style.display = '';
-    document.getElementById('pdfBtn').style.display = '';
-    document.getElementById('driveSaveBtn').style.display = '';
-    document.getElementById('progressModeBar')?.classList.add('visible');
-
-    closeProjectsModal();
-    showToast(t('drive_loaded_ok', { name: data.name || '' }));
-  } catch(e) {
-    console.error(e);
-    showToast(t('drive_load_error'));
-    renderProjectsModal();
-  }
-}
-
-// Show drive save button when pattern is generated
-const _origShowButtons = () => {
-  document.getElementById('driveSaveBtn').style.display = driveAccessToken ? '' : '';
-};
 </script>
 </body>
 </html>
