@@ -1360,7 +1360,7 @@
     </div>
     <button id="driveBtn" onclick="openProjectsModal()" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid rgba(245,240,232,0.35);border-radius:20px;padding:5px 12px 5px 8px;color:var(--cream);font-family:'Crimson Pro',Georgia,serif;font-size:13px;cursor:pointer;white-space:nowrap;">
       <span id="driveAvatar" style="width:22px;height:22px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--dark);">☁</span>
-      <span id="driveBtnLabel">Mis Proyectos</span>
+      <span id="driveBtnLabel" data-i18n="drive_my_projects">Mis Proyectos</span>
     </button>
   </header>
 
@@ -1633,10 +1633,10 @@
           </div>
           <div class="toolbar-actions">
             <button class="btn-secondary" id="showGridBtn" onclick="toggleGrid()" style="display:none"><span data-i18n="btn_grid_on">Grid: ON</span></button>
-            <button class="btn-edit-toggle" id="editToggleBtn" onclick="toggleEditMode()" style="display:none">✏️ Edit</button>
+            <button class="btn-edit-toggle" id="editToggleBtn" onclick="toggleEditMode()" style="display:none"><span data-i18n="btn_edit">Edit</span></button>
             <button class="btn-secondary" id="downloadBtn" onclick="downloadPattern()" style="display:none">↓ <span data-i18n="btn_png">PNG</span></button>
             <button class="btn-secondary" id="pdfBtn" onclick="exportPDF()" style="display:none;border-color:var(--gold);color:var(--gold)">↓ <span data-i18n="btn_pdf">PDF Chart</span></button>
-            <button class="btn-secondary" id="saveProjectBtn" onclick="openProjectsModal()" style="display:none;border-color:#4285f4;color:#4285f4">☁ <span>Guardar</span></button>
+            <button class="btn-secondary" id="saveProjectBtn" onclick="openProjectsModal()" style="display:none;border-color:#4285f4;color:#4285f4">☁ <span data-i18n="drive_save_btn">Save</span></button>
           </div>
         </div>
       </div>
@@ -1757,7 +1757,7 @@
 <div id="projectsModal" style="display:none;position:fixed;inset:0;background:rgba(42,36,32,0.8);z-index:2000;align-items:center;justify-content:center;">
   <div style="background:#f5f0e8;border-radius:14px;width:min(660px,95vw);max-height:88vh;display:flex;flex-direction:column;font-family:'Crimson Pro',Georgia,serif;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
     <div style="padding:20px 24px 16px;border-bottom:1px solid #e8e0d5;display:flex;align-items:center;gap:12px;">
-      <span style="font-size:20px;font-weight:700;color:#2a2420;font-family:'Playfair Display',serif;">🧵 Mis Proyectos</span>
+      <span id="projectsModalTitle" style="font-size:20px;font-weight:700;color:#2a2420;font-family:'Playfair Display',serif;">🧵 Mis Proyectos</span>
       <button onclick="closeProjectsModal()" style="margin-left:auto;background:none;border:none;font-size:22px;cursor:pointer;color:#8b7355;">×</button>
     </div>
     <div id="projectsModalBody" style="flex:1;overflow-y:auto;padding:20px 24px;"></div>
@@ -3498,8 +3498,8 @@ const BRAND_CATALOG = {
 // Cross-stitch: square cells 1:1
 // Miyuki Delica DB-11: rectangular ~1:1.5 (w:h) — beads are taller than wide
 const FORMAT_GEOMETRY = {
-  crossstitch: { cellW: 1, cellH: 1, unitName: 'stitch', unitPlural: 'stitches', unitsPerPackage: 900 },
-  miyuki:      { cellW: 1, cellH: 1.5, unitName: 'bead',   unitPlural: 'beads',   unitsPerPackage: 1000 },
+  crossstitch: { cellW: 1, cellH: 1,   unitName: 'stitch', unitPlural: () => t('unit_stitches'), unitsPerPackage: 900 },
+  miyuki:      { cellW: 1, cellH: 1.5, unitName: 'bead',   unitPlural: () => t('unit_beads'),   unitsPerPackage: 1000 },
 };
 
 let currentFormat = 'crossstitch'; // 'crossstitch' | 'miyuki'
@@ -3925,7 +3925,7 @@ async function _generatePatternImpl() {
   const modeTag = currentMode === 'portrait' ? ` &nbsp;·&nbsp; ${t('mode_label')}` : '';
   const brandLabel = currentBrand.toUpperCase();
   document.getElementById('canvasInfo').innerHTML =
-    `<strong>${W}×${H}</strong> ${getGeometry().unitPlural} &nbsp;·&nbsp; <strong>${Object.keys(finalColors).length}</strong> ${brandLabel} colors &nbsp;·&nbsp; <strong>${totalStitches.toLocaleString()}</strong> total ${getGeometry().unitPlural}${modeTag}`;
+    `<strong>${W}×${H}</strong> ${getGeometry().unitPlural()} &nbsp;·&nbsp; <strong>${Object.keys(finalColors).length}</strong> ${brandLabel} ${t('lbl_colors_count')} &nbsp;·&nbsp; <strong>${totalStitches.toLocaleString()}</strong> ${t('lbl_total')} ${getGeometry().unitPlural()}${modeTag}`;
 
   document.getElementById('showGridBtn').style.display = '';
   document.getElementById('editToggleBtn').style.display = '';
@@ -4407,7 +4407,7 @@ function renderShoppingTable() {
           </div>
         </div>
       </td>
-      <td class="td-stitches">${count.toLocaleString()} <span style="font-size:10px;color:var(--warm-gray)">${getGeometry().unitPlural}</span></td>
+      <td class="td-stitches">${count.toLocaleString()} <span style="font-size:10px;color:var(--warm-gray)">${getGeometry().unitPlural()}</span></td>
       <td class="td-needed">${needed}</td>
       <td>
         <div class="stock-stepper">
@@ -4751,12 +4751,14 @@ function requireDriveAuth(fn) {
 function openProjectsModal() {
   if (!isPro()) { showPaywall('Guardar proyectos requiere PRO.'); return; }
   document.getElementById('projectsModal').style.display = 'flex';
+  const titleEl = document.getElementById('projectsModalTitle');
+  if (titleEl) titleEl.textContent = '🧵 ' + t('drive_my_projects');
   renderProjectsModal();
 }
 function confirmSaveProject() {
   const nameInput = document.getElementById('projectNameInput');
   const name = (nameInput?.value||'').trim() || new Date().toLocaleDateString();
-  if (!currentPattern) { showToast('Genera un patrón primero.'); return; }
+  if (!currentPattern) { showToast(t('drive_no_pattern')); return; }
   let thumb = '';
   try {
     const tc = document.createElement('canvas');
@@ -4779,23 +4781,23 @@ function confirmSaveProject() {
     }
   };
   const btn = document.querySelector('#projectsModalBody button[onclick="confirmSaveProject()"]');
-  if (btn) { btn.disabled=true; btn.textContent='Guardando…'; }
+  if (btn) { btn.disabled=true; btn.textContent=t('drive_saving'); }
   const overwriteChk = document.getElementById('overwriteCheck');
   const useExistingId = overwriteChk && overwriteChk.checked && _currentProjectId ? _currentProjectId : null;
   driveSave(name, data, useExistingId).then(() => {
   if (!useExistingId) _currentProjectId = null;
-    showToast('✓ Proyecto guardado en Drive');
+    showToast(t('drive_saved_ok'));
     closeProjectsModal();
   }).catch(() => {
-    showToast('Error al guardar. Inténtalo de nuevo.');
-    if (btn) { btn.disabled=false; btn.textContent='☁ Guardar en Drive'; }
+    showToast(t('drive_save_error'));
+    if (btn) { btn.disabled=false; btn.textContent='☁ '+t('drive_save_btn'); }
   });
 }
 
 async function loadProjectFromDrive(fileId) {
   console.log('loadProjectFromDrive called, fileId:', fileId);
   const body = document.getElementById('projectsModalBody');
-  body.innerHTML = '<div style="text-align:center;padding:40px;color:#8b7355;">⏳ Cargando proyecto…</div>';
+  body.innerHTML = '<div style="text-align:center;padding:40px;color:#8b7355;">⏳ '+t('drive_loading_project')+'</div>';
   try {
     const data = await driveLoad(fileId);
     console.log('data loaded:', data);
@@ -4854,13 +4856,13 @@ async function loadProjectFromDrive(fileId) {
     if (canvasWrapper) canvasWrapper.style.display = '';
     document.getElementById('patternCanvas').scrollIntoView({behavior:'smooth', block:'center'});
     const canvasInfo = document.getElementById('canvasInfo');
-    if (canvasInfo) canvasInfo.innerHTML = '<strong>'+data.W+'×'+data.H+'</strong> stitches';
+    if (canvasInfo) canvasInfo.innerHTML = '<strong>'+data.W+'×'+data.H+'</strong> '+getGeometry().unitPlural();
     _currentProjectId = fileId;
     window._currentProjectName = data.name || '';
     closeProjectsModal();
-    showToast('✓ Proyecto "'+data.name+'" cargado');
+    showToast(t('drive_loaded_ok'));
   } catch(e) {
-    showToast('Error al cargar el proyecto.');
+    showToast(t('drive_load_error'));
     renderProjectsModal();
   }
 }
@@ -4875,13 +4877,13 @@ function renderProjectsModal() {
     return;
   }
   const overwriteOption = _currentProjectId ? '<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#8b7355;margin-bottom:8px;cursor:pointer"><input type="checkbox" id="overwriteCheck" checked> Sobrescribir proyecto actual</label>' : '';
-  const saveFormHTML = currentPattern ? '<div style="margin-bottom:20px;padding:16px;background:#faf6f0;border-radius:8px;border:1px solid #e8e0d5;"><div style="font-size:13px;font-weight:600;color:#2a2420;margin-bottom:10px;">💾 Guardar patrón actual</div><input id="projectNameInput" type="text" placeholder="Nombre del proyecto…" style="width:100%;border:1.5px solid #e8e0d5;border-radius:6px;padding:8px 12px;font-family:inherit;font-size:15px;background:white;color:#2a2420;margin-bottom:8px;" value="'+(_currentProjectId && window._currentProjectName ? window._currentProjectName : new Date().toLocaleDateString()+' — '+(currentPattern.W||'')+'×'+(currentPattern.H||'')+' pt')+'">'+overwriteOption+'<button onclick="confirmSaveProject()" style="width:100%;background:var(--thread-red);color:white;border:none;border-radius:6px;padding:9px;font-family:inherit;font-size:14px;cursor:pointer;">☁ Guardar en Drive</button></div>' : '';
-  body.innerHTML = saveFormHTML + '<div id="projectsListArea"><div style="text-align:center;padding:40px;color:#8b7355;font-size:14px;">Cargando proyectos…</div></div>';
+  const saveFormHTML = currentPattern ? '<div style="margin-bottom:20px;padding:16px;background:#faf6f0;border-radius:8px;border:1px solid #e8e0d5;"><div style="font-size:13px;font-weight:600;color:#2a2420;margin-bottom:10px;">💾 '+t('drive_save_current')+'</div><input id="projectNameInput" type="text" placeholder="'+t('drive_name_placeholder')+'" style="width:100%;border:1.5px solid #e8e0d5;border-radius:6px;padding:8px 12px;font-family:inherit;font-size:15px;background:white;color:#2a2420;margin-bottom:8px;" value="'+(_currentProjectId && window._currentProjectName ? window._currentProjectName : new Date().toLocaleDateString()+' — '+(currentPattern.W||'')+'×'+(currentPattern.H||'')+' pt')+'">'+overwriteOption+'<button onclick="confirmSaveProject()" style="width:100%;background:var(--thread-red);color:white;border:none;border-radius:6px;padding:9px;font-family:inherit;font-size:14px;cursor:pointer;">☁ '+t('drive_save_btn')+'</button></div>' : '';
+  body.innerHTML = saveFormHTML + '<div id="projectsListArea"><div style="text-align:center;padding:40px;color:#8b7355;font-size:14px;">'+t('drive_loading')+'</div></div>';
   driveList().then(files => {
     const area = document.getElementById('projectsListArea');
     if (!area) return;
-    if (!files.length) { area.innerHTML = '<div style="text-align:center;padding:40px;color:#8b7355"><div style="font-size:40px;margin-bottom:12px">🧵</div><p>Sin proyectos guardados. ¡Genera un patrón y guárdalo!</p></div>'; return; }
-    area.innerHTML = '<div style="font-size:12px;font-weight:600;color:#8b7355;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">Proyectos guardados</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">'+
+    if (!files.length) { area.innerHTML = '<div style="text-align:center;padding:40px;color:#8b7355"><div style="font-size:40px;margin-bottom:12px">🧵</div><p>'+t('drive_no_projects')+'</p></div>'; return; }
+    area.innerHTML = '<div style="font-size:12px;font-weight:600;color:#8b7355;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">'+t('drive_saved_projects')+'</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">'+
       files.map(f => '<div data-file-id="'+f.id+'" style="background:white;border:1.5px solid #e8e0d5;border-radius:8px;overflow:hidden;cursor:pointer;transition:all .18s;position:relative;" onmouseover="this.style.borderColor=\'#8b2635\'" onmouseout="this.style.borderColor=\'#e8e0d5\'">'+
         '<div style="width:100%;aspect-ratio:1;background:#f0ebe3;display:flex;align-items:center;justify-content:center;font-size:32px;">🧵</div>'+
         '<div style="padding:8px 10px;"><div style="font-size:12px;font-weight:600;color:#2a2420;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+f.name.replace('.stitch','')+'</div>'+
@@ -4890,7 +4892,7 @@ function renderProjectsModal() {
         '</div>').join('')+'</div>';
     area.addEventListener('click', async e => {
       const del = e.target.closest('[data-del-id]');
-      if (del) { e.stopPropagation(); if(!confirm('¿Eliminar este proyecto?')) return; await driveDelete(del.dataset.delId); renderProjectsModal(); return; }
+      if (del) { e.stopPropagation(); if(!confirm(t('drive_delete_confirm'))) return; await driveDelete(del.dataset.delId); renderProjectsModal(); return; }
       const card = e.target.closest('[data-file-id]');
       if (card) { await loadProjectFromDrive(card.dataset.fileId); }
     });
@@ -4906,7 +4908,7 @@ function updateDriveBtn() {
     label.textContent = driveUser.name.split(' ')[0];
   } else {
     avatar.textContent = '☁';
-    label.textContent = 'Mis Proyectos';
+    label.textContent = t('drive_my_projects');
   }
 }
 
@@ -5286,6 +5288,10 @@ const TRANSLATIONS = {
     cc_search_placeholder: 'Search by code or name…',
     // Regenerating toast
     toast_regenerating: 'regenerating…',
+    lbl_colors_count: 'colors',
+    unit_stitches: 'stitches',
+    unit_beads: 'beads',
+    lbl_total: 'total',
     paywall_title: 'Unlock PRO',
     paywall_brand: 'This thread brand requires a PRO plan.',
     paywall_editor: 'The brush editor requires a PRO plan.',
@@ -5299,6 +5305,24 @@ const TRANSLATIONS = {
     paywall_apply: 'Apply',
     paywall_continue: 'Continue with free version',
     paywall_unlocked: '🎉 PRO access activated!',
+    drive_my_projects: 'My Projects',
+    drive_save_btn: 'Save to Drive',
+    drive_saving: 'Saving…',
+    drive_saved_ok: '✓ Project saved to Drive',
+    drive_save_error: 'Error saving. Please try again.',
+    drive_no_pattern: 'Generate a pattern first.',
+    drive_loading: 'Loading projects…',
+    drive_loading_project: 'Loading project…',
+    drive_loaded_ok: '✓ Project loaded',
+    drive_load_error: 'Error loading project.',
+    drive_no_projects: 'No saved projects yet. Generate a pattern and save it!',
+    drive_saved_projects: 'Saved projects',
+    drive_delete_confirm: 'Delete this project?',
+    drive_save_current: 'Save current pattern',
+    drive_name_placeholder: 'Project name…',
+    drive_overwrite: 'Overwrite current project',
+    drive_overwritten: '✓ Project overwritten',
+    drive_signin: 'Sign in with Google to save and load your projects from any device.',
     paywall_cs_features: 'Anchor, Cosmo, Madeira · Up to 400×600pt · 40 colors · PDF export · Brush editor · Progress mode · Drive projects',
     paywall_my_features: 'Brick + Peyote · All shapes · Unlimited size · PDF export · Brush editor · Progress mode · Drive projects',
     paywall_pack: 'Complete Pack',
@@ -5404,6 +5428,10 @@ const TRANSLATIONS = {
     cc_apply: 'Aplicar',
     cc_search_placeholder: 'Buscar por código o nombre…',
     toast_regenerating: 'regenerando…',
+    lbl_colors_count: 'colores',
+    unit_stitches: 'puntos',
+    unit_beads: 'cuentas',
+    lbl_total: 'total',
     paywall_title: 'Desbloquear PRO',
     paywall_brand: 'Esta marca requiere un plan PRO.',
     paywall_editor: 'El editor de pincel requiere PRO.',
@@ -5417,6 +5445,24 @@ const TRANSLATIONS = {
     paywall_apply: 'Aplicar',
     paywall_continue: 'Continuar con versión gratuita',
     paywall_unlocked: '🎉 ¡Acceso PRO activado!',
+    drive_my_projects: 'Mis Proyectos',
+    drive_save_btn: 'Guardar en Drive',
+    drive_saving: 'Guardando…',
+    drive_saved_ok: '✓ Proyecto guardado en Drive',
+    drive_save_error: 'Error al guardar. Inténtalo de nuevo.',
+    drive_no_pattern: 'Genera un patrón primero.',
+    drive_loading: 'Cargando proyectos…',
+    drive_loading_project: 'Cargando proyecto…',
+    drive_loaded_ok: '✓ Proyecto cargado',
+    drive_load_error: 'Error al cargar el proyecto.',
+    drive_no_projects: 'Sin proyectos guardados. ¡Genera un patrón y guárdalo!',
+    drive_saved_projects: 'Proyectos guardados',
+    drive_delete_confirm: '¿Eliminar este proyecto?',
+    drive_save_current: 'Guardar patrón actual',
+    drive_name_placeholder: 'Nombre del proyecto…',
+    drive_overwrite: 'Sobrescribir proyecto actual',
+    drive_overwritten: '✓ Proyecto sobrescrito',
+    drive_signin: 'Inicia sesión con Google para guardar y cargar tus proyectos desde cualquier dispositivo.',
     paywall_cs_features: 'Anchor, Cosmo, Madeira · Hasta 400×600pt · 40 colores · PDF export · Editor pincel · Progress mode · Proyectos en Drive',
     paywall_my_features: 'Brick + Peyote · Todas las formas · Tamaño libre · PDF export · Editor pincel · Progress mode · Proyectos en Drive',
     paywall_pack: 'Pack Completo',
@@ -5522,6 +5568,10 @@ const TRANSLATIONS = {
     cc_apply: 'Aplicar',
     cc_search_placeholder: 'Buscar por código ou nome…',
     toast_regenerating: 'regenerando…',
+    lbl_colors_count: 'cores',
+    unit_stitches: 'pontos',
+    unit_beads: 'contas',
+    lbl_total: 'total',
     paywall_title: 'Desbloquear PRO',
     paywall_brand: 'Esta marca requer um plano PRO.',
     paywall_editor: 'O editor de pincel requer PRO.',
@@ -5535,6 +5585,24 @@ const TRANSLATIONS = {
     paywall_apply: 'Aplicar',
     paywall_continue: 'Continuar com versão gratuita',
     paywall_unlocked: '🎉 Acesso PRO ativado!',
+    drive_my_projects: 'Meus Projetos',
+    drive_save_btn: 'Guardar no Drive',
+    drive_saving: 'Guardando…',
+    drive_saved_ok: '✓ Projeto guardado no Drive',
+    drive_save_error: 'Erro ao guardar. Tente novamente.',
+    drive_no_pattern: 'Gere um padrão primeiro.',
+    drive_loading: 'Carregando projetos…',
+    drive_loading_project: 'Carregando projeto…',
+    drive_loaded_ok: '✓ Projeto carregado',
+    drive_load_error: 'Erro ao carregar projeto.',
+    drive_no_projects: 'Sem projetos guardados. Gere um padrão e guarde!',
+    drive_saved_projects: 'Projetos guardados',
+    drive_delete_confirm: 'Excluir este projeto?',
+    drive_save_current: 'Guardar padrão atual',
+    drive_name_placeholder: 'Nome do projeto…',
+    drive_overwrite: 'Sobrescrever projeto atual',
+    drive_overwritten: '✓ Projeto sobrescrito',
+    drive_signin: 'Entre com o Google para guardar e carregar seus projetos de qualquer dispositivo.',
     paywall_cs_features: 'Anchor, Cosmo, Madeira · Até 400×600pt · 40 cores · PDF export · Editor pincel · Modo progresso · Projetos no Drive',
     paywall_my_features: 'Brick + Peyote · Todas as formas · Tamanho livre · PDF export · Editor pincel · Modo progresso · Projetos no Drive',
     paywall_pack: 'Pack Completo',
@@ -5640,6 +5708,10 @@ const TRANSLATIONS = {
     cc_apply: 'Anwenden',
     cc_search_placeholder: 'Nach Code oder Name suchen…',
     toast_regenerating: 'wird neu erstellt…',
+    lbl_colors_count: 'Farben',
+    unit_stitches: 'Stiche',
+    unit_beads: 'Perlen',
+    lbl_total: 'gesamt',
     paywall_title: 'PRO freischalten',
     paywall_brand: 'Diese Marke erfordert einen PRO-Plan.',
     paywall_editor: 'Der Pinseleditor erfordert PRO.',
@@ -5653,6 +5725,24 @@ const TRANSLATIONS = {
     paywall_apply: 'Anwenden',
     paywall_continue: 'Mit kostenloser Version fortfahren',
     paywall_unlocked: '🎉 PRO-Zugang aktiviert!',
+    drive_my_projects: 'Meine Projekte',
+    drive_save_btn: 'In Drive speichern',
+    drive_saving: 'Wird gespeichert…',
+    drive_saved_ok: '✓ Projekt in Drive gespeichert',
+    drive_save_error: 'Fehler beim Speichern. Bitte erneut versuchen.',
+    drive_no_pattern: 'Zuerst ein Muster erstellen.',
+    drive_loading: 'Projekte werden geladen…',
+    drive_loading_project: 'Projekt wird geladen…',
+    drive_loaded_ok: '✓ Projekt geladen',
+    drive_load_error: 'Fehler beim Laden des Projekts.',
+    drive_no_projects: 'Noch keine gespeicherten Projekte. Erstellen Sie ein Muster!',
+    drive_saved_projects: 'Gespeicherte Projekte',
+    drive_delete_confirm: 'Dieses Projekt löschen?',
+    drive_save_current: 'Aktuelles Muster speichern',
+    drive_name_placeholder: 'Projektname…',
+    drive_overwrite: 'Aktuelles Projekt überschreiben',
+    drive_overwritten: '✓ Projekt überschrieben',
+    drive_signin: 'Mit Google anmelden, um Projekte zu speichern und von jedem Gerät abzurufen.',
     paywall_cs_features: 'Anchor, Cosmo, Madeira · Bis 400×600pt · 40 Farben · PDF-Export · Pinseleditor · Fortschrittsmodus · Drive-Projekte',
     paywall_my_features: 'Brick + Peyote · Alle Formen · Unbegrenzte Größe · PDF-Export · Pinseleditor · Fortschrittsmodus · Drive-Projekte',
     paywall_pack: 'Komplett-Paket',
@@ -5729,6 +5819,15 @@ function setLang(lang) {
 
   // Re-render shopping table if pattern exists (skein word changes)
   if (currentColors) renderShoppingTable();
+  if (currentPattern && currentColors) {
+    const W = currentPattern.W, H = currentPattern.H;
+    const brandLabel = currentBrand.toUpperCase();
+    const totalStitches = W * H;
+    const canvasInfo = document.getElementById('canvasInfo');
+    if (canvasInfo && canvasInfo.innerHTML.includes('·')) {
+      canvasInfo.innerHTML = `<strong>${W}×${H}</strong> ${getGeometry().unitPlural()} &nbsp;·&nbsp; <strong>${Object.keys(currentColors).length}</strong> ${brandLabel} ${t('lbl_colors_count')} &nbsp;·&nbsp; <strong>${totalStitches.toLocaleString()}</strong> ${t('lbl_total')} ${getGeometry().unitPlural()}`;
+    }
+  }
 }
 
 // ============================================================
@@ -6221,7 +6320,8 @@ function toggleEditMode() {
   const btn = document.getElementById('editToggleBtn');
   const toolbar = document.getElementById('paintToolbar');
   btn.classList.toggle('active', editMode);
-  btn.textContent = editMode ? t('btn_editing') : t('btn_edit');
+  const btnSpan = btn.querySelector('span') || btn;
+  btnSpan.textContent = editMode ? t('btn_editing') : t('btn_edit');
   toolbar.classList.toggle('visible', editMode);
 
   if (editMode) {
