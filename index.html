@@ -1533,6 +1533,19 @@
         <input type="hidden" id="patternW" value="80">
         <input type="hidden" id="patternH" value="120">
         <div class="size-hint-row" id="sizeHintRow" style="margin-top:4px">80 × 120 stitches</div>
+        <div id="aidaRow" style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:var(--warm-gray)" data-i18n="lbl_fabric">Fabric</span>
+          <select id="aidaCount" onchange="updateSizeHint()" style="font-size:12px;padding:2px 6px;border:1px solid #d4cab8;border-radius:4px;background:#faf6f0;color:#2a2420;font-family:'Crimson Pro',Georgia,serif;cursor:pointer;">
+            <option value="11">Aida 11ct</option>
+            <option value="14" selected>Aida 14ct</option>
+            <option value="16">Aida 16ct</option>
+            <option value="18">Aida 18ct</option>
+            <option value="28aida">Aida 28ct</option>
+            <option value="28linen">Linen 28ct</option>
+            <option value="28even">Evenweave 28ct</option>
+          </select>
+          <span id="aidaSizeResult" style="font-size:12px;color:var(--warm-gray)"></span>
+        </div>
       </div>
 
       <div class="panel-section">
@@ -1633,6 +1646,7 @@
           </div>
           <div class="toolbar-actions">
             <button class="btn-secondary" id="showGridBtn" onclick="toggleGrid()" style="display:none"><span data-i18n="btn_grid_on">Grid: ON</span></button>
+            <button class="btn-secondary" id="realisticBtn" onclick="toggleRealisticView()" style="display:none;outline:2px solid var(--thread-red)">👁 <span>Realistic</span></button>
             <button class="btn-edit-toggle" id="editToggleBtn" onclick="toggleEditMode()" style="display:none"><span data-i18n="btn_edit">Edit</span></button>
             <button class="btn-secondary" id="downloadBtn" onclick="downloadPattern()" style="display:none">↓ <span data-i18n="btn_png">PNG</span></button>
             <button class="btn-secondary" id="pdfBtn" onclick="exportPDF()" style="display:none;border-color:var(--gold);color:var(--gold)">↓ <span data-i18n="btn_pdf">PDF Chart</span></button>
@@ -3513,7 +3527,7 @@ function saveProFlags() { localStorage.setItem(PRO_STORAGE_KEY, JSON.stringify({
 function unlockWithCode(code) { if ((code||'').trim().toUpperCase() === BETA_CODE) { hasCSPro = true; hasMiyukiPro = true; saveProFlags(); return true; } return false; }
 function isPro() { return hasCSPro || hasMiyukiPro; }
 function canUseBrand(b) { return b === 'dmc' || (hasCSPro && ['anchor','cosmo','madeira'].includes(b)); }
-document.addEventListener('DOMContentLoaded', () => { updateProBadge(); });
+document.addEventListener('DOMContentLoaded', () => { updateProBadge(); updateSizeHint(); });
 
 function getGeometry() {
   return FORMAT_GEOMETRY[currentFormat] || FORMAT_GEOMETRY.crossstitch;
@@ -3653,6 +3667,7 @@ let currentPattern = null;
 let currentColors = null;
 let zoom = 4;
 let showGrid = true;
+let realisticView = true;
 
 // ============================================================
 // IMAGE UPLOAD
@@ -3731,6 +3746,10 @@ function selectFormat(fmt) {
   // Show/hide size section based on format
   const sizeSection = document.getElementById('patternSizeSection');
   if (sizeSection) sizeSection.style.display = isMiyuki ? 'none' : '';
+
+  updateSizeHint();
+  const rb = document.getElementById('realisticBtn');
+  if (rb && rb.style.display !== 'none') rb.style.display = isMiyuki ? 'none' : '';
 
   // Regenerate if pattern exists
   if (currentPattern && sourceImage) generatePattern();
@@ -3928,6 +3947,7 @@ async function _generatePatternImpl() {
     `<strong>${W}×${H}</strong> ${getGeometry().unitPlural()} &nbsp;·&nbsp; <strong>${Object.keys(finalColors).length}</strong> ${brandLabel} ${t('lbl_colors_count')} &nbsp;·&nbsp; <strong>${totalStitches.toLocaleString()}</strong> ${t('lbl_total')} ${getGeometry().unitPlural()}${modeTag}`;
 
   document.getElementById('showGridBtn').style.display = '';
+  document.getElementById('realisticBtn').style.display = '';
   document.getElementById('editToggleBtn').style.display = '';
   document.getElementById('downloadBtn').style.display = '';
   document.getElementById('pdfBtn').style.display = '';
@@ -3945,6 +3965,75 @@ async function _generatePatternImpl() {
 
   buildLegend(finalColors);
 } // end _generatePatternImpl
+
+// ============================================================
+// REALISTIC CROSS-STITCH RENDERER
+// ============================================================
+function drawCrossStitch(ctx, x, y, cellW, cellH, hex, done) {
+  const px = x * cellW;
+  const py = y * cellH;
+
+  // Fabric background
+  ctx.fillStyle = '#f5f0e8';
+  ctx.fillRect(px, py, cellW, cellH);
+
+  // Subtle fabric texture: faint grid holes at corners (zoom >= 8)
+  if (cellW >= 8) {
+    ctx.fillStyle = 'rgba(180,165,140,0.25)';
+    const d = Math.max(1, cellW * 0.08);
+    ctx.fillRect(px, py, d, d);
+    ctx.fillRect(px + cellW - d, py, d, d);
+    ctx.fillRect(px, py + cellH - d, d, d);
+    ctx.fillRect(px + cellW - d, py + cellH - d, d, d);
+  }
+
+  if (done === 'pending') {
+    // Show thread color very faded as "to do" hint
+    const [r,g,b] = hexToRgb(hex);
+    ctx.fillStyle = `rgba(${r},${g},${b},0.15)`;
+    ctx.fillRect(px, py, cellW, cellH);
+    return;
+  }
+  const isEmphasized = done === true; // done stitch — draw stronger cross
+
+  // Parse thread color
+  const [r, g, b] = hexToRgb(hex);
+
+  // Thread stroke width proportional to cell
+  const lw = Math.max(0.8, cellW * (isEmphasized ? 0.35 : 0.28));
+  const pad = Math.max(1, cellW * 0.14);
+
+  ctx.lineCap = 'round';
+  ctx.lineWidth = lw;
+
+  // Shadow pass (subtle depth)
+  if (cellW >= 5) {
+    ctx.strokeStyle = `rgba(0,0,0,0.18)`;
+    ctx.beginPath();
+    ctx.moveTo(px + pad + 0.5, py + pad + 0.5);
+    ctx.lineTo(px + cellW - pad + 0.5, py + cellH - pad + 0.5);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(px + cellW - pad + 0.5, py + pad + 0.5);
+    ctx.lineTo(px + pad + 0.5, py + cellH - pad + 0.5);
+    ctx.stroke();
+  }
+
+  // Main thread color — first diagonal (\)
+  const darken = isEmphasized ? 0.75 : 0.9;
+  ctx.strokeStyle = `rgb(${Math.round(r*darken)},${Math.round(g*darken)},${Math.round(b*darken)})`;
+  ctx.beginPath();
+  ctx.moveTo(px + pad, py + pad);
+  ctx.lineTo(px + cellW - pad, py + cellH - pad);
+  ctx.stroke();
+
+  // Second diagonal (/) — slightly brighter to simulate highlight
+  ctx.strokeStyle = `rgb(${Math.min(255,Math.round(r*1.08))},${Math.min(255,Math.round(g*1.08))},${Math.min(255,Math.round(b*1.08))})`;
+  ctx.beginPath();
+  ctx.moveTo(px + cellW - pad, py + pad);
+  ctx.lineTo(px + pad, py + cellH - pad);
+  ctx.stroke();
+}
 
 // ============================================================
 // DRAW PATTERN
@@ -3973,15 +4062,15 @@ function drawPattern(grid, W, H, colorCounts) {
       const baseIdx = grid[y*W+x];
       const key = `${x},${y}`;
       const dmcIdx = paintOverride[key] !== undefined ? paintOverride[key] : baseIdx;
-      ctx.fillStyle = getEffectiveEntry(dmcIdx).hex;
-      ctx.fillRect(x*cellW, y*cellH, cellW, cellH);
-      // Miyuki: draw bead oval shape overlay
-      if (currentFormat === 'miyuki' && cellSize >= 6) {
-        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        ctx.ellipse(x*cellW + cellW/2, y*cellH + cellH/2, cellW*0.4, cellH*0.42, 0, 0, Math.PI*2);
-        ctx.stroke();
+      const hex = getEffectiveEntry(dmcIdx).hex;
+      if (realisticView) {
+        const isDone = progressMode
+          ? (doneStitches.has(key) ? true : 'pending')
+          : false;
+        drawCrossStitch(ctx, x, y, cellW, cellH, hex, isDone);
+      } else {
+        ctx.fillStyle = hex;
+        ctx.fillRect(x*cellW, y*cellH, cellW, cellH);
       }
     }
   }
@@ -4242,11 +4331,17 @@ function redrawCell(cellX, cellY) {
   const entry = getEffectiveEntry(dmcIdx);
   const [r,g,b] = hexToRgb(entry.hex);
 
+  const isDone = doneStitches.has(`${cellX},${cellY}`);
+
+  if (realisticView) {
+    const doneArg = progressMode ? (isDone ? true : 'pending') : false;
+    drawCrossStitch(ctx, cellX, cellY, cW, cH, entry.hex, doneArg);
+    return;
+  }
+
   // Base color
   ctx.fillStyle = entry.hex;
   ctx.fillRect(cellX*cW, cellY*cH, cW, cH);
-
-  const isDone = doneStitches.has(`${cellX},${cellY}`);
 
   if (isDone) {
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
@@ -4574,6 +4669,19 @@ function toggleGrid() {
   }
 }
 
+function toggleRealisticView() {
+  realisticView = !realisticView;
+  const btn = document.getElementById('realisticBtn');
+  if (btn) {
+    btn.style.outline = realisticView ? '2px solid var(--thread-red)' : '';
+    const span = btn.querySelector('span');
+    if (span) span.textContent = realisticView ? t('btn_view_realistic') : t('btn_view_simple');
+  }
+  if (currentPattern) {
+    drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+  }
+}
+
 function downloadPattern() {
   const canvas = document.getElementById('patternCanvas');
   const a = document.createElement('a');
@@ -4847,6 +4955,7 @@ async function loadProjectFromDrive(fileId) {
     renderShoppingTable();
     if (data.doneStitches && data.doneStitches.length) updateProgressStats && updateProgressStats();
     document.getElementById('showGridBtn').style.display='';
+    document.getElementById('realisticBtn').style.display = currentFormat === 'crossstitch' ? '' : 'none';
     document.getElementById('editToggleBtn').style.display='';
     document.getElementById('downloadBtn').style.display='';
     document.getElementById('pdfBtn').style.display='';
@@ -5199,6 +5308,17 @@ const TRANSLATIONS = {
     lbl_w: 'W', lbl_h: 'H',
     lbl_width: 'Width in stitches',
     lbl_height: 'Height in stitches',
+    btn_view_simple: 'Simple',
+    btn_view_realistic: 'Realistic',
+    lbl_fabric: 'Fabric',
+    lbl_approx_size: 'Approx. size',
+    fabric_aida11: 'Aida 11ct',
+    fabric_aida14: 'Aida 14ct',
+    fabric_aida16: 'Aida 16ct',
+    fabric_aida18: 'Aida 18ct',
+    fabric_aida28: 'Aida 28ct',
+    fabric_linen28: 'Linen 28ct',
+    fabric_even28: 'Evenweave 28ct',
     lbl_colors: 'Number of thread colors',
     lbl_anti: 'Anti-confetti strength',
     lbl_anti_sub: 'Higher = fewer isolated stitches',
@@ -5340,6 +5460,17 @@ const TRANSLATIONS = {
     lbl_width: 'Ancho en puntos',
     lbl_w: 'A', lbl_h: 'H',
     lbl_height: 'Alto en puntos',
+    btn_view_simple: 'Simple',
+    btn_view_realistic: 'Realista',
+    lbl_fabric: 'Tela',
+    lbl_approx_size: 'Tamaño aprox.',
+    fabric_aida11: 'Aida 11ct',
+    fabric_aida14: 'Aida 14ct',
+    fabric_aida16: 'Aida 16ct',
+    fabric_aida18: 'Aida 18ct',
+    fabric_aida28: 'Aida 28ct',
+    fabric_linen28: 'Lino 28ct',
+    fabric_even28: 'Evenweave 28ct',
     lbl_colors: 'Número de colores de hilo',
     lbl_anti: 'Anti-confetti',
     lbl_anti_sub: 'Mayor = menos puntos aislados',
@@ -5480,6 +5611,17 @@ const TRANSLATIONS = {
     lbl_width: 'Largura em pontos',
     lbl_w: 'L', lbl_h: 'A',
     lbl_height: 'Altura em pontos',
+    btn_view_simple: 'Simple',
+    btn_view_realistic: 'Realista',
+    lbl_fabric: 'Tecido',
+    lbl_approx_size: 'Tamanho aprox.',
+    fabric_aida11: 'Aida 11ct',
+    fabric_aida14: 'Aida 14ct',
+    fabric_aida16: 'Aida 16ct',
+    fabric_aida18: 'Aida 18ct',
+    fabric_aida28: 'Aida 28ct',
+    fabric_linen28: 'Linho 28ct',
+    fabric_even28: 'Evenweave 28ct',
     lbl_colors: 'Número de cores de fio',
     lbl_anti: 'Anti-confete',
     lbl_anti_sub: 'Mais alto = menos pontos isolados',
@@ -5620,6 +5762,17 @@ const TRANSLATIONS = {
     lbl_width: 'Breite in Stichen',
     lbl_w: 'B', lbl_h: 'H',
     lbl_height: 'H\u00f6he in Stichen',
+    btn_view_simple: 'Einfach',
+    btn_view_realistic: 'Realistisch',
+    lbl_fabric: 'Stoff',
+    lbl_approx_size: 'Ungef. Gr\u00f6\u00dfe',
+    fabric_aida11: 'Aida 11ct',
+    fabric_aida14: 'Aida 14ct',
+    fabric_aida16: 'Aida 16ct',
+    fabric_aida18: 'Aida 18ct',
+    fabric_aida28: 'Aida 28ct',
+    fabric_linen28: 'Leinen 28ct',
+    fabric_even28: 'Evenweave 28ct',
     lbl_colors: 'Anzahl der Garnfarben',
     lbl_anti: 'Anti-Konfetti-Stärke',
     lbl_anti_sub: 'Höher = weniger einzelne Stiche',
@@ -5808,6 +5961,13 @@ function applyTranslations() {
 
   // Update document lang
   document.documentElement.lang = currentLang;
+
+  // Sync realistic view button text
+  const rb = document.getElementById('realisticBtn');
+  if (rb) {
+    const span = rb.querySelector('span');
+    if (span) span.textContent = realisticView ? t('btn_view_realistic') : t('btn_view_simple');
+  }
 }
 
 function setLang(lang) {
@@ -5893,6 +6053,28 @@ function toggleRatioLock() {
   btn.classList.toggle('locked', ratioLocked);
   btn.textContent = ratioLocked ? '🔒' : '🔓';
   btn.title = ratioLocked ? 'Lock aspect ratio' : 'Unlock aspect ratio';
+}
+
+const FABRIC_CT = { '11': 11, '14': 14, '16': 16, '18': 18, '28aida': 28, '28linen': 28, '28even': 28 };
+
+function updateSizeHint() {
+  const W = parseInt(document.getElementById('patternWSlider')?.value || 80);
+  const H = parseInt(document.getElementById('patternHSlider')?.value || 120);
+  const sel = document.getElementById('aidaCount');
+  const result = document.getElementById('aidaSizeResult');
+  const aidaRow = document.getElementById('aidaRow');
+
+  if (currentFormat === 'miyuki') {
+    if (aidaRow) aidaRow.style.display = 'none';
+    return;
+  }
+  if (aidaRow) aidaRow.style.display = 'flex';
+  if (!sel || !result) return;
+
+  const ct = FABRIC_CT[sel.value] || 14;
+  const wCm = ((W / ct) * 2.54).toFixed(1);
+  const hCm = ((H / ct) * 2.54).toFixed(1);
+  result.textContent = t('lbl_approx_size') + ': ≈ ' + wCm + ' × ' + hCm + ' cm';
 }
 
 function syncSize(changed, val) {
@@ -6270,6 +6452,7 @@ function startBlankCanvas() {
   document.getElementById('patternCanvas').style.display = '';
   document.getElementById('progressModeBar').classList.add('visible');
   document.getElementById('showGridBtn').style.display = '';
+  document.getElementById('realisticBtn').style.display = '';
   document.getElementById('editToggleBtn').style.display = '';
   document.getElementById('downloadBtn').style.display = '';
   document.getElementById('pdfBtn').style.display = '';
