@@ -15,6 +15,7 @@
 <!-- VERSION: Beta 0.1 — Full feature build -->
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
 <style>
   :root {
     --cream: #f5f0e8;
@@ -1357,6 +1358,10 @@
       <button class="lang-btn" onclick="setLang('pt')" title="Português">PT</button>
       <button class="lang-btn" onclick="setLang('de')" title="Deutsch">DE</button>
     </div>
+    <button id="driveBtn" onclick="openProjectsModal()" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid rgba(245,240,232,0.35);border-radius:20px;padding:5px 12px 5px 8px;color:var(--cream);font-family:'Crimson Pro',Georgia,serif;font-size:13px;cursor:pointer;white-space:nowrap;">
+      <span id="driveAvatar" style="width:22px;height:22px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--dark);">☁</span>
+      <span id="driveBtnLabel">Mis Proyectos</span>
+    </button>
   </header>
 
   <div class="main">
@@ -1631,6 +1636,7 @@
             <button class="btn-edit-toggle" id="editToggleBtn" onclick="toggleEditMode()" style="display:none">✏️ Edit</button>
             <button class="btn-secondary" id="downloadBtn" onclick="downloadPattern()" style="display:none">↓ <span data-i18n="btn_png">PNG</span></button>
             <button class="btn-secondary" id="pdfBtn" onclick="exportPDF()" style="display:none;border-color:var(--gold);color:var(--gold)">↓ <span data-i18n="btn_pdf">PDF Chart</span></button>
+            <button class="btn-secondary" id="saveProjectBtn" onclick="openProjectsModal()" style="display:none;border-color:#4285f4;color:#4285f4">☁ <span>Guardar</span></button>
           </div>
         </div>
       </div>
@@ -1717,14 +1723,20 @@
           </div>
           <!-- BUY LIST -->
           <div class="buy-list" id="buyList">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 0 8px;flex-wrap:wrap">
+              <button onclick="buySelectedOnAmazon()" style="background:#FF9900;color:#111;border:none;border-radius:4px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Crimson Pro',Georgia,serif">🛒 Buy selected on Amazon</button>
+              <label style="font-size:12px;color:var(--warm-gray);cursor:pointer"><input type="checkbox" id="selectAllAmazon" onchange="toggleAllAmazon(this.checked)" style="margin-right:4px">Select all</label>
+            </div>
             <table class="skein-table" id="buyTable">
               <thead>
                 <tr>
+                  <th style="width:24px"></th>
                   <th style="width:180px" data-i18n="th_color">Color</th>
                   <th class="right" data-i18n="th_stitches">Stitches</th>
                   <th class="center" data-i18n="th_need">Need</th>
                   <th class="center" data-i18n="th_ihave">I have</th>
                   <th class="center" data-i18n="th_tobuy">To buy</th>
+                  <th class="center">Amazon</th>
                 </tr>
               </thead>
               <tbody id="buyTableBody"></tbody>
@@ -1738,6 +1750,43 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- PROJECTS MODAL -->
+<div id="projectsModal" style="display:none;position:fixed;inset:0;background:rgba(42,36,32,0.8);z-index:2000;align-items:center;justify-content:center;">
+  <div style="background:#f5f0e8;border-radius:14px;width:min(660px,95vw);max-height:88vh;display:flex;flex-direction:column;font-family:'Crimson Pro',Georgia,serif;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+    <div style="padding:20px 24px 16px;border-bottom:1px solid #e8e0d5;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:20px;font-weight:700;color:#2a2420;font-family:'Playfair Display',serif;">🧵 Mis Proyectos</span>
+      <button onclick="closeProjectsModal()" style="margin-left:auto;background:none;border:none;font-size:22px;cursor:pointer;color:#8b7355;">×</button>
+    </div>
+    <div id="projectsModalBody" style="flex:1;overflow-y:auto;padding:20px 24px;"></div>
+    <div style="padding:14px 24px;border-top:1px solid #e8e0d5;display:flex;justify-content:flex-end;gap:8px;">
+      <button onclick="closeProjectsModal()" style="background:none;border:1.5px solid #c8bfb0;border-radius:6px;padding:7px 18px;font-family:inherit;font-size:14px;cursor:pointer;color:#2a2420;">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- AMAZON MODAL -->
+<div id="amazonModal" style="display:none;position:fixed;inset:0;background:rgba(42,36,32,0.8);z-index:2000;align-items:center;justify-content:center;">
+  <div style="background:#f5f0e8;border-radius:14px;width:min(480px,95vw);max-height:85vh;display:flex;flex-direction:column;font-family:'Crimson Pro',Georgia,serif;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+    <div style="padding:20px 24px 16px;border-bottom:1px solid #e8e0d5;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:20px;font-weight:700;color:#FF9900;font-family:'Playfair Display',serif;">amazon</span>
+      <span style="font-size:16px;font-weight:600;color:#2a2420;" id="amazonModalTitle">Lista de compra</span>
+      <button onclick="closeAmazonModal()" style="margin-left:auto;background:none;border:none;font-size:22px;cursor:pointer;color:#8b7355;">×</button>
+    </div>
+    <div id="amazonModalList" style="flex:1;overflow-y:auto;padding:16px 24px;display:flex;flex-direction:column;gap:10px;"></div>
+    <div id="amazonColorPicker" style="display:none;border-top:1px solid #e8e0d5;padding:12px 24px;max-height:200px;overflow-y:auto;">
+      <div style="font-size:12px;font-weight:600;color:#8b7355;margin-bottom:8px;">Selecciona un color del patrón:</div>
+      <div id="amazonColorPickerList" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+    <div style="padding:14px 24px;border-top:1px solid #e8e0d5;display:flex;justify-content:space-between;align-items:center;">
+      <span id="amazonModalStock" style="font-size:12px;color:#8b7355;"></span>
+      <div style="display:flex;gap:8px;">
+        <button onclick="addColorToAmazonModal()" style="background:var(--thread-red);color:white;border:none;border-radius:6px;padding:7px 18px;font-family:inherit;font-size:14px;cursor:pointer;">+ Añadir color</button>
+        <button onclick="closeAmazonModal()" style="background:none;border:1.5px solid #c8bfb0;border-radius:6px;padding:7px 18px;font-family:inherit;font-size:14px;cursor:pointer;color:#2a2420;">Cerrar</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -3464,6 +3513,7 @@ function saveProFlags() { localStorage.setItem(PRO_STORAGE_KEY, JSON.stringify({
 function unlockWithCode(code) { if ((code||'').trim().toUpperCase() === BETA_CODE) { hasCSPro = true; hasMiyukiPro = true; saveProFlags(); return true; } return false; }
 function isPro() { return hasCSPro || hasMiyukiPro; }
 function canUseBrand(b) { return b === 'dmc' || (hasCSPro && ['anchor','cosmo','madeira'].includes(b)); }
+document.addEventListener('DOMContentLoaded', () => { updateProBadge(); });
 
 function getGeometry() {
   return FORMAT_GEOMETRY[currentFormat] || FORMAT_GEOMETRY.crossstitch;
@@ -3881,6 +3931,7 @@ async function _generatePatternImpl() {
   document.getElementById('editToggleBtn').style.display = '';
   document.getElementById('downloadBtn').style.display = '';
   document.getElementById('pdfBtn').style.display = '';
+  if (driveToken) document.getElementById('saveProjectBtn').style.display = '';
   document.getElementById('progressModeBar').classList.add('visible');
 
   // Load saved progress for this pattern
@@ -4380,10 +4431,16 @@ function renderShoppingTable() {
 
     // Buy list row (only if toBuy > 0)
     if (toBuy > 0) {
+      const amzQ = encodeURIComponent(`${effectiveBrand.toUpperCase()} ${effectiveEntry.code} embroidery floss ${toBuy} skeins`);
+      const amzURL = `https://www.amazon.es/s?k=${amzQ}&tag=stitchthread2-20`;
+      const buyRowHTML = `<td style="text-align:center;vertical-align:middle"><input type="checkbox" class="amz-check" data-idx="${dmcIdx}" data-url="${amzURL}" data-tobuy="${toBuy}" style="cursor:pointer"></td>` + rowHTML +
+        `<td style="text-align:center;vertical-align:middle"><a href="${amzURL}" target="_blank" rel="noopener"
+          onclick="handleAmzClick(event,${dmcIdx},${toBuy})"
+          style="display:inline-block;background:#FF9900;color:#111;border-radius:3px;padding:3px 8px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap">🛒 Amazon</a></td>`;
       const tr2 = document.createElement('tr');
       tr2.className = 'skein-row';
       tr2.id = `buyrow-${dmcIdx}`;
-      tr2.innerHTML = rowHTML;
+      tr2.innerHTML = buyRowHTML;
       buyBody.appendChild(tr2);
     }
   });
@@ -4544,6 +4601,344 @@ function downloadPattern() {
   }
   a.click();
   showToast(t('toast_png'));
+}
+
+function openAmazonModal(items) {
+  const list = document.getElementById('amazonModalList');
+  list.innerHTML = items.map(({color, code, name, url, toBuy}) => `
+    <div style="display:flex;align-items:center;gap:10px;background:white;border-radius:8px;padding:10px 14px;border:1px solid #e8e0d5;">
+      <div style="width:28px;height:28px;border-radius:50%;background:${color};border:1px solid rgba(0,0,0,0.15);flex-shrink:0;"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:13px;color:#2a2420;">${code} — ${name}</div>
+        <div style="font-size:11px;color:#8b7355;">necesitas ${toBuy} madeja${toBuy>1?'s':''}</div>
+      </div>
+      <a href="${url}" target="_blank" rel="noopener"
+        style="background:#FF9900;color:#111;border:none;border-radius:4px;padding:6px 12px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">
+        Ver →
+      </a>
+    </div>`).join('');
+  document.getElementById('amazonModalStock').textContent = '';
+  document.getElementById('amazonModal').style.display = 'flex';
+  window._amazonModalItems = items;
+}
+function closeAmazonModal() {
+  document.getElementById('amazonModal').style.display = 'none';
+  const items = window._amazonModalItems;
+  if (!items || !items.length) return;
+  const toast = document.getElementById('toast');
+  toast.innerHTML = `¿Actualizar stock? <button onclick="confirmAmazonStock()" style="margin-left:8px;background:var(--thread-red);color:white;border:none;border-radius:4px;padding:2px 10px;cursor:pointer;font-family:inherit;font-size:13px;">Sí</button>`;
+  toast.classList.add('show');
+  setTimeout(() => { toast.classList.remove('show'); toast.innerHTML=''; }, 5000);
+}
+function confirmAmazonStock() {
+  const items = window._amazonModalItems || [];
+  items.forEach(({idx, toBuy}) => { userStock[idx] = Math.max(0,(userStock[idx]||0)+toBuy); });
+  renderShoppingTable();
+  document.getElementById('toast').classList.remove('show');
+  showToast('✓ Stock actualizado');
+  window._amazonModalItems = null;
+}
+function handleAmzClick(e, dmcIdx, toBuy) {
+  e.preventDefault();
+  const btn = e.currentTarget;
+  const url = btn.href || btn.dataset.url;
+  const entry = getEffectiveEntry(dmcIdx);
+  openAmazonModal([{color: entry.hex, code: entry.code, name: entry.name, url, toBuy, idx: dmcIdx}]);
+}
+function buySelectedOnAmazon() {
+  const checks = [...document.querySelectorAll('.amz-check:checked')];
+  if (!checks.length) { showToast('Selecciona al menos un hilo'); return; }
+  const items = checks.map(c => {
+    const idx = Number(c.dataset.idx);
+    const entry = getEffectiveEntry(idx);
+    return {color: entry.hex, code: entry.code, name: entry.name, url: c.dataset.url, toBuy: Number(c.dataset.tobuy), idx};
+  });
+  openAmazonModal(items);
+}
+function toggleAllAmazon(checked) {
+  document.querySelectorAll('.amz-check').forEach(c => c.checked = checked);
+}
+function addColorToAmazonModal() {
+  const picker = document.getElementById('amazonColorPicker');
+  const list = document.getElementById('amazonColorPickerList');
+  if (picker.style.display !== 'none') { picker.style.display='none'; return; }
+  if (!currentPattern) return;
+  const currentIdxs = new Set((window._amazonModalItems||[]).map(i=>i.idx));
+  const counts = {};
+  for (const v of currentPattern.grid) counts[v]=(counts[v]||0)+1;
+  const available = Object.keys(counts).map(Number).filter(idx=>!currentIdxs.has(idx));
+  if (!available.length) { showToast('No hay más colores disponibles'); return; }
+  list.innerHTML = available.map(idx => {
+    const e = getEffectiveEntry(idx);
+    const q = encodeURIComponent((e.brand||'DMC').toUpperCase()+' '+e.code+' embroidery floss');
+    const url = 'https://www.amazon.es/s?k='+q+'&tag=stitchthread2-20';
+    return `<div onclick="pickColorForAmazon(${idx},'${url}')"
+      style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;border:1px solid #e8e0d5;background:white;">
+      <div style="width:22px;height:22px;border-radius:50%;background:#${e.hex};border:1px solid rgba(0,0,0,0.15);flex-shrink:0;"></div>
+      <span style="font-size:13px;color:#2a2420;font-weight:600;">${e.code}</span>
+      <span style="font-size:12px;color:#8b7355;">${e.name}</span>
+    </div>`;
+  }).join('');
+  picker.style.display = 'block';
+}
+function pickColorForAmazon(idx, url) {
+  const e = getEffectiveEntry(idx);
+  const items = window._amazonModalItems || [];
+  items.push({color:'#'+e.hex, code:e.code, name:e.name, url, toBuy:1, idx});
+  window._amazonModalItems = items;
+  document.getElementById('amazonColorPicker').style.display='none';
+  openAmazonModal(items);
+}
+// ── GOOGLE DRIVE ──
+const DRIVE_CLIENT_ID = '851953645621-tlu1v5g0t70unme57ct4flea9rto88aj.apps.googleusercontent.com';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/userinfo.profile';
+let driveToken = null;
+let _currentProjectId = null;
+let driveUser = {name:'', picture:''};
+let driveTokenClient = null;
+let _driveAuthCallback = null;
+
+window.addEventListener('load', () => {
+  const tryInit = () => {
+    if (typeof google !== 'undefined' && google.accounts) {
+      driveTokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: DRIVE_CLIENT_ID,
+        scope: DRIVE_SCOPE,
+        callback: onDriveToken,
+      });
+      const saved = sessionStorage.getItem('drive_token');
+      if (saved) { try { const d=JSON.parse(saved); if(Date.now()<d.exp){driveToken=d.token;driveUser=d.user;updateDriveBtn();} } catch(e){} }
+    } else { setTimeout(tryInit, 300); }
+  };
+  tryInit();
+});
+
+function onDriveToken(resp) {
+  if (resp.error) return;
+  driveToken = resp.access_token;
+  fetch('https://www.googleapis.com/oauth2/v2/userinfo', {headers:{Authorization:'Bearer '+driveToken}})
+    .then(r=>r.json()).then(info => {
+      driveUser = {name: info.name||info.email||'', picture: info.picture||''};
+      sessionStorage.setItem('drive_token', JSON.stringify({token:driveToken, user:driveUser, exp:Date.now()+3500000}));
+      updateDriveBtn();
+      if (_driveAuthCallback) { _driveAuthCallback(); _driveAuthCallback=null; }
+    });
+}
+
+function requireDriveAuth(fn) {
+  console.log('requireDriveAuth called, driveTokenClient:', driveTokenClient, 'google:', typeof google);
+  if (driveToken) { fn(); return; }
+  _driveAuthCallback = fn;
+  if (driveTokenClient) {
+    driveTokenClient.requestAccessToken({prompt:''});
+  } else {
+    const tryAuth = () => {
+      if (typeof google !== 'undefined' && google.accounts) {
+        driveTokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: DRIVE_CLIENT_ID,
+          scope: DRIVE_SCOPE,
+          callback: onDriveToken,
+        });
+        driveTokenClient.requestAccessToken({prompt:''});
+      } else {
+        setTimeout(tryAuth, 300);
+      }
+    };
+    tryAuth();
+  }
+}
+
+function openProjectsModal() {
+  if (!isPro()) { showPaywall('Guardar proyectos requiere PRO.'); return; }
+  document.getElementById('projectsModal').style.display = 'flex';
+  renderProjectsModal();
+}
+function confirmSaveProject() {
+  const nameInput = document.getElementById('projectNameInput');
+  const name = (nameInput?.value||'').trim() || new Date().toLocaleDateString();
+  if (!currentPattern) { showToast('Genera un patrón primero.'); return; }
+  let thumb = '';
+  try {
+    const tc = document.createElement('canvas');
+    tc.width=120; tc.height=Math.round(120*currentPattern.H/currentPattern.W);
+    tc.getContext('2d').drawImage(document.getElementById('patternCanvas'),0,0,tc.width,tc.height);
+    thumb = tc.toDataURL('image/jpeg',0.6);
+  } catch(e){}
+  const data = {
+    version:1, name, savedAt:new Date().toISOString(), thumb,
+    grid:Array.from(currentPattern.grid), W:currentPattern.W, H:currentPattern.H,
+    currentBrand, currentFormat, paintOverride:{...paintOverride},
+    userStock:{...userStock}, myThreadBox:Array.from(myThreadBox),
+    doneStitches: Array.from(doneStitches),
+    shoppingData: shoppingData.map(s => ({...s})),
+    sourceImageData: (() => { try { const c=document.querySelector('.upload-area img'); return c?c.src:''; } catch(e){return '';} })(),
+    sliders:{
+      W:parseInt(document.getElementById('patternWSlider')?.value||80),
+      colors:parseInt(document.getElementById('colorsSlider')?.value||20),
+      anti:parseInt(document.getElementById('antiSlider')?.value||4)
+    }
+  };
+  const btn = document.querySelector('#projectsModalBody button[onclick="confirmSaveProject()"]');
+  if (btn) { btn.disabled=true; btn.textContent='Guardando…'; }
+  const overwriteChk = document.getElementById('overwriteCheck');
+  const useExistingId = overwriteChk && overwriteChk.checked && _currentProjectId ? _currentProjectId : null;
+  driveSave(name, data, useExistingId).then(() => {
+  if (!useExistingId) _currentProjectId = null;
+    showToast('✓ Proyecto guardado en Drive');
+    closeProjectsModal();
+  }).catch(() => {
+    showToast('Error al guardar. Inténtalo de nuevo.');
+    if (btn) { btn.disabled=false; btn.textContent='☁ Guardar en Drive'; }
+  });
+}
+
+async function loadProjectFromDrive(fileId) {
+  console.log('loadProjectFromDrive called, fileId:', fileId);
+  const body = document.getElementById('projectsModalBody');
+  body.innerHTML = '<div style="text-align:center;padding:40px;color:#8b7355;">⏳ Cargando proyecto…</div>';
+  try {
+    const data = await driveLoad(fileId);
+    console.log('data loaded:', data);
+    if (!data || !data.grid) { showToast('Error: proyecto corrupto.'); renderProjectsModal(); return; }
+    currentPattern = {grid: new Int32Array(data.grid), W:data.W, H:data.H};
+    if (data.currentBrand) currentBrand = data.currentBrand;
+    if (data.currentFormat) currentFormat = data.currentFormat;
+    if (data.paintOverride) Object.assign(paintOverride, data.paintOverride);
+    if (data.userStock) Object.assign(userStock, data.userStock);
+    if (data.myThreadBox) { myThreadBox.clear(); data.myThreadBox.forEach(v=>myThreadBox.add(v)); }
+    if (data.doneStitches) {
+      doneStitches.clear();
+      data.doneStitches.forEach(v=>doneStitches.add(v));
+      try { localStorage.setItem('snt_progress_'+currentPattern.W+'x'+currentPattern.H+'_'+currentBrand, JSON.stringify([...doneStitches])); } catch(e){}
+    }
+    if (data.shoppingData) shoppingData = data.shoppingData;
+    if (data.sourceImageData) {
+      const area = document.getElementById('uploadArea');
+      if (area) {
+        area.innerHTML = '<img class="preview" src="'+data.sourceImageData+'" style="pointer-events:none"><input type="file" id="fileInput" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0;">';
+        area.classList.add('has-image');
+        document.getElementById('fileInput').addEventListener('change', e => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = ev => {
+            const img = new Image();
+            img.onload = () => { sourceImage = img; area.innerHTML = '<img class="preview" src="'+ev.target.result+'" style="pointer-events:none">'; area.classList.add('has-image'); document.getElementById('generateBtn').disabled = false; setRatioFromImage(img); };
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+      const img = new Image();
+      img.onload = () => { sourceImage = img; document.getElementById('generateBtn').disabled = false; };
+      img.src = data.sourceImageData;
+    }
+    const counts = {};
+    for (const v of currentPattern.grid) counts[v]=(counts[v]||0)+1;
+    currentColors = counts;
+    console.log('currentColors after count:', counts);
+    console.log('W:', data.W, 'H:', data.H);
+    drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, counts);
+    console.log('drawPattern called');
+    console.log('patternCanvas:', document.getElementById('patternCanvas'));
+    console.log('stitchCanvas:', document.getElementById('stitchCanvas'));
+    renderShoppingTable();
+    if (data.doneStitches && data.doneStitches.length) updateProgressStats && updateProgressStats();
+    document.getElementById('showGridBtn').style.display='';
+    document.getElementById('editToggleBtn').style.display='';
+    document.getElementById('downloadBtn').style.display='';
+    document.getElementById('pdfBtn').style.display='';
+    document.getElementById('progressModeBar')?.classList.add('visible');
+    document.getElementById('patternCanvas').style.display = '';
+    const canvasWrapper = document.getElementById('canvasWrapper') || document.querySelector('.canvas-wrapper') || document.querySelector('.canvas-area');
+    if (canvasWrapper) canvasWrapper.style.display = '';
+    document.getElementById('patternCanvas').scrollIntoView({behavior:'smooth', block:'center'});
+    const canvasInfo = document.getElementById('canvasInfo');
+    if (canvasInfo) canvasInfo.innerHTML = '<strong>'+data.W+'×'+data.H+'</strong> stitches';
+    _currentProjectId = fileId;
+    window._currentProjectName = data.name || '';
+    closeProjectsModal();
+    showToast('✓ Proyecto "'+data.name+'" cargado');
+  } catch(e) {
+    showToast('Error al cargar el proyecto.');
+    renderProjectsModal();
+  }
+}
+
+function closeProjectsModal() {
+  document.getElementById('projectsModal').style.display = 'none';
+}
+function renderProjectsModal() {
+  const body = document.getElementById('projectsModalBody');
+  if (!driveToken) {
+    body.innerHTML = '<div style="text-align:center;padding:40px 24px"><div style="font-size:48px;margin-bottom:16px">☁️</div><p style="font-size:15px;color:#8b7355;margin-bottom:20px">Inicia sesión con Google para guardar y cargar tus proyectos desde cualquier dispositivo.</p><button onclick="requireDriveAuth(()=>renderProjectsModal())" style="display:inline-flex;align-items:center;gap:10px;background:white;border:1.5px solid #dadce0;border-radius:6px;padding:10px 20px;font-size:15px;cursor:pointer;font-family:inherit;color:#2a2420;"><svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>Entrar con Google</button></div>';
+    return;
+  }
+  const overwriteOption = _currentProjectId ? '<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#8b7355;margin-bottom:8px;cursor:pointer"><input type="checkbox" id="overwriteCheck" checked> Sobrescribir proyecto actual</label>' : '';
+  const saveFormHTML = currentPattern ? '<div style="margin-bottom:20px;padding:16px;background:#faf6f0;border-radius:8px;border:1px solid #e8e0d5;"><div style="font-size:13px;font-weight:600;color:#2a2420;margin-bottom:10px;">💾 Guardar patrón actual</div><input id="projectNameInput" type="text" placeholder="Nombre del proyecto…" style="width:100%;border:1.5px solid #e8e0d5;border-radius:6px;padding:8px 12px;font-family:inherit;font-size:15px;background:white;color:#2a2420;margin-bottom:8px;" value="'+(_currentProjectId && window._currentProjectName ? window._currentProjectName : new Date().toLocaleDateString()+' — '+(currentPattern.W||'')+'×'+(currentPattern.H||'')+' pt')+'">'+overwriteOption+'<button onclick="confirmSaveProject()" style="width:100%;background:var(--thread-red);color:white;border:none;border-radius:6px;padding:9px;font-family:inherit;font-size:14px;cursor:pointer;">☁ Guardar en Drive</button></div>' : '';
+  body.innerHTML = saveFormHTML + '<div id="projectsListArea"><div style="text-align:center;padding:40px;color:#8b7355;font-size:14px;">Cargando proyectos…</div></div>';
+  driveList().then(files => {
+    const area = document.getElementById('projectsListArea');
+    if (!area) return;
+    if (!files.length) { area.innerHTML = '<div style="text-align:center;padding:40px;color:#8b7355"><div style="font-size:40px;margin-bottom:12px">🧵</div><p>Sin proyectos guardados. ¡Genera un patrón y guárdalo!</p></div>'; return; }
+    area.innerHTML = '<div style="font-size:12px;font-weight:600;color:#8b7355;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">Proyectos guardados</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">'+
+      files.map(f => '<div data-file-id="'+f.id+'" style="background:white;border:1.5px solid #e8e0d5;border-radius:8px;overflow:hidden;cursor:pointer;transition:all .18s;position:relative;" onmouseover="this.style.borderColor=\'#8b2635\'" onmouseout="this.style.borderColor=\'#e8e0d5\'">'+
+        '<div style="width:100%;aspect-ratio:1;background:#f0ebe3;display:flex;align-items:center;justify-content:center;font-size:32px;">🧵</div>'+
+        '<div style="padding:8px 10px;"><div style="font-size:12px;font-weight:600;color:#2a2420;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+f.name.replace('.stitch','')+'</div>'+
+        '<div style="font-size:11px;color:#8b7355;">'+new Date(f.modifiedTime).toLocaleDateString()+'</div></div>'+
+        '<button data-del-id="'+f.id+'" style="position:absolute;top:5px;right:5px;width:20px;height:20px;background:rgba(139,38,53,0.85);color:white;border:none;border-radius:50%;font-size:11px;cursor:pointer;display:none;align-items:center;justify-content:center;" onmouseover="this.style.display=\'flex\'" >×</button>'+
+        '</div>').join('')+'</div>';
+    area.addEventListener('click', async e => {
+      const del = e.target.closest('[data-del-id]');
+      if (del) { e.stopPropagation(); if(!confirm('¿Eliminar este proyecto?')) return; await driveDelete(del.dataset.delId); renderProjectsModal(); return; }
+      const card = e.target.closest('[data-file-id]');
+      if (card) { await loadProjectFromDrive(card.dataset.fileId); }
+    });
+  }).catch(() => { const a=document.getElementById('projectsListArea'); if(a) a.innerHTML='<p style="color:#8b2635;text-align:center">Error cargando proyectos.</p>'; });
+}
+
+function updateDriveBtn() {
+  const avatar = document.getElementById('driveAvatar');
+  const label = document.getElementById('driveBtnLabel');
+  if (!avatar || !label) return;
+  if (driveToken && driveUser.name) {
+    avatar.innerHTML = driveUser.picture ? '<img src="'+driveUser.picture+'" style="width:22px;height:22px;border-radius:50%;object-fit:cover;">' : driveUser.name[0].toUpperCase();
+    label.textContent = driveUser.name.split(' ')[0];
+  } else {
+    avatar.textContent = '☁';
+    label.textContent = 'Mis Proyectos';
+  }
+}
+
+async function driveReq(url, opts={}) {
+  const res = await fetch(url, {...opts, headers:{Authorization:'Bearer '+driveToken,...(opts.headers||{})}});
+  if (res.status===401) { driveToken=null; sessionStorage.removeItem('drive_token'); updateDriveBtn(); throw new Error('Token expired'); }
+  return res;
+}
+
+async function driveList() {
+  const res = await driveReq('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name,modifiedTime)&q=name+contains+%27.stitch%27&orderBy=modifiedTime+desc&pageSize=50');
+  return (await res.json()).files || [];
+}
+
+async function driveSave(name, data, existingId=null) {
+  const meta = {name: name+'.stitch', parents: existingId ? undefined : ['appDataFolder']};
+  const body = new FormData();
+  body.append('metadata', new Blob([JSON.stringify(meta)], {type:'application/json'}));
+  body.append('file', new Blob([JSON.stringify(data)], {type:'application/json'}));
+  const url = existingId
+    ? 'https://www.googleapis.com/upload/drive/v3/files/'+existingId+'?uploadType=multipart'
+    : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+  return driveReq(url, {method: existingId?'PATCH':'POST', body});
+}
+
+async function driveLoad(fileId) {
+  const res = await driveReq('https://www.googleapis.com/drive/v3/files/'+fileId+'?alt=media');
+  return res.json();
+}
+
+async function driveDelete(fileId) {
+  await driveReq('https://www.googleapis.com/drive/v3/files/'+fileId, {method:'DELETE'});
 }
 
 function showPaywall(reason) {
@@ -5779,6 +6174,7 @@ function startBlankCanvas() {
   document.getElementById('editToggleBtn').style.display = '';
   document.getElementById('downloadBtn').style.display = '';
   document.getElementById('pdfBtn').style.display = '';
+  if (driveToken) document.getElementById('saveProjectBtn').style.display = '';
 
   // Update info bar
   document.getElementById('canvasInfo').innerHTML =
