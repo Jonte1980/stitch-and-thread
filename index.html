@@ -1,0 +1,2376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stitch & Thread — Turn Any Photo Into a Cross-Stitch Pattern</title>
+<meta name="description" content="Convert any image into a professional cross-stitch or Miyuki bead pattern. Free online tool with DMC, Anchor, Cosmo, Madeira support and PDF export.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #f5f0e8;
+    --cream-dark: #ede5d4;
+    --red: #8b2635;
+    --red-light: #b03344;
+    --gold: #b8974a;
+    --gold-light: #d4b06a;
+    --charcoal: #2a2420;
+    --charcoal-light: #4a3f38;
+    --warm-gray: #8a7d70;
+    --linen: #e8dfd0;
+    --white: #fdfaf5;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Crimson Pro', Georgia, serif;
+    background: var(--cream);
+    color: var(--charcoal);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ─── AIDA TEXTURE BACKGROUND ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(42,36,32,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(42,36,32,0.04) 1px, transparent 1px);
+    background-size: 14px 14px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  * { position: relative; z-index: 1; }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(245,240,232,0.94);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--linen);
+    padding: 0 5vw;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--charcoal);
+    text-decoration: none;
+    letter-spacing: -0.3px;
+  }
+
+  .nav-logo span { color: var(--red); }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 15px;
+    color: var(--charcoal-light);
+    text-decoration: none;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--red); }
+
+  .nav-cta {
+    background: var(--red) !important;
+    color: var(--white) !important;
+    padding: 8px 20px;
+    border: none;
+    font-family: 'Crimson Pro', serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s !important;
+    text-decoration: none;
+  }
+
+  .nav-cta:hover { background: var(--red-light) !important; }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 0;
+    padding-top: 64px;
+    overflow: hidden;
+  }
+
+  .hero-content {
+    padding: 80px 5vw 80px 8vw;
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(42px, 4.5vw, 68px);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--charcoal);
+    letter-spacing: -1px;
+    margin-bottom: 28px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--red);
+  }
+
+  .hero-sub {
+    font-size: clamp(17px, 1.4vw, 20px);
+    color: var(--charcoal-light);
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 480px;
+    margin-bottom: 44px;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--red);
+    color: var(--white);
+    padding: 15px 32px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 17px;
+    font-weight: 500;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: background 0.2s, transform 0.15s;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-primary:hover {
+    background: var(--red-light);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--charcoal);
+    padding: 14px 0;
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    font-weight: 400;
+    text-decoration: none;
+    border-bottom: 1px solid var(--charcoal);
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .btn-ghost:hover { color: var(--red); border-color: var(--red); }
+
+  .hero-trust {
+    margin-top: 48px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 13px;
+    color: var(--warm-gray);
+    font-style: italic;
+  }
+
+  .hero-trust::before {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 32px;
+    background: var(--linen);
+  }
+
+  /* ─── HERO VISUAL ─── */
+  .hero-visual {
+    height: 100vh;
+    background: var(--charcoal);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-visual-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 28px;
+  }
+
+  /* ─── APP MOCKUP ─── */
+  .app-mockup {
+    width: 100%;
+    height: 100%;
+    max-height: 640px;
+    background: #f5f0e8;
+    border: 1px solid rgba(245,240,232,0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  }
+
+  /* Top bar */
+  .app-topbar {
+    height: 42px;
+    background: #f5f0e8;
+    border-bottom: 1px solid #ddd4c0;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .app-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #2a2420;
+    white-space: nowrap;
+  }
+
+  .app-logo em { font-style: normal; color: #8b2635; }
+
+  .app-pro-badge {
+    background: #b8974a;
+    color: #fff;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 2px 6px;
+    font-family: 'Crimson Pro', serif;
+  }
+
+  .app-tagline {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #8a7d70;
+    margin-left: 4px;
+    font-family: 'Crimson Pro', serif;
+  }
+
+  .app-lang-btns {
+    margin-left: auto;
+    display: flex;
+    gap: 3px;
+  }
+
+  .app-lang {
+    font-size: 9px;
+    padding: 2px 6px;
+    border: 1px solid #ddd4c0;
+    color: #8a7d70;
+    background: transparent;
+    font-family: 'Crimson Pro', serif;
+    cursor: default;
+  }
+
+  .app-lang.active {
+    border-color: #8b2635;
+    color: #8b2635;
+    background: rgba(139,38,53,0.06);
+  }
+
+  /* App body = sidebar + canvas */
+  .app-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    background-image:
+      linear-gradient(rgba(42,36,32,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(42,36,32,0.04) 1px, transparent 1px);
+    background-size: 14px 14px;
+    background-color: #f5f0e8;
+  }
+
+  /* Sidebar */
+  .app-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    border-right: 1px solid #ddd4c0;
+    background: rgba(245,240,232,0.7);
+    overflow: hidden;
+  }
+
+  .app-blank-btn {
+    border: 1.5px dashed #b0a090;
+    padding: 8px;
+    text-align: center;
+    font-size: 9px;
+    font-family: 'Crimson Pro', serif;
+    color: #8a7d70;
+    cursor: default;
+  }
+
+  .app-section-label {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #8a7d70;
+    margin-bottom: 6px;
+    font-family: 'Crimson Pro', serif;
+  }
+
+  .app-upload-box {
+    border: 1.5px dashed #b0a090;
+    padding: 14px 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .app-upload-icon {
+    width: 20px;
+    height: 20px;
+    stroke: #8b2635;
+    fill: none;
+    stroke-width: 1.5;
+  }
+
+  .app-upload-title {
+    font-size: 9px;
+    font-weight: 600;
+    color: #8b2635;
+    font-family: 'Crimson Pro', serif;
+  }
+
+  .app-upload-sub {
+    font-size: 8px;
+    color: #8a7d70;
+    font-family: 'Crimson Pro', serif;
+  }
+
+  .app-format-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+
+  .app-format-btn {
+    border: 1px solid #ddd4c0;
+    padding: 7px 4px;
+    text-align: center;
+    cursor: default;
+    background: #fff8f0;
+  }
+
+  .app-format-btn.active {
+    border-color: #8b2635;
+    background: rgba(139,38,53,0.05);
+  }
+
+  .app-format-symbol {
+    font-size: 13px;
+    color: #2a2420;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .app-format-name {
+    font-size: 8px;
+    font-weight: 600;
+    color: #2a2420;
+    font-family: 'Crimson Pro', serif;
+    display: block;
+  }
+
+  .app-format-sub {
+    font-size: 7px;
+    color: #8b2635;
+    font-family: 'Crimson Pro', serif;
+    display: block;
+  }
+
+  .app-brand-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+
+  .app-brand-btn {
+    border: 1px solid #ddd4c0;
+    padding: 6px 4px;
+    text-align: center;
+    cursor: default;
+    background: #fff8f0;
+  }
+
+  .app-brand-btn.active {
+    border-color: #8b2635;
+    background: rgba(139,38,53,0.05);
+  }
+
+  .app-brand-name {
+    font-size: 9px;
+    font-weight: 600;
+    color: #2a2420;
+    font-family: 'Crimson Pro', serif;
+    display: block;
+  }
+
+  .app-brand-sub {
+    font-size: 7px;
+    color: #8a7d70;
+    font-family: 'Crimson Pro', serif;
+    display: block;
+  }
+
+  .app-slider-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3px;
+  }
+
+  .app-slider-label { font-size: 8px; color: #2a2420; font-family: 'Crimson Pro', serif; }
+  .app-slider-val { font-size: 10px; font-weight: 700; color: #8b2635; font-family: 'Crimson Pro', serif; }
+
+  .app-slider-track {
+    height: 3px;
+    background: #ddd4c0;
+    border-radius: 2px;
+    position: relative;
+    margin-bottom: 8px;
+  }
+
+  .app-slider-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: #8b2635;
+    border-radius: 2px;
+  }
+
+  .app-slider-thumb {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #8b2635;
+    border: 2px solid #f5f0e8;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  /* Canvas area */
+  .app-canvas-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .app-canvas-toolbar {
+    height: 28px;
+    background: rgba(245,240,232,0.8);
+    border: 1px solid #ddd4c0;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .app-canvas-hint {
+    font-size: 9px;
+    color: #8a7d70;
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+  }
+
+  .app-canvas-btns {
+    margin-left: auto;
+    display: flex;
+    gap: 4px;
+  }
+
+  .app-tool-btn {
+    font-size: 8px;
+    padding: 2px 7px;
+    border: 1px solid #ddd4c0;
+    color: #2a2420;
+    font-family: 'Crimson Pro', serif;
+    cursor: default;
+    background: #fff8f0;
+  }
+
+  .app-canvas-box {
+    flex: 1;
+    background: rgba(245,240,232,0.5);
+    border: 1px solid #ddd4c0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* The pixel-art pattern rendered inside the canvas */
+  .app-pattern-canvas {
+    display: grid;
+    gap: 0;
+    image-rendering: pixelated;
+  }
+
+  /* ─── FLOATING BADGE ─── */
+  .floating-badge {
+    position: absolute;
+    bottom: 40px;
+    left: -20px;
+    background: var(--gold);
+    color: var(--charcoal);
+    padding: 14px 20px;
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+    max-width: 160px;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+    z-index: 10;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+
+  /* Decorative corner ornament */
+  .hero-ornament {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    width: 60px;
+    height: 60px;
+    opacity: 0.2;
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 8vw;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .divider-line { flex: 1; height: 1px; background: var(--linen); }
+
+  .divider-ornament {
+    font-family: 'Playfair Display', serif;
+    color: var(--gold);
+    font-size: 20px;
+    letter-spacing: 8px;
+    opacity: 0.6;
+  }
+
+  /* ─── SECTIONS ─── */
+  section { padding: 100px 8vw; }
+
+  .section-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 3vw, 48px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--charcoal);
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
+  }
+
+  h2 em { font-style: italic; color: var(--red); }
+
+  .section-intro {
+    font-size: 18px;
+    color: var(--charcoal-light);
+    font-weight: 300;
+    max-width: 560px;
+    line-height: 1.65;
+    margin-bottom: 64px;
+  }
+
+  /* ─── HOW IT WORKS ─── */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1px;
+    background: var(--linen);
+    border: 1px solid var(--linen);
+  }
+
+  .step {
+    background: var(--cream);
+    padding: 48px 36px;
+    position: relative;
+  }
+
+  .step-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--linen);
+    line-height: 1;
+    margin-bottom: 20px;
+    letter-spacing: -2px;
+  }
+
+  .step-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .step-icon svg { width: 22px; height: 22px; stroke: var(--white); stroke-width: 1.5; fill: none; }
+
+  .step h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--charcoal);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .step p {
+    font-size: 16px;
+    color: var(--charcoal-light);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .step::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    top: 30%;
+    bottom: 30%;
+    width: 1px;
+    background: var(--gold);
+    opacity: 0.3;
+  }
+
+  .step:last-child::after { display: none; }
+
+  /* ─── FEATURES ─── */
+  .features-bg {
+    background: var(--charcoal);
+    color: var(--cream);
+  }
+
+  .features-bg .section-eyebrow { color: var(--gold); }
+  .features-bg h2 { color: var(--cream); }
+  .features-bg h2 em { color: var(--gold); }
+  .features-bg .section-intro { color: rgba(245,240,232,0.7); }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1px;
+    background: rgba(245,240,232,0.08);
+  }
+
+  .feature {
+    background: var(--charcoal);
+    padding: 40px 32px;
+    transition: background 0.2s;
+  }
+
+  .feature:hover { background: rgba(245,240,232,0.04); }
+
+  .feature-icon {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(184,151,74,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .feature-icon svg { width: 20px; height: 20px; stroke: var(--gold); stroke-width: 1.5; fill: none; }
+
+  .feature h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--cream);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+
+  .feature p {
+    font-size: 15px;
+    color: rgba(245,240,232,0.6);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .feature-free {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.55);
+    background: rgba(245,240,232,0.07);
+    padding: 3px 8px;
+    display: inline-block;
+    margin-bottom: 12px;
+    border: 1px solid rgba(245,240,232,0.15);
+  }
+  .feature-pro {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(184,151,74,0.12);
+    padding: 3px 8px;
+    display: inline-block;
+    margin-bottom: 12px;
+    border: 1px solid rgba(184,151,74,0.2);
+  }
+
+  /* ─── PRICING ─── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--linen);
+    border: 1px solid var(--linen);
+    margin-top: 0;
+  }
+
+  .plan {
+    background: var(--cream);
+    padding: 48px 36px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .plan.featured {
+    background: var(--charcoal);
+    position: relative;
+    z-index: 2;
+    margin: -1px;
+  }
+
+  .plan-badge {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--charcoal);
+    background: var(--gold);
+    padding: 4px 10px;
+    display: inline-block;
+    margin-bottom: 24px;
+    font-weight: 600;
+    align-self: flex-start;
+  }
+
+  .plan-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--charcoal);
+    margin-bottom: 8px;
+  }
+
+  .plan.featured .plan-name { color: var(--cream); }
+
+  .plan-desc {
+    font-size: 14px;
+    color: var(--warm-gray);
+    font-weight: 300;
+    margin-bottom: 32px;
+    line-height: 1.5;
+  }
+
+  .plan.featured .plan-desc { color: rgba(245,240,232,0.55); }
+
+  .plan-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 52px;
+    font-weight: 700;
+    color: var(--charcoal);
+    line-height: 1;
+    margin-bottom: 6px;
+    letter-spacing: -2px;
+  }
+
+  .plan.featured .plan-price { color: var(--cream); }
+
+  .plan-price sup {
+    font-size: 22px;
+    font-weight: 400;
+    vertical-align: super;
+    letter-spacing: 0;
+  }
+
+  .plan-period {
+    font-size: 14px;
+    color: var(--warm-gray);
+    font-weight: 300;
+    margin-bottom: 36px;
+  }
+
+  .plan.featured .plan-period { color: rgba(245,240,232,0.45); }
+
+  .plan-features {
+    list-style: none;
+    margin-bottom: 40px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .plan-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 15px;
+    color: var(--charcoal-light);
+    line-height: 1.4;
+  }
+
+  .plan.featured .plan-features li { color: rgba(245,240,232,0.8); }
+
+  .plan-features li svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .check { stroke: var(--gold); fill: none; stroke-width: 2; }
+  .cross { stroke: var(--warm-gray); fill: none; stroke-width: 2; }
+
+  .plan-cta {
+    display: block;
+    text-align: center;
+    padding: 14px 24px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+  }
+
+  .plan-cta-outline {
+    border: 1.5px solid var(--charcoal);
+    color: var(--charcoal);
+    background: transparent;
+  }
+
+  .plan-cta-outline:hover {
+    background: var(--charcoal);
+    color: var(--cream);
+  }
+
+  .plan-cta-solid {
+    background: var(--red);
+    color: var(--white);
+  }
+
+  .plan-cta-solid:hover { background: var(--red-light); transform: translateY(-1px); }
+
+  .plan-cta-gold {
+    border: 1.5px solid var(--gold);
+    color: var(--gold);
+    background: transparent;
+  }
+
+  .plan-cta-gold:hover { background: var(--gold); color: var(--charcoal); }
+
+  .plan-tier-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    border-top: 1px solid var(--linen);
+    padding-top: 14px;
+    margin-top: 16px;
+    margin-bottom: 10px;
+    font-family: 'Crimson Pro', serif;
+  }
+  .plan.featured .plan-tier-label { border-color: rgba(245,240,232,0.12); color: rgba(245,240,232,0.45); }
+
+  /* ─── TESTIMONIALS ─── */
+  .testimonials {
+    background: var(--cream-dark);
+  }
+
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+
+  .testimonial {
+    background: var(--white);
+    padding: 36px 32px;
+    border: 1px solid var(--linen);
+    position: relative;
+  }
+
+  .testimonial::before {
+    content: '"';
+    font-family: 'Playfair Display', serif;
+    font-size: 96px;
+    color: var(--linen);
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    line-height: 1;
+    z-index: 0;
+  }
+
+  .testimonial-text {
+    font-size: 17px;
+    color: var(--charcoal);
+    line-height: 1.65;
+    font-style: italic;
+    font-weight: 300;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    color: var(--white);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .author-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--charcoal);
+    display: block;
+  }
+
+  .author-detail {
+    font-size: 13px;
+    color: var(--warm-gray);
+    font-style: italic;
+  }
+
+  .stars {
+    color: var(--gold);
+    font-size: 14px;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── FAQ ─── */
+  .faq-list {
+    max-width: 720px;
+  }
+
+  .faq-item {
+    border-bottom: 1px solid var(--linen);
+  }
+
+  .faq-question {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 24px 0;
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--charcoal);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    transition: color 0.2s;
+  }
+
+  .faq-question:hover { color: var(--red); }
+
+  .faq-question svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    stroke: var(--gold);
+    fill: none;
+    stroke-width: 2;
+    transition: transform 0.2s;
+  }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s;
+  }
+
+  .faq-answer.open { max-height: 200px; padding-bottom: 24px; }
+
+  .faq-answer p {
+    font-size: 16px;
+    color: var(--charcoal-light);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .faq-question.active svg { transform: rotate(45deg); }
+
+  /* ─── CTA FINAL ─── */
+  .cta-final {
+    background: var(--red);
+    color: var(--white);
+    text-align: center;
+    padding: 120px 8vw;
+  }
+
+  .cta-final .section-eyebrow { color: rgba(255,255,255,0.6); }
+  .cta-final h2 { color: var(--white); }
+  .cta-final h2 em { color: var(--gold-light); font-style: italic; }
+  .cta-final .section-intro { color: rgba(255,255,255,0.75); max-width: 520px; margin-left: auto; margin-right: auto; }
+
+  .btn-white {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--white);
+    color: var(--red);
+    padding: 16px 36px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 18px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.2s;
+    border: none;
+    cursor: pointer;
+    margin-top: 16px;
+  }
+
+  .btn-white:hover { transform: translateY(-2px); }
+
+  .cta-note {
+    margin-top: 20px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
+    font-style: italic;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--charcoal);
+    color: rgba(245,240,232,0.5);
+    padding: 60px 8vw 40px;
+  }
+
+  .footer-inner {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 48px;
+  }
+
+  .footer-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 12px;
+  }
+
+  .footer-brand span { color: var(--gold); }
+
+  .footer-tagline {
+    font-size: 14px;
+    color: rgba(245,240,232,0.4);
+    font-style: italic;
+    line-height: 1.6;
+    max-width: 280px;
+  }
+
+  .footer-col h4 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+  .footer-col a {
+    font-size: 14px;
+    color: rgba(245,240,232,0.5);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-col a:hover { color: var(--cream); }
+
+  .footer-bottom {
+    border-top: 1px solid rgba(245,240,232,0.08);
+    padding-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: rgba(245,240,232,0.25);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .langs { display: flex; gap: 12px; }
+  .langs a { color: rgba(245,240,232,0.3); text-decoration: none; font-size: 12px; letter-spacing: 0.05em; }
+  .langs a:hover { color: var(--gold); }
+
+  /* ─── SCROLL ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate {
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards;
+  }
+
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.25s; }
+  .delay-3 { animation-delay: 0.4s; }
+  .delay-4 { animation-delay: 0.55s; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-visual { display: none; }
+    .hero-content { padding: 60px 6vw; min-height: auto; }
+    .pricing-grid { grid-template-columns: 1fr !important; }
+    .plan.featured { margin: 0; }
+    .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+    nav { padding: 0 4vw; }
+    .nav-links { gap: 16px; }
+    section { padding: 70px 6vw; }
+  }
+
+  @media (max-width: 640px) {
+    .nav-links li:not(:last-child) { display: none; }
+    h1 { font-size: 36px; letter-spacing: -0.5px; }
+  }
+
+  /* ─── LANG SWITCHER ─── */
+  .lang-switcher { display: flex; gap: 2px; align-items: center; }
+  .lang-btn {
+    background: none; border: 1px solid transparent;
+    font-family: 'Crimson Pro', serif; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.06em; color: #8a7d70; padding: 3px 7px;
+    cursor: pointer; transition: all 0.15s; line-height: 1;
+  }
+  .lang-btn:hover { color: #2a2420; border-color: #e8dfd0; }
+  .lang-btn.active { color: #8b2635; border-color: #8b2635; background: rgba(139,38,53,0.05); }
+</style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <a href="#" class="nav-logo">Stitch <span>&</span> Thread</a>
+  <ul class="nav-links">
+    <li><a href="#how" data-i18n="nav_how">How it works</a></li>
+    <li><a href="#features" data-i18n="nav_features">Features</a></li>
+    <li><a href="#pricing" data-i18n="nav_pricing">Pricing</a></li>
+    <li>
+      <div class="lang-switcher" id="langSwitcher">
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="es">ES</button>
+        <button class="lang-btn" data-lang="pt">PT</button>
+        <button class="lang-btn" data-lang="de">DE</button>
+      </div>
+    </li>
+    <li><a href="https://stitchandthread.app/app/" target="_blank" class="nav-cta" data-i18n="nav_cta">Try free →</a></li>
+  </ul>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero" style="padding:0;">
+  <div class="hero-content">
+    <p class="hero-eyebrow animate" data-i18n="hero_eyebrow">Pattern Generator</p>
+    <h1 class="animate delay-1">
+      Your photo.<br>
+      <em data-i18n="hero_h1_em">Your pattern.</em><br>
+      <span data-i18n="hero_h1_c">In seconds.</span>
+    </h1>
+    <p class="hero-sub animate delay-2" data-i18n="hero_sub">Upload any image and instantly generate a professional cross-stitch or Miyuki bead pattern. DMC, Anchor, Cosmo, Madeira — complete with PDF export and shopping list.</p>
+    <div class="hero-actions animate delay-3">
+      <a href="https://stitchandthread.app/app/" target="_blank" class="btn-primary">
+        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 4v16m8-8H4" stroke-linecap="round"/></svg>
+        <span data-i18n="hero_cta">Start for free</span>
+      </a>
+      <a href="#how" class="btn-ghost" data-i18n="hero_ghost">See how it works ↓</a>
+    </div>
+    <p class="hero-trust animate delay-4" data-i18n="hero_trust">No account needed &nbsp;·&nbsp; No upload stored &nbsp;·&nbsp; Works offline</p>
+  </div>
+
+  <div class="hero-visual">
+    <div class="hero-visual-inner">
+
+      <!-- App mockup -->
+      <div class="app-mockup">
+
+        <!-- Top bar -->
+        <div class="app-topbar">
+          <span class="app-logo">Stitch <em>&</em> Thread</span>
+          <span class="app-pro-badge">⭐ PRO</span>
+          <span class="app-tagline">Cross-Stitch Pattern Generator</span>
+          <div class="app-lang-btns">
+            <span class="app-lang active">EN</span>
+            <span class="app-lang">ES</span>
+            <span class="app-lang">PT</span>
+            <span class="app-lang">DE</span>
+          </div>
+        </div>
+
+        <!-- Body: sidebar + canvas -->
+        <div class="app-body">
+
+          <!-- Sidebar -->
+          <div class="app-sidebar">
+
+            <div class="app-blank-btn">+ Lienzo en blanco</div>
+
+            <div>
+              <div class="app-section-label">Imagen</div>
+              <div class="app-upload-box">
+                <svg class="app-upload-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><circle cx="8.5" cy="6" r="1"/><path d="M21 15l-5-5L5 21"/></svg>
+                <span class="app-upload-title">Sube tu imagen</span>
+                <span class="app-upload-sub">JPG, PNG, WebP — cualquier tamaño</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="app-section-label">Formato</div>
+              <div class="app-format-btns">
+                <div class="app-format-btn active">
+                  <span class="app-format-symbol">✕</span>
+                  <span class="app-format-name">Cross-Stitch</span>
+                  <span class="app-format-sub">Hilo sobre tela</span>
+                </div>
+                <div class="app-format-btn">
+                  <span class="app-format-symbol">⬬</span>
+                  <span class="app-format-name">Miyuki</span>
+                  <span class="app-format-sub">Cuentas DB-11</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="app-section-label">Marca de Hilo</div>
+              <div class="app-brand-grid">
+                <div class="app-brand-btn active">
+                  <span class="app-brand-name">DMC</span>
+                  <span class="app-brand-sub">454 colores</span>
+                </div>
+                <div class="app-brand-btn">
+                  <span class="app-brand-name">Anchor</span>
+                  <span class="app-brand-sub">444 colores</span>
+                </div>
+                <div class="app-brand-btn">
+                  <span class="app-brand-name">Cosmo</span>
+                  <span class="app-brand-sub">500 colores</span>
+                </div>
+                <div class="app-brand-btn">
+                  <span class="app-brand-name">Madeira</span>
+                  <span class="app-brand-sub">381 colores</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="app-section-label">Tamaño del Patrón</div>
+              <div class="app-slider-row">
+                <span class="app-slider-label">Ancho en puntos</span>
+                <span class="app-slider-val">80</span>
+              </div>
+              <div class="app-slider-track">
+                <div class="app-slider-fill" style="width:30%"></div>
+                <div class="app-slider-thumb" style="left:30%"></div>
+              </div>
+              <div class="app-slider-row">
+                <span class="app-slider-label">Alto en puntos</span>
+                <span class="app-slider-val">120</span>
+              </div>
+              <div class="app-slider-track">
+                <div class="app-slider-fill" style="width:25%"></div>
+                <div class="app-slider-thumb" style="left:25%"></div>
+              </div>
+              <div style="font-size:8px; color:#8a7d70; font-family:'Crimson Pro',serif; text-align:center; margin-top:2px;">80 × 120 puntos</div>
+            </div>
+
+            <div>
+              <div class="app-section-label">Colores</div>
+              <div class="app-slider-row">
+                <span class="app-slider-label">Número de colores de hilo</span>
+                <span class="app-slider-val">20</span>
+              </div>
+              <div class="app-slider-track">
+                <div class="app-slider-fill" style="width:50%"></div>
+                <div class="app-slider-thumb" style="left:50%"></div>
+              </div>
+              <div class="app-slider-row" style="margin-top:6px;">
+                <span class="app-slider-label">Anti-confetti</span>
+                <span class="app-slider-val">3</span>
+              </div>
+              <div class="app-slider-track">
+                <div class="app-slider-fill" style="width:38%"></div>
+                <div class="app-slider-thumb" style="left:38%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="app-section-label">Modo</div>
+              <div class="app-format-btns">
+                <div class="app-format-btn active">
+                  <span class="app-format-symbol" style="font-size:10px;">🖼</span>
+                  <span class="app-format-name">General</span>
+                  <span class="app-format-sub">Cualquier imagen</span>
+                </div>
+                <div class="app-format-btn">
+                  <span class="app-format-symbol" style="font-size:10px;">🐾</span>
+                  <span class="app-format-name">Portrait/Pet</span>
+                  <span class="app-format-sub">Caras y animales</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="border:1px dashed #b0a090;padding:6px;text-align:center;font-size:8px;font-family:'Crimson Pro',serif;color:#8a7d70;">
+              🧵 Mis Hilos
+            </div>
+
+            <div style="background:#2a2420;padding:10px;text-align:center;cursor:default;margin-top:auto;">
+              <span style="font-family:'Crimson Pro',serif;font-size:11px;font-weight:600;color:#f5f0e8;letter-spacing:0.05em;">Generar Patrón</span>
+            </div>
+
+          </div><!-- /sidebar -->
+
+          <!-- Canvas area -->
+          <div class="app-canvas-area">
+            <div class="app-canvas-toolbar">
+              <span class="app-canvas-hint" style="font-size:8px;color:#8a7d70;font-family:'Crimson Pro',serif;font-style:italic;">80×120 lienzo en blanco — pinta libremente</span>
+              <div class="app-canvas-btns">
+                <span class="app-tool-btn">−</span>
+                <span class="app-tool-btn">×4</span>
+                <span class="app-tool-btn">+</span>
+                <span class="app-tool-btn" style="border-color:#2a6496;color:#2a6496;">Cuadrícula: SÍ</span>
+                <span class="app-tool-btn" style="background:#8b2635;color:#fff;border-color:#8b2635;">👁 Realista</span>
+                <span class="app-tool-btn" style="background:#2a6496;color:#fff;border-color:#2a6496;">✏ Editando</span>
+                <span class="app-tool-btn">↓ PNG</span>
+                <span class="app-tool-btn" style="background:#8b2635;color:#fff;border-color:#8b2635;">↓ PDF del Patrón</span>
+              </div>
+            </div>
+
+            <!-- Edit tools row -->
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 0;flex-shrink:0;flex-wrap:wrap;">
+              <span class="app-tool-btn" style="background:#8b2635;color:#fff;border-color:#8b2635;">🖌 Pincel</span>
+              <span class="app-tool-btn">⌫ Borrador</span>
+              <span class="app-tool-btn">💧 Cuentagotas</span>
+              <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border:1px solid #8b2635;background:rgba(139,38,53,0.08);">
+                <span style="display:inline-block;width:10px;height:10px;background:#3b5998;"></span>
+                <span style="font-size:8px;font-family:'Crimson Pro',serif;color:#2a2420;">DMC 158</span>
+              </span>
+              <span class="app-tool-btn" style="margin-left:auto;">↩ Deshacer</span>
+            </div>
+
+            <!-- Progress bar -->
+            <div style="display:flex;align-items:center;gap:6px;padding:3px 0;flex-shrink:0;">
+              <div style="width:28px;height:14px;background:#ddd4c0;border-radius:7px;position:relative;flex-shrink:0;">
+                <div style="position:absolute;left:14px;top:2px;width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.2);"></div>
+              </div>
+              <span style="font-size:8px;font-family:'Crimson Pro',serif;color:#8a7d70;">✅ Modo progreso</span>
+            </div>
+
+            <div class="app-canvas-box" style="min-height:0;flex:1;">
+              <div id="app-pattern-canvas" class="app-pattern-canvas"></div>
+            </div>
+
+            <!-- Shopping list -->
+            <div style="background:rgba(245,240,232,0.8);border:1px solid #ddd4c0;flex-shrink:0;margin-top:6px;">
+              <div style="display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid #ddd4c0;gap:8px;">
+                <span style="font-size:9px;font-weight:700;font-family:'Crimson Pro',serif;color:#2a2420;">🧵 LISTA DE COMPRA Y LEYENDA</span>
+                <span style="font-size:8px;color:#8a7d70;font-family:'Crimson Pro',serif;">3 colores · 13 madejas necesarias · ya tengo · 13 por comprar</span>
+              </div>
+              <div style="display:flex;gap:0;border-bottom:1px solid #ddd4c0;">
+                <span style="font-size:8px;padding:4px 10px;background:rgba(139,38,53,0.07);border-right:1px solid #ddd4c0;color:#8b2635;font-family:'Crimson Pro',serif;">Todos los colores</span>
+                <span style="font-size:8px;padding:4px 10px;color:#8a7d70;font-family:'Crimson Pro',serif;">🛒 Por comprar (3)</span>
+              </div>
+              <table style="width:100%;font-size:7px;font-family:'Crimson Pro',serif;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:rgba(42,36,32,0.04);">
+                    <td style="padding:3px 6px;color:#8a7d70;">Color</td>
+                    <td style="padding:3px 6px;color:#8a7d70;">Puntos</td>
+                    <td style="padding:3px 6px;color:#8a7d70;">Necesito</td>
+                    <td style="padding:3px 6px;color:#8a7d70;">Tengo</td>
+                    <td style="padding:3px 6px;color:#8a7d70;">Comprar</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom:1px solid #e8dfd0;">
+                    <td style="padding:3px 6px;"><span style="display:inline-flex;align-items:center;gap:3px;"><span style="width:10px;height:10px;background:#f5f0e8;border:1px solid #ddd4c0;display:inline-block;"></span>DMC White</span></td>
+                    <td style="padding:3px 6px;">9686 p.</td>
+                    <td style="padding:3px 6px;">11</td>
+                    <td style="padding:3px 6px;"><span style="display:flex;align-items:center;gap:2px;"><span style="padding:1px 3px;border:1px solid #ddd4c0;">−</span><span>0</span><span style="padding:1px 3px;border:1px solid #ddd4c0;">+</span></span></td>
+                    <td style="padding:3px 6px;"><span style="background:#8b2635;color:#fff;padding:1px 5px;font-size:7px;">11</span></td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #e8dfd0;">
+                    <td style="padding:3px 6px;"><span style="display:inline-flex;align-items:center;gap:3px;"><span style="width:10px;height:10px;background:#c8102e;border:1px solid #ddd4c0;display:inline-block;"></span>DMC 150</span></td>
+                    <td style="padding:3px 6px;">3 p.</td>
+                    <td style="padding:3px 6px;">1</td>
+                    <td style="padding:3px 6px;"><span style="display:flex;align-items:center;gap:2px;"><span style="padding:1px 3px;border:1px solid #ddd4c0;">−</span><span>0</span><span style="padding:1px 3px;border:1px solid #ddd4c0;">+</span></span></td>
+                    <td style="padding:3px 6px;"><span style="background:#8b2635;color:#fff;padding:1px 5px;font-size:7px;">1</span></td>
+                  </tr>
+                  <tr>
+                    <td style="padding:3px 6px;"><span style="display:inline-flex;align-items:center;gap:3px;"><span style="width:10px;height:10px;background:#3b5998;border:1px solid #ddd4c0;display:inline-block;"></span>DMC 158</span></td>
+                    <td style="padding:3px 6px;">3 p.</td>
+                    <td style="padding:3px 6px;">1</td>
+                    <td style="padding:3px 6px;"><span style="display:flex;align-items:center;gap:2px;"><span style="padding:1px 3px;border:1px solid #ddd4c0;">−</span><span>0</span><span style="padding:1px 3px;border:1px solid #ddd4c0;">+</span></span></td>
+                    <td style="padding:3px 6px;"><span style="background:#8b2635;color:#fff;padding:1px 5px;font-size:7px;">1</span></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style="padding:5px 8px;">
+                <span style="font-size:7px;border:1px solid #ddd4c0;padding:3px 8px;color:#2a2420;font-family:'Crimson Pro',serif;cursor:default;">↓ Exportar lista de compra</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /body -->
+      </div><!-- /mockup -->
+
+      <div class="floating-badge">
+        PDF + shopping list included
+      </div>
+    </div>
+
+    <svg class="hero-ornament" viewBox="0 0 60 60" fill="none">
+      <circle cx="30" cy="30" r="28" stroke="rgba(245,240,232,0.8)" stroke-width="0.5"/>
+      <circle cx="30" cy="30" r="22" stroke="rgba(245,240,232,0.5)" stroke-width="0.5" stroke-dasharray="4 3"/>
+      <path d="M30 8 L32 28 L30 52 L28 28 Z" fill="rgba(245,240,232,0.2)"/>
+      <path d="M8 30 L28 32 L52 30 L28 28 Z" fill="rgba(245,240,232,0.2)"/>
+    </svg>
+  </div>
+</section>
+
+<div class="divider"><div class="divider-line"></div><div class="divider-ornament">✦ ✦ ✦</div><div class="divider-line"></div></div>
+
+<!-- ─── HOW IT WORKS ─── -->
+<section id="how">
+  <span class="section-eyebrow" data-i18n="how_eyebrow">Simple process</span>
+  <h2>Three steps to your<br><em>perfect pattern</em></h2>
+  <p class="section-intro">No software to install. No account to create. Open your browser, upload your photo, and your pattern is ready.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <h3>Upload your image</h3>
+      <p>Any photo works — portraits, pets, landscapes, logos. JPG, PNG or WebP, any size.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      </div>
+      <h3>Adjust & generate</h3>
+      <p>Choose your stitch count, color palette, thread brand and technique. Click generate.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-icon">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
+      <h3>Export & stitch</h3>
+      <p>Download a multi-page PDF with chart, legend, and shopping list. Start stitching today.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-icon">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      </div>
+      <h3>Stitch with joy</h3>
+      <p>Use the built-in progress tracker to mark each stitch. Watch your creation come to life.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><div class="divider-line"></div><div class="divider-ornament">✦ ✦ ✦</div><div class="divider-line"></div></div>
+
+<!-- ─── FEATURES ─── -->
+<section id="features" class="features-bg">
+  <span class="section-eyebrow" data-i18n="feat_eyebrow">What's included</span>
+  <h2>Everything a crafter<br><em>actually needs</em></h2>
+  <p class="section-intro">Built by stitchers, for stitchers. Every feature exists because someone needed it in their craft room.</p>
+
+  <div class="features-grid">
+
+    <!-- ── FREE features ── -->
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></div>
+      <span class="feature-free">FREE</span>
+      <h3>Pattern generator</h3>
+      <p>Cross-stitch (DMC, up to 80pt, 15 colors) and Miyuki Loom (up to 20×20 beads, free shape). Powered by Lab-space color matching.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M3 19c0-3.314 4.03-6 9-6s9 2.686 9 6"/></svg></div>
+      <span class="feature-free">FREE</span>
+      <h3>Portrait &amp; pet mode</h3>
+      <p>Specialized preprocessing with edge sharpening, skin/fur smoothing and background simplification for centered subjects.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+      <span class="feature-free">FREE</span>
+      <h3>Realistic view &amp; Aida selector</h3>
+      <p>See your pattern as it will really look when stitched. Choose fabric count and see the physical size in cm.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>
+      <span class="feature-free">FREE</span>
+      <h3>Illustration / anime mode</h3>
+      <p>Optimised processing for flat-colour artwork, illustrations and anime-style images. Clean edges, vivid palette.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+      <span class="feature-free">FREE</span>
+      <h3>PNG export &amp; offline PWA</h3>
+      <p>Export your pattern as PNG (with watermark on Free). Install as an app on any device — works fully offline, no data ever stored.</p>
+    </div>
+
+    <!-- ── PRO features ── -->
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 8v8M8 12h8"/></svg></div>
+      <span class="feature-pro">PRO</span>
+      <h3>All 4 thread brands</h3>
+      <p>Anchor (444 colors), Cosmo (500), Madeira (381) — plus DMC. Switch brands at any time without regenerating.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <span class="feature-pro">PRO</span>
+      <h3>PDF export</h3>
+      <p>Multi-page chart: bold 10-stitch grid, symbol legend, skein/tube count per color, and a printable shopping list.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+      <span class="feature-pro">PRO</span>
+      <h3>Brush editor &amp; Thread Box</h3>
+      <p>Paint cells directly on the canvas. Change any color across the whole pattern. Save your personal thread inventory.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></div>
+      <span class="feature-pro">PRO</span>
+      <h3>Shopping list export</h3>
+      <p>Export your exact buy list as .txt. Amazon affiliate links for every DMC color — buy everything in one click.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+      <span class="feature-pro">PRO</span>
+      <h3>Progress mode</h3>
+      <p>Tap stitches to mark them done. Live counter shows stitches completed, remaining, and overall percentage.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></div>
+      <span class="feature-pro">PRO</span>
+      <h3>Save projects to Drive</h3>
+      <p>Save your pattern, color overrides and stock directly to Google Drive. Open from any device, anytime.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="2"/><circle cx="8" cy="16" r="2"/><circle cx="16" cy="12" r="2"/><path d="M9.8 9.4l4.4 1.2M9.8 14.6l4.4-1.2"/></svg></div>
+      <span class="feature-pro">PRO — Miyuki</span>
+      <h3>Brick Stitch &amp; Peyote</h3>
+      <p>All offset techniques with correct canvas rendering and PDF export. All shapes: Earring, Bracelet, Necklace. No size limits.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── PRICING ─── -->
+<section id="pricing">
+  <span class="section-eyebrow" data-i18n="price_eyebrow">Honest pricing</span>
+  <h2>Start free, upgrade<br><em>when you're ready</em></h2>
+  <p class="section-intro">The core generator is completely free. One-time payment to unlock PRO — no subscription, no recurring fees.</p>
+
+  <!-- 2×2 grid: Free + Cross-Stitch PRO top row / Miyuki PRO + Pack Completo bottom row -->
+  <div class="pricing-grid" style="grid-template-columns:1fr 1fr;">
+
+    <!-- ── FREE ── -->
+    <div class="plan">
+      <div class="plan-name" data-i18n="plan_free_name">Free</div>
+      <p class="plan-desc" data-i18n="plan_free_desc">Everything to get started, no account needed</p>
+      <div class="plan-price"><sup>€</sup>0</div>
+      <p class="plan-period" data-i18n="plan_free_period">Forever free</p>
+      <p class="plan-tier-label">Cross-stitch</p>
+      <ul class="plan-features">
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>DMC only (454 colors)</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Max 80pt wide · up to 15 colors</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>PNG export (watermark)</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Realistic view · Aida size selector</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Illustration / anime mode</li>
+      </ul>
+      <p class="plan-tier-label" style="margin-top:16px;">Miyuki</p>
+      <ul class="plan-features">
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Loom technique only</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Free shape only · max 20×20 beads</li>
+        <li><svg viewBox="0 0 16 16" class="cross"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>Brick, Peyote, other shapes</li>
+        <li><svg viewBox="0 0 16 16" class="cross"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>PDF export</li>
+      </ul>
+      <a href="https://stitchandthread.app/app/" target="_blank" class="plan-cta plan-cta-outline" data-i18n="plan_free_cta">Start free →</a>
+    </div>
+
+    <!-- ── CROSS-STITCH PRO ── -->
+    <div class="plan">
+      <div class="plan-name">Cross-Stitch PRO</div>
+      <p class="plan-desc" data-i18n="plan_xs_desc">All thread brands, large patterns, PDF export</p>
+      <div class="plan-price"><sup>€</sup>10</div>
+      <p class="plan-period" data-i18n="plan_xs_period">One-time · Lifetime access</p>
+      <p class="plan-tier-label">Everything in Free, plus:</p>
+      <ul class="plan-features">
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Anchor, Cosmo, Madeira</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Patterns up to 400×600pt</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Up to 40 colors</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>PDF export</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Brush editor</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Thread Box + Change color</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Shopping list export (.txt)</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Progress mode</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Save projects to Drive</li>
+      </ul>
+      <a href="https://stitchandthread.app/app/" target="_blank" class="plan-cta plan-cta-outline" data-i18n="plan_xs_cta">Get Cross-Stitch PRO →</a>
+    </div>
+
+    <!-- ── MIYUKI PRO ── -->
+    <div class="plan">
+      <div class="plan-name">Miyuki PRO</div>
+      <p class="plan-desc" data-i18n="plan_my_desc">All bead techniques, all shapes, no size limits</p>
+      <div class="plan-price"><sup>€</sup>10</div>
+      <p class="plan-period" data-i18n="plan_my_period">One-time · Lifetime access</p>
+      <p class="plan-tier-label">Everything in Free (Miyuki), plus:</p>
+      <ul class="plan-features">
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Brick Stitch + Peyote techniques</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>All shapes: Earring, Bracelet, Necklace</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Free size — no limits</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>PDF export</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Brush editor</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Shopping list export (.txt)</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Progress mode</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Save projects to Drive</li>
+      </ul>
+      <a href="https://stitchandthread.app/app/" target="_blank" class="plan-cta plan-cta-outline" data-i18n="plan_my_cta">Get Miyuki PRO →</a>
+    </div>
+
+    <!-- ── PACK COMPLETO — FEATURED ── -->
+    <div class="plan featured">
+      <span class="plan-badge" data-i18n="plan_pack_badge">Best value — save €5</span>
+      <div class="plan-name" data-i18n="plan_pack_name">Pack Completo</div>
+      <p class="plan-desc" data-i18n="plan_pack_desc">Cross-Stitch PRO + Miyuki PRO — everything unlocked</p>
+      <div class="plan-price"><sup>€</sup>15</div>
+      <p class="plan-period" data-i18n="plan_pack_period">One-time · Lifetime access</p>
+      <p class="plan-tier-label" style="color:var(--gold);border-color:rgba(184,151,74,0.3);">Everything in both PROs:</p>
+      <ul class="plan-features">
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>All 4 thread brands</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Cross-stitch up to 400×600pt · 40 colors</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Miyuki — Brick, Peyote · all shapes</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>PDF export (both techniques)</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Brush editor · Thread Box · Change color</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Shopping list export (.txt)</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Progress mode</li>
+        <li><svg viewBox="0 0 16 16" class="check"><polyline points="3,8 6,11 13,4"/></svg>Save projects to Drive</li>
+        <li style="color:var(--gold);font-style:italic;"><svg viewBox="0 0 16 16" style="width:16px;height:16px;stroke:var(--gold);fill:none;stroke-width:2;flex-shrink:0;"><polyline points="3,8 6,11 13,4"/></svg>Cross-Stitch + Miyuki — save €5</li>
+      </ul>
+      <a href="https://stitchandthread.app/app/" target="_blank" class="plan-cta plan-cta-solid" data-i18n="plan_pack_cta">Get Pack Completo — €15 →</a>
+    </div>
+
+  </div>
+
+  <p style="text-align:center; margin-top:32px; font-size:14px; color:var(--warm-gray); font-style:italic;" data-i18n="price_note">
+    Have a beta code? Enter it inside the app.
+  </p>
+</section>
+
+<div class="divider"><div class="divider-line"></div><div class="divider-ornament">✦ ✦ ✦</div><div class="divider-line"></div></div>
+
+<!-- ─── TESTIMONIALS ─── -->
+<section class="testimonials" style="background:var(--cream-dark);">
+  <span class="section-eyebrow" data-i18n="test_eyebrow">From the community</span>
+  <h2>Stitchers love it.<br><em>Really.</em></h2>
+
+  <div class="testimonials-grid">
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">I uploaded a photo of my dog and had a full pattern ready in under a minute. The PDF was perfect — took it straight to my sewing room and started stitching.</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">M</div>
+        <div>
+          <span class="author-name">María González</span>
+          <span class="author-detail">Cross-stitch artist, Madrid</span>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">The Miyuki mode is incredible. I design earrings every weekend — this has replaced all my other tools. The brick stitch offset is correct, which is rare!</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">A</div>
+        <div>
+          <span class="author-name">Annelies Bakker</span>
+          <span class="author-detail">Jewelry maker, Amsterdam</span>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">Finalmente uma ferramenta de ponto cruz em português! Usei para fazer um retrato do meu gato e ficou perfeito. O modo retrato faz uma diferença enorme.</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">L</div>
+        <div>
+          <span class="author-name">Lucia Fernandes</span>
+          <span class="author-detail">Hobby stitcher, São Paulo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FAQ ─── -->
+<section id="faq">
+  <span class="section-eyebrow" data-i18n="faq_eyebrow">Questions answered</span>
+  <h2>Frequently asked<br><em>questions</em></h2>
+
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Is my photo stored anywhere?
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>Never. Everything runs in your browser. Your photos are processed locally on your device — they never leave it. There's no server, no cloud, no account. This is by design.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Do I need an account to use it?
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>No account, no email, no signup. Just open the app and start. You only create an account if you choose to purchase a PRO license.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What does "one-time payment" mean exactly?
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>You pay once and own the license forever. No monthly fees, no annual renewals.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Can I use it on my phone?
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>Yes! Stitch & Thread is a Progressive Web App — you can install it on iOS or Android from your browser. It works fully offline after installation.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What languages is it available in?
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>English, Spanish, Portuguese (Brazilian) and German. The language selector is in the top-right corner of the app.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What's the difference between Cross-Stitch PRO and Miyuki PRO?
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>Miyuki PRO includes everything in Cross-Stitch PRO plus the full Miyuki Delica DB-11 pattern generator with Loom, Brick Stitch, and Peyote techniques. If you work with beads, Miyuki PRO is the one for you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CTA FINAL ─── -->
+<section class="cta-final" style="padding:120px 8vw;">
+  <span class="section-eyebrow" data-i18n="cta_eyebrow">Ready to stitch?</span>
+  <h2>Your next pattern is<br><em>one photo away</em></h2>
+  <p class="section-intro">Join thousands of crafters who generate their own patterns. Free to start. No account. No fuss.</p>
+  <a href="https://stitchandthread.app/app/" target="_blank" class="btn-white">
+    Open Stitch & Thread →
+  </a>
+  <p class="cta-note">Free forever · Upgrade anytime · No subscription</p>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">Stitch <span>&</span> Thread</div>
+      <p class="footer-tagline" data-i18n="footer_tagline">The craft-first pattern generator. Free, private, works offline. Made with love for the stitching community.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="https://stitchandthread.app/app/" target="_blank">Open app →</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Languages</h4>
+      <ul>
+        <li><a href="https://stitchandthread.app/app/" target="_blank">English</a></li>
+        <li><a href="https://stitchandthread.app/app/" target="_blank">Español</a></li>
+        <li><a href="https://stitchandthread.app/app/" target="_blank">Português</a></li>
+        <li><a href="https://stitchandthread.app/app/" target="_blank">Deutsch</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span data-i18n="footer_copy">© 2026 Stitch & Thread. All processing is local — your data never leaves your device.</span>
+    <div class="langs">
+      <a href="#">EN</a>
+      <a href="#">ES</a>
+      <a href="#">PT</a>
+      <a href="#">DE</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ─── i18n ───────────────────────────────────────────────────────────────────
+const LANG = {
+  en: {
+    nav_how: 'How it works', nav_features: 'Features', nav_pricing: 'Pricing', nav_cta: 'Try free →',
+    hero_eyebrow: 'Pattern Generator',
+    hero_h1_a: 'Your photo.', hero_h1_em: 'Your pattern.', hero_h1_c: 'In seconds.',
+    hero_sub: 'Upload any image and instantly generate a professional cross-stitch or Miyuki bead pattern. DMC, Anchor, Cosmo, Madeira — complete with PDF export and shopping list.',
+    hero_cta: 'Start for free', hero_ghost: 'See how it works ↓',
+    hero_trust: 'No account needed · No upload stored · Works offline',
+    how_eyebrow: 'Simple process',
+    how_h2a: 'Three steps to your', how_h2b: 'perfect pattern',
+    how_intro: 'No software to install. No account to create. Open your browser, upload your photo, and your pattern is ready.',
+    step1_h: 'Upload your image', step1_p: 'Any photo works — portraits, pets, landscapes, logos. JPG, PNG or WebP, any size.',
+    step2_h: 'Adjust & generate', step2_p: 'Choose your stitch count, color palette, thread brand and technique. Click generate.',
+    step3_h: 'Export & stitch', step3_p: 'Download a multi-page PDF with chart, legend, and shopping list. Start stitching today.',
+    step4_h: 'Stitch with joy', step4_p: 'Use the built-in progress tracker to mark each stitch. Watch your creation come to life.',
+    feat_eyebrow: "What's included",
+    feat_h2a: 'Everything a crafter', feat_h2b: 'actually needs',
+    feat_intro: 'Built by stitchers, for stitchers. Every feature exists because someone needed it in their craft room.',
+    price_eyebrow: 'Honest pricing',
+    price_h2a: 'Start free, upgrade', price_h2b: "when you're ready",
+    price_intro: 'The core generator is completely free. One-time payment to unlock PRO — no subscription, no recurring fees.',
+    plan_free_name: 'Free', plan_free_desc: 'Everything to get started, no account needed', plan_free_period: 'Forever free', plan_free_cta: 'Start free →',
+    plan_pack_badge: 'Best value — save €5', plan_pack_name: 'Pack Completo', plan_pack_desc: 'Cross-Stitch PRO + Miyuki PRO — everything unlocked', plan_pack_period: 'One-time payment · Lifetime access', plan_pack_cta: 'Get Pack Completo — €15 →',
+    plan_ind_name: 'Individual PRO', plan_ind_desc: 'Pick just the technique you need', plan_ind_period: 'One-time payment per tier', plan_ind_cta: 'Choose a PRO tier →',
+    plan_xs_desc: 'All thread brands, large patterns, PDF export',
+    plan_xs_period: 'One-time · Lifetime access',
+    plan_xs_cta: 'Get Cross-Stitch PRO →',
+    plan_my_desc: 'All bead techniques, all shapes, no size limits',
+    plan_my_period: 'One-time · Lifetime access',
+    plan_my_cta: 'Get Miyuki PRO →',
+    price_note: 'Have a beta code? Enter it inside the app.',
+    test_eyebrow: 'From the community',
+    test_h2a: 'Stitchers love it.', test_h2b: 'Really.',
+    faq_eyebrow: 'Questions answered',
+    faq_h2a: 'Frequently asked', faq_h2b: 'questions',
+    faq1q: 'Is my photo stored anywhere?', faq1a: "Never. Everything runs in your browser. Your photos are processed locally on your device — they never leave it. There's no server, no cloud, no account. This is by design.",
+    faq2q: 'Do I need an account to use it?', faq2a: 'No account, no email, no signup. Just open the app and start. You only create an account if you choose to purchase a PRO license.',
+    faq3q: 'What does "one-time payment" mean exactly?', faq3a: 'You pay once and own the license forever. No monthly fees, no annual renewals.',
+    faq4q: 'Can I use it on my phone?', faq4a: 'Yes! Stitch & Thread is a Progressive Web App — you can install it on iOS or Android from your browser. It works fully offline after installation.',
+    faq5q: 'What languages is it available in?', faq5a: 'English, Spanish, Portuguese (Brazilian) and German. The language selector is in the top-right corner of the app.',
+    faq6q: "What's the difference between Cross-Stitch PRO and Miyuki PRO?", faq6a: 'Miyuki PRO includes everything in Cross-Stitch PRO plus the full Miyuki Delica DB-11 pattern generator with Loom, Brick Stitch, and Peyote techniques. If you work with beads, Miyuki PRO is the one for you.',
+    cta_eyebrow: 'Ready to stitch?',
+    cta_h2a: 'Your next pattern is', cta_h2b: 'one photo away',
+    cta_intro: 'Join thousands of crafters who generate their own patterns. Free to start. No account. No fuss.',
+    cta_btn: 'Open Stitch & Thread →',
+    cta_note: 'Free forever · Upgrade anytime · No subscription',
+    footer_tagline: 'The craft-first pattern generator. Free, private, works offline. Made with love for the stitching community.',
+    footer_product: 'Product', footer_languages: 'Languages',
+    footer_how: 'How it works', footer_features: 'Features', footer_pricing: 'Pricing', footer_open: 'Open app →',
+    footer_copy: '© 2026 Stitch & Thread. All processing is local — your data never leaves your device.',
+  },
+  es: {
+    nav_how: 'Cómo funciona', nav_features: 'Funciones', nav_pricing: 'Precios', nav_cta: 'Probar gratis →',
+    hero_eyebrow: 'Generador de Patrones',
+    hero_h1_a: 'Tu foto.', hero_h1_em: 'Tu patrón.', hero_h1_c: 'En segundos.',
+    hero_sub: 'Sube cualquier imagen y genera al instante un patrón profesional de punto de cruz o cuentas Miyuki. DMC, Anchor, Cosmo, Madeira — con PDF y lista de compra incluidos.',
+    hero_cta: 'Empezar gratis', hero_ghost: 'Ver cómo funciona ↓',
+    hero_trust: 'Sin cuenta · Sin almacenamiento · Funciona sin conexión',
+    how_eyebrow: 'Proceso simple',
+    how_h2a: 'Tres pasos para tu', how_h2b: 'patrón perfecto',
+    how_intro: 'Sin instalaciones. Sin cuenta. Abre el navegador, sube tu foto y tu patrón estará listo.',
+    step1_h: 'Sube tu imagen', step1_p: 'Cualquier foto — retratos, mascotas, paisajes, logos. JPG, PNG o WebP, cualquier tamaño.',
+    step2_h: 'Ajusta y genera', step2_p: 'Elige el tamaño, la paleta de colores, la marca de hilo y la técnica. Haz clic en Generar.',
+    step3_h: 'Exporta y borda', step3_p: 'Descarga un PDF multipágina con el patrón, leyenda y lista de compra. ¡Empieza a bordar hoy!',
+    step4_h: 'Borda con alegría', step4_p: 'Usa el marcador de progreso integrado para marcar cada punto y ver cómo cobra vida tu creación.',
+    feat_eyebrow: 'Qué incluye',
+    feat_h2a: 'Todo lo que una artesana', feat_h2b: 'realmente necesita',
+    feat_intro: 'Hecho por bordadoras, para bordadoras. Cada función existe porque alguien la necesitó en su sala de costura.',
+    price_eyebrow: 'Precios honestos',
+    price_h2a: 'Empieza gratis, mejora', price_h2b: 'cuando estés lista',
+    price_intro: 'El generador base es completamente gratuito. Un único pago para desbloquear PRO — sin suscripción, sin cargos recurrentes.',
+    plan_free_name: 'Gratis', plan_free_desc: 'Todo para empezar, sin cuenta necesaria', plan_free_period: 'Gratis para siempre', plan_free_cta: 'Empezar gratis →',
+    plan_pack_badge: 'Mejor valor — ahorra 5€', plan_pack_name: 'Pack Completo', plan_pack_desc: 'Cross-Stitch PRO + Miyuki PRO — todo desbloqueado', plan_pack_period: 'Pago único · Acceso de por vida', plan_pack_cta: 'Conseguir Pack Completo — 15€ →',
+    plan_ind_name: 'PRO Individual', plan_ind_desc: 'Elige solo la técnica que necesitas', plan_ind_period: 'Pago único por nivel', plan_ind_cta: 'Elegir un nivel PRO →',
+    plan_xs_desc: 'Todas las marcas, patrones grandes, export PDF',
+    plan_xs_period: 'Pago único · Acceso de por vida',
+    plan_xs_cta: 'Conseguir Cross-Stitch PRO →',
+    plan_my_desc: 'Todas las técnicas, todas las formas, sin límite de tamaño',
+    plan_my_period: 'Pago único · Acceso de por vida',
+    plan_my_cta: 'Conseguir Miyuki PRO →',
+    price_note: '¿Tienes un código beta? Introdúcelo en la app.',
+    test_eyebrow: 'La comunidad opina',
+    test_h2a: 'Les encanta.', test_h2b: 'De verdad.',
+    faq_eyebrow: 'Preguntas frecuentes',
+    faq_h2a: 'Preguntas', faq_h2b: 'frecuentes',
+    faq1q: '¿Se almacena mi foto en algún servidor?', faq1a: 'Nunca. Todo funciona en tu navegador. Tus fotos se procesan localmente en tu dispositivo y nunca lo abandonan. No hay servidor, ni nube, ni cuenta. Así está diseñado.',
+    faq2q: '¿Necesito una cuenta?', faq2a: 'Sin cuenta, sin email, sin registro. Solo abre la app y empieza. Solo necesitas cuenta si decides comprar una licencia PRO.',
+    faq3q: '¿Qué significa exactamente "pago único"?', faq3a: 'Pagas una vez y tienes la licencia de por vida. Sin cuotas mensuales, sin renovaciones anuales.',
+    faq4q: '¿Puedo usarla en el móvil?', faq4a: 'Sí. Stitch & Thread es una Progressive Web App — puedes instalarla en iOS o Android desde el navegador. Funciona completamente sin conexión tras la instalación.',
+    faq5q: '¿En qué idiomas está disponible?', faq5a: 'Inglés, español, portugués (brasileño) y alemán. El selector de idioma está en la esquina superior derecha de la app.',
+    faq6q: '¿Cuál es la diferencia entre Cross-Stitch PRO y Miyuki PRO?', faq6a: 'Miyuki PRO incluye todo lo de Cross-Stitch PRO más el generador completo de patrones Miyuki Delica DB-11 con técnicas Loom, Brick Stitch y Peyote. Si trabajas con cuentas, Miyuki PRO es el tuyo.',
+    cta_eyebrow: '¿Lista para bordar?',
+    cta_h2a: 'Tu próximo patrón está', cta_h2b: 'a una foto de distancia',
+    cta_intro: 'Únetete a miles de artesanas que generan sus propios patrones. Gratis para empezar. Sin cuenta. Sin complicaciones.',
+    cta_btn: 'Abrir Stitch & Thread →',
+    cta_note: 'Gratis para siempre · Mejora cuando quieras · Sin suscripción',
+    footer_tagline: 'El generador de patrones para artesanas. Gratuito, privado, funciona sin conexión. Hecho con amor para la comunidad del bordado.',
+    footer_product: 'Producto', footer_languages: 'Idiomas',
+    footer_how: 'Cómo funciona', footer_features: 'Funciones', footer_pricing: 'Precios', footer_open: 'Abrir app →',
+    footer_copy: '© 2026 Stitch & Thread. Todo el procesamiento es local — tus datos nunca abandonan tu dispositivo.',
+  },
+  pt: {
+    nav_how: 'Como funciona', nav_features: 'Recursos', nav_pricing: 'Preços', nav_cta: 'Experimentar grátis →',
+    hero_eyebrow: 'Gerador de Padrões',
+    hero_h1_a: 'Sua foto.', hero_h1_em: 'Seu padrão.', hero_h1_c: 'Em segundos.',
+    hero_sub: 'Envie qualquer imagem e gere instantaneamente um padrão profissional de ponto cruz ou contas Miyuki. DMC, Anchor, Cosmo, Madeira — com PDF e lista de compras incluídos.',
+    hero_cta: 'Começar grátis', hero_ghost: 'Ver como funciona ↓',
+    hero_trust: 'Sem conta · Sem armazenamento · Funciona offline',
+    how_eyebrow: 'Processo simples',
+    how_h2a: 'Três passos para o seu', how_h2b: 'padrão perfeito',
+    how_intro: 'Sem instalação. Sem cadastro. Abra o navegador, envie sua foto e seu padrão estará pronto.',
+    step1_h: 'Envie sua imagem', step1_p: 'Qualquer foto — retratos, animais, paisagens, logos. JPG, PNG ou WebP, qualquer tamanho.',
+    step2_h: 'Ajuste e gere', step2_p: 'Escolha o tamanho, paleta de cores, marca de linha e técnica. Clique em Gerar.',
+    step3_h: 'Exporte e borde', step3_p: 'Baixe um PDF com gráfico, legenda e lista de compras. Comece a bordar hoje!',
+    step4_h: 'Borde com alegria', step4_p: 'Use o marcador de progresso integrado para marcar cada ponto e ver sua criação ganhar vida.',
+    feat_eyebrow: 'O que está incluído',
+    feat_h2a: 'Tudo que uma bordadeira', feat_h2b: 'realmente precisa',
+    feat_intro: 'Feito por bordadeiras, para bordadeiras. Cada recurso existe porque alguém precisou dele.',
+    price_eyebrow: 'Preços honestos',
+    price_h2a: 'Comece grátis, melhore', price_h2b: 'quando estiver pronta',
+    price_intro: 'O gerador básico é completamente gratuito. Pagamento único para desbloquear o PRO — sem assinatura, sem cobranças recorrentes.',
+    plan_free_name: 'Grátis', plan_free_desc: 'Tudo para começar, sem conta necessária', plan_free_period: 'Grátis para sempre', plan_free_cta: 'Começar grátis →',
+    plan_pack_badge: 'Melhor valor — economize 5€', plan_pack_name: 'Pack Completo', plan_pack_desc: 'Cross-Stitch PRO + Miyuki PRO — tudo desbloqueado', plan_pack_period: 'Pagamento único · Acesso vitalício', plan_pack_cta: 'Pegar Pack Completo — 15€ →',
+    plan_ind_name: 'PRO Individual', plan_ind_desc: 'Escolha só a técnica que precisa', plan_ind_period: 'Pagamento único por nível', plan_ind_cta: 'Escolher um nível PRO →',
+    plan_xs_desc: 'Todas as marcas, padrões grandes, export PDF',
+    plan_xs_period: 'Pagamento único · Acesso vitalício',
+    plan_xs_cta: 'Pegar Cross-Stitch PRO →',
+    plan_my_desc: 'Todas as técnicas, todas as formas, sem limite de tamanho',
+    plan_my_period: 'Pagamento único · Acesso vitalício',
+    plan_my_cta: 'Pegar Miyuki PRO →',
+    price_note: 'Tem um código beta? Insira-o no app.',
+    test_eyebrow: 'A comunidade fala',
+    test_h2a: 'Bordadeiras adoram.', test_h2b: 'De verdade.',
+    faq_eyebrow: 'Dúvidas frequentes',
+    faq_h2a: 'Perguntas', faq_h2b: 'frequentes',
+    faq1q: 'Minha foto fica armazenada em algum servidor?', faq1a: 'Nunca. Tudo funciona no seu navegador. Suas fotos são processadas localmente no seu dispositivo — elas nunca saem dele. Não há servidor, nuvem ou conta.',
+    faq2q: 'Preciso criar uma conta?', faq2a: 'Sem conta, sem e-mail, sem cadastro. Só abra o app e comece. Você só cria uma conta se decidir comprar uma licença PRO.',
+    faq3q: 'O que significa exatamente "pagamento único"?', faq3a: 'Você paga uma vez e tem a licença para sempre. Sem mensalidades, sem renovações anuais.',
+    faq4q: 'Posso usar no celular?', faq4a: 'Sim! Stitch & Thread é um Progressive Web App — você pode instalá-lo no iOS ou Android pelo navegador. Funciona completamente offline após a instalação.',
+    faq5q: 'Em quais idiomas está disponível?', faq5a: 'Inglês, espanhol, português (brasileiro) e alemão. O seletor de idioma fica no canto superior direito do app.',
+    faq6q: 'Qual a diferença entre Cross-Stitch PRO e Miyuki PRO?', faq6a: 'Miyuki PRO inclui tudo do Cross-Stitch PRO mais o gerador completo de padrões Miyuki Delica DB-11 com técnicas Loom, Brick Stitch e Peyote. Se você trabalha com contas, Miyuki PRO é para você.',
+    cta_eyebrow: 'Pronta para bordar?',
+    cta_h2a: 'Seu próximo padrão está', cta_h2b: 'a uma foto de distância',
+    cta_intro: 'Junte-se a milhares de artesãs que geram seus próprios padrões. Grátis para começar. Sem conta. Sem complicação.',
+    cta_btn: 'Abrir Stitch & Thread →',
+    cta_note: 'Grátis para sempre · Melhore quando quiser · Sem assinatura',
+    footer_tagline: 'O gerador de padrões para artesãs. Gratuito, privado, funciona offline. Feito com amor para a comunidade de bordado.',
+    footer_product: 'Produto', footer_languages: 'Idiomas',
+    footer_how: 'Como funciona', footer_features: 'Recursos', footer_pricing: 'Preços', footer_open: 'Abrir app →',
+    footer_copy: '© 2026 Stitch & Thread. Todo o processamento é local — seus dados nunca saem do seu dispositivo.',
+  },
+  de: {
+    nav_how: 'So funktioniert es', nav_features: 'Funktionen', nav_pricing: 'Preise', nav_cta: 'Kostenlos testen →',
+    hero_eyebrow: 'Muster-Generator',
+    hero_h1_a: 'Dein Foto.', hero_h1_em: 'Dein Muster.', hero_h1_c: 'In Sekunden.',
+    hero_sub: 'Lade ein beliebiges Bild hoch und erstelle sofort ein professionelles Kreuzstich- oder Miyuki-Perlenmuster. DMC, Anchor, Cosmo, Madeira — mit PDF-Export und Einkaufsliste.',
+    hero_cta: 'Kostenlos starten', hero_ghost: 'So funktioniert es ↓',
+    hero_trust: 'Kein Konto · Keine Speicherung · Funktioniert offline',
+    how_eyebrow: 'Einfacher Ablauf',
+    how_h2a: 'Drei Schritte zu deinem', how_h2b: 'perfekten Muster',
+    how_intro: 'Keine Installation. Kein Konto. Browser öffnen, Foto hochladen — dein Muster ist fertig.',
+    step1_h: 'Bild hochladen', step1_p: 'Jedes Foto geeignet — Porträts, Haustiere, Landschaften, Logos. JPG, PNG oder WebP, beliebige Größe.',
+    step2_h: 'Anpassen & generieren', step2_p: 'Stichanzahl, Farbpalette, Garnmarke und Technik wählen. Auf Generieren klicken.',
+    step3_h: 'Exportieren & sticken', step3_p: 'Mehrseitiges PDF mit Diagramm, Legende und Einkaufsliste herunterladen. Noch heute anfangen!',
+    step4_h: 'Mit Freude sticken', step4_p: 'Mit dem integrierten Fortschritts-Tracker jeden Stich abhaken und dein Werk entstehen sehen.',
+    feat_eyebrow: 'Was enthalten ist',
+    feat_h2a: 'Alles, was eine Stickerin', feat_h2b: 'wirklich braucht',
+    feat_intro: 'Von Stickerinnen für Stickerinnen. Jede Funktion entstand, weil jemand sie im Nähzimmer brauchte.',
+    price_eyebrow: 'Ehrliche Preise',
+    price_h2a: 'Kostenlos starten,', price_h2b: 'upgraden wenn du bereit bist',
+    price_intro: 'Der Kern-Generator ist völlig kostenlos. Einmalige Zahlung für PRO — kein Abo, keine Folgekosten.',
+    plan_free_name: 'Kostenlos', plan_free_desc: 'Alles zum Starten, kein Konto nötig', plan_free_period: 'Für immer kostenlos', plan_free_cta: 'Kostenlos starten →',
+    plan_pack_badge: 'Bestes Preis-Leistung — 5€ sparen', plan_pack_name: 'Pack Completo', plan_pack_desc: 'Cross-Stitch PRO + Miyuki PRO — alles freigeschaltet', plan_pack_period: 'Einmalige Zahlung · Lebenslanges Zugang', plan_pack_cta: 'Pack Completo holen — 15€ →',
+    plan_ind_name: 'Einzel-PRO', plan_ind_desc: 'Nur die Technik wählen, die du brauchst', plan_ind_period: 'Einmalige Zahlung pro Stufe', plan_ind_cta: 'Eine PRO-Stufe wählen →',
+    plan_xs_desc: 'Alle Garnmarken, große Muster, PDF-Export',
+    plan_xs_period: 'Einmalige Zahlung · Lebenslanger Zugang',
+    plan_xs_cta: 'Cross-Stitch PRO holen →',
+    plan_my_desc: 'Alle Techniken, alle Formen, keine Größenlimits',
+    plan_my_period: 'Einmalige Zahlung · Lebenslanger Zugang',
+    plan_my_cta: 'Miyuki PRO holen →',
+    price_note: 'Beta-Code vorhanden? In der App eingeben.',
+    test_eyebrow: 'Was die Community sagt',
+    test_h2a: 'Stickerinnen lieben es.', test_h2b: 'Wirklich.',
+    faq_eyebrow: 'Häufige Fragen',
+    faq_h2a: 'Häufig gestellte', faq_h2b: 'Fragen',
+    faq1q: 'Wird mein Foto irgendwo gespeichert?', faq1a: 'Niemals. Alles läuft im Browser. Deine Fotos werden lokal auf deinem Gerät verarbeitet und verlassen es nie. Kein Server, keine Cloud, kein Konto.',
+    faq2q: 'Brauche ich ein Konto?', faq2a: 'Kein Konto, keine E-Mail, keine Registrierung. Einfach die App öffnen und loslegen. Ein Konto wird nur beim Kauf einer PRO-Lizenz benötigt.',
+    faq3q: 'Was bedeutet "einmalige Zahlung" genau?', faq3a: 'Du zahlst einmal und besitzt die Lizenz für immer. Keine Monatsgebühren, keine Jahreserneuerungen.',
+    faq4q: 'Kann ich es auf dem Smartphone nutzen?', faq4a: 'Ja! Stitch & Thread ist eine Progressive Web App — installierbar auf iOS oder Android über den Browser. Funktioniert nach der Installation vollständig offline.',
+    faq5q: 'In welchen Sprachen ist es verfügbar?', faq5a: 'Englisch, Spanisch, Portugiesisch (Brasilianisch) und Deutsch. Der Sprachumschalter befindet sich in der oberen rechten Ecke der App.',
+    faq6q: 'Was ist der Unterschied zwischen Cross-Stitch PRO und Miyuki PRO?', faq6a: 'Miyuki PRO enthält alles aus Cross-Stitch PRO plus den vollständigen Miyuki Delica DB-11 Muster-Generator mit Loom, Brick Stitch und Peyote-Techniken.',
+    cta_eyebrow: 'Bereit zum Sticken?',
+    cta_h2a: 'Dein nächstes Muster ist', cta_h2b: 'ein Foto entfernt',
+    cta_intro: 'Schließ dich tausenden Handarbeiterinnen an, die ihre eigenen Muster erstellen. Kostenlos starten. Kein Konto. Kein Aufwand.',
+    cta_btn: 'Stitch & Thread öffnen →',
+    cta_note: 'Für immer kostenlos · Jederzeit upgraden · Kein Abo',
+    footer_tagline: 'Der Muster-Generator für Handarbeiterinnen. Kostenlos, privat, funktioniert offline. Mit Liebe für die Stickgemeinschaft gemacht.',
+    footer_product: 'Produkt', footer_languages: 'Sprachen',
+    footer_how: 'So funktioniert es', footer_features: 'Funktionen', footer_pricing: 'Preise', footer_open: 'App öffnen →',
+    footer_copy: '© 2026 Stitch & Thread. Alles wird lokal verarbeitet — deine Daten verlassen dein Gerät nie.',
+  }
+};
+
+let currentLang = 'en';
+
+// Nodes that need special handling (innerHTML with <em> or <br>)
+const COMPLEX = {
+  '[data-i18n="hero_h1_em"]': l => `<em data-i18n="hero_h1_em">${LANG[l].hero_h1_em}</em>`,
+};
+
+function applyLang(l) {
+  currentLang = l;
+  const T = LANG[l];
+
+  // Simple text nodes
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (T[key] !== undefined) el.textContent = T[key];
+  });
+
+  // H2 headings that have two lines (a + em)
+  setH2('#how h2', T.how_h2a, T.how_h2b);
+  setH2('#features h2', T.feat_h2a, T.feat_h2b);
+  setH2('#pricing h2', T.price_h2a, T.price_h2b);
+  setH2('.testimonials h2', T.test_h2a, T.test_h2b);
+  setH2('#faq h2', T.faq_h2a, T.faq_h2b);
+  setH2('.cta-final h2', T.cta_h2a, T.cta_h2b);
+
+  // Hero h1 lines
+  const h1 = document.querySelector('h1');
+  if (h1) h1.innerHTML = `${T.hero_h1_a}<br><em data-i18n="hero_h1_em">${T.hero_h1_em}</em><br><span data-i18n="hero_h1_c">${T.hero_h1_c}</span>`;
+
+  // Plans
+  setText('.plan:nth-child(1) .plan-name', T.plan_free_name);
+  setText('.plan:nth-child(1) .plan-desc', T.plan_free_desc);
+  setText('.plan:nth-child(1) .plan-period', T.plan_free_period);
+  setText('.plan:nth-child(1) .plan-cta', T.plan_free_cta);
+  setText('.plan:nth-child(2) .plan-badge', T.plan_pack_badge);
+  setText('.plan:nth-child(2) .plan-name', T.plan_pack_name);
+  setText('.plan:nth-child(2) .plan-desc', T.plan_pack_desc);
+  setText('.plan:nth-child(2) .plan-period', T.plan_pack_period);
+  setText('.plan:nth-child(2) .plan-cta', T.plan_pack_cta);
+  setText('.plan:nth-child(3) .plan-name', T.plan_my_name || 'Miyuki PRO');
+  setText('.plan:nth-child(3) .plan-desc', T.plan_my_desc);
+  setText('.plan:nth-child(3) .plan-period', T.plan_my_period);
+  setText('.plan:nth-child(3) .plan-cta', T.plan_my_cta);
+  setText('.plan:nth-child(2) .plan-name', T.plan_xs_name || 'Cross-Stitch PRO');
+  setText('.plan:nth-child(2) .plan-desc', T.plan_xs_desc);
+  setText('.plan:nth-child(2) .plan-period', T.plan_xs_period);
+  setText('.plan:nth-child(2) .plan-cta', T.plan_xs_cta);
+
+  // Price note
+  const priceNote = document.querySelector('#pricing > p');
+  if (priceNote) priceNote.textContent = T.price_note;
+
+  // FAQ questions & answers
+  const faqs = document.querySelectorAll('.faq-item');
+  const keys = [1,2,3,4,5,6];
+  faqs.forEach((item, i) => {
+    const k = keys[i];
+    if (!k) return;
+    const btn = item.querySelector('.faq-question');
+    const ans = item.querySelector('.faq-answer p');
+    if (btn) {
+      const svg = btn.querySelector('svg');
+      btn.textContent = T[`faq${k}q`];
+      if (svg) btn.appendChild(svg);
+    }
+    if (ans) ans.textContent = T[`faq${k}a`];
+  });
+
+  // Footer cols
+  const footerCols = document.querySelectorAll('.footer-col');
+  if (footerCols[0]) {
+    footerCols[0].querySelector('h4').textContent = T.footer_product;
+    const links = footerCols[0].querySelectorAll('a');
+    if (links[0]) links[0].textContent = T.footer_how;
+    if (links[1]) links[1].textContent = T.footer_features;
+    if (links[2]) links[2].textContent = T.footer_pricing;
+    if (links[3]) links[3].textContent = T.footer_open;
+  }
+  if (footerCols[1]) footerCols[1].querySelector('h4').textContent = T.footer_languages;
+
+  // CTA button
+  const ctaBtn = document.querySelector('.btn-white');
+  if (ctaBtn) ctaBtn.textContent = T.cta_btn;
+
+  // Lang buttons: update active state
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === l);
+  });
+
+  // Update app mockup lang buttons too
+  document.querySelectorAll('.app-lang').forEach(btn => {
+    const map = {en:'EN', es:'ES', pt:'PT', de:'DE'};
+    btn.classList.toggle('active', btn.textContent === map[l]);
+  });
+
+  // <html lang>
+  document.documentElement.lang = l === 'pt' ? 'pt-BR' : l;
+}
+
+function setText(sel, text) {
+  const el = document.querySelector(sel);
+  if (el && text !== undefined) el.textContent = text;
+}
+
+function setH2(sel, a, b) {
+  const el = document.querySelector(sel);
+  if (!el) return;
+  el.innerHTML = `${a}<br><em>${b}</em>`;
+}
+
+// Init lang switcher
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+});
+
+// ─── App mockup pattern grid ─────────────────────────────────────────────────
+const COLS = 32, ROWS = 28;
+const palette = [
+  'transparent','#8b2635','#b8974a','#f0e8d8',
+  '#c44d5e','#6b1c29','#d4b06a','#ddd4c0',
+];
+const pat = [
+  3,3,3,3,3,3,3,3,3,3,3,3,3,7,7,3,3,7,7,3,3,3,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,3,3,7,1,1,7,7,1,1,7,3,3,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,3,7,1,4,4,1,1,4,4,1,7,3,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,7,1,4,4,5,5,5,5,4,4,1,7,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,7,1,4,4,5,5,1,1,5,5,4,4,1,7,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,7,1,4,4,5,5,1,3,3,1,5,5,4,4,1,7,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,7,1,4,4,5,5,1,3,3,3,3,1,5,5,4,4,1,7,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,7,1,4,4,5,5,1,1,3,3,3,3,1,1,5,5,4,4,1,7,3,3,3,3,3,3,
+  3,3,3,3,3,3,7,1,4,4,5,1,1,3,3,3,3,3,3,1,1,5,4,4,1,7,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,7,1,4,4,4,1,3,3,3,3,3,3,1,4,4,4,1,7,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,7,1,4,4,4,1,1,1,1,1,1,4,4,4,1,7,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,7,1,4,4,4,4,4,4,4,4,4,4,1,7,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,7,1,4,4,4,4,4,4,4,4,1,7,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,3,7,1,1,4,4,4,4,1,1,7,3,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,3,3,3,7,1,2,2,1,7,3,3,3,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,3,3,3,7,1,2,2,1,7,3,3,3,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,3,3,3,7,1,2,2,1,7,3,3,3,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,3,6,6,7,1,2,2,1,7,6,6,3,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,6,6,6,2,1,2,2,1,2,6,6,6,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,6,6,6,2,2,1,2,2,1,2,2,6,6,6,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,6,6,6,2,2,2,1,2,2,1,2,2,2,6,6,6,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,7,1,1,2,2,2,2,2,2,2,2,2,2,1,1,7,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,7,1,1,2,2,2,2,2,2,2,2,1,1,7,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,7,1,1,1,2,2,2,2,1,1,1,7,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,3,7,7,7,1,1,1,1,7,7,7,3,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
+  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
+];
+
+function buildPattern() {
+  const container = document.getElementById('app-pattern-canvas');
+  if (!container) return;
+  const area = container.parentElement;
+  const areaW = area.clientWidth - 24;
+  const areaH = area.clientHeight - 24;
+  const cellSize = Math.max(5, Math.min(Math.floor(areaW / COLS), Math.floor(areaH / ROWS)));
+  container.style.gridTemplateColumns = `repeat(${COLS}, ${cellSize}px)`;
+  container.style.gridTemplateRows = `repeat(${ROWS}, ${cellSize}px)`;
+  container.innerHTML = '';
+  pat.forEach((v, i) => {
+    const cell = document.createElement('div');
+    const col = i % COLS;
+    const row = Math.floor(i / COLS);
+    const isStitch = v !== 7 && v !== 3;
+    const gridLine = `1px solid rgba(180,160,140,${v === 3 ? '0.35' : '0.15'})`;
+    cell.style.cssText = `width:${cellSize}px;height:${cellSize}px;background:${palette[v]};border-right:${gridLine};border-bottom:${gridLine};display:flex;align-items:center;justify-content:center;font-size:${Math.max(4,cellSize-4)}px;color:rgba(255,255,255,0.55);font-family:'Crimson Pro',serif;line-height:1;${(col+1)%10===0?'border-right:1px solid rgba(139,38,53,0.3);':''}${(row+1)%10===0?'border-bottom:1px solid rgba(139,38,53,0.3);':''}`;
+    if (isStitch && cellSize >= 7) cell.textContent = '×';
+    container.appendChild(cell);
+  });
+}
+
+window.addEventListener('load', () => {
+  buildPattern();
+  // Detect browser language on first load
+  const browserLang = (navigator.language || 'en').slice(0,2).toLowerCase();
+  const supported = ['en','es','pt','de'];
+  applyLang(supported.includes(browserLang) ? browserLang : 'en');
+});
+
+// ─── FAQ toggle ───
+function toggleFaq(btn) {
+  const answer = btn.nextElementSibling;
+  const isOpen = answer.classList.contains('open');
+  document.querySelectorAll('.faq-answer.open').forEach(a => a.classList.remove('open'));
+  document.querySelectorAll('.faq-question.active').forEach(b => b.classList.remove('active'));
+  if (!isOpen) { answer.classList.add('open'); btn.classList.add('active'); }
+}
+
+// ─── Scroll reveal ───
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.animation = 'fadeUp 0.6s ease forwards';
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.step, .feature, .testimonial, .faq-item').forEach(el => {
+  el.style.opacity = '0';
+  observer.observe(el);
+});
+</script>
+
+</body>
+</html>
