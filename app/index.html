@@ -126,6 +126,8 @@
     padding: 28px;
     position: sticky;
     top: 24px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
   }
 
   .panel-section {
@@ -227,6 +229,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding-right: 8px;
+    gap: 8px;
   }
 
   .control-value {
@@ -235,6 +239,7 @@
     color: var(--thread-red);
     font-weight: 700;
   }
+
 
   input[type="range"] {
     width: 100%;
@@ -858,6 +863,7 @@
   }
   .lock-btn:hover { border-color: var(--charcoal); }
   .lock-btn.locked { background: var(--thread-red); border-color: var(--thread-red); color: white; }
+  #patternSizeSection .section-label::after { display: none; }
   .size-hint-row {
     font-size: 11px;
     color: var(--warm-gray);
@@ -1505,25 +1511,42 @@
 
       <!-- Controls -->
       <div class="panel-section" id="patternSizeSection">
-        <div class="section-label" data-i18n="sec_size">Pattern Size</div>
+        <div class="section-label" style="width:100%;">
+          <span data-i18n="sec_size">Pattern Size</span>
+          <span style="flex:1;height:1px;background:var(--linen);align-self:center;"></span>
+          <button class="lock-btn locked" id="ratioLockBtn" onclick="toggleRatioLock()"
+            title="Lock aspect ratio" style="margin-bottom:4px">🔒</button>
+        </div>
 
         <!-- W -->
         <div class="control-group">
           <div class="control-label">
-            <span data-i18n="lbl_width">Width in stitches</span>
-            <span class="control-value" id="patternWVal">80</span>
+            <span data-i18n="lbl_width">Width</span>
+            <div style="display:flex;align-items:center;gap:2px;margin-left:auto;">
+              <input type="number" id="patternWVal" class="control-value" value="80" min="10" max="400" step="1" style="width:52px;border:1px solid #d4cab8;border-radius:4px;padding:2px 4px;font-family:inherit;font-size:13px;background:#faf6f0;text-align:center;" onchange="syncSize('w',this.value)" onclick="this.select()">
+              <span style="font-size:12px;color:var(--warm-gray)">pt</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:2px;">
+              <input type="number" id="patternWCm" value="14.5" min="0.5" max="100" step="0.1" style="width:52px;border:1px solid #d4cab8;border-radius:4px;padding:2px 4px;font-family:inherit;font-size:13px;background:#faf6f0;text-align:center;color:#8b2635;font-weight:600;" onchange="syncSizeCm('w',this.value)" onclick="this.select()">
+              <span style="font-size:12px;color:var(--warm-gray)">cm</span>
+            </div>
           </div>
           <input type="range" id="patternWSlider" min="10" max="400" value="80"
             oninput="syncSize('w', this.value)">
         </div>
 
-        <!-- H + lock -->
+        <!-- H -->
         <div class="control-group">
           <div class="control-label">
-            <span data-i18n="lbl_height">Height in stitches</span>
-            <span class="control-value" id="patternHVal">120</span>
-            <button class="lock-btn locked" id="ratioLockBtn" onclick="toggleRatioLock()"
-              title="Lock aspect ratio" style="margin-left:6px">🔒</button>
+            <span data-i18n="lbl_height">Height</span>
+            <div style="display:flex;align-items:center;gap:2px;margin-left:auto;">
+              <input type="number" id="patternHVal" class="control-value" value="120" min="10" max="600" step="1" style="width:52px;border:1px solid #d4cab8;border-radius:4px;padding:2px 4px;font-family:inherit;font-size:13px;background:#faf6f0;text-align:center;" onchange="syncSize('h',this.value)" onclick="this.select()">
+              <span style="font-size:12px;color:var(--warm-gray)">pt</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:2px;">
+              <input type="number" id="patternHCm" value="21.8" min="0.5" max="150" step="0.1" style="width:52px;border:1px solid #d4cab8;border-radius:4px;padding:2px 4px;font-family:inherit;font-size:13px;background:#faf6f0;text-align:center;color:#8b2635;font-weight:600;" onchange="syncSizeCm('h',this.value)" onclick="this.select()">
+              <span style="font-size:12px;color:var(--warm-gray)">cm</span>
+            </div>
           </div>
           <input type="range" id="patternHSlider" min="10" max="600" value="120"
             oninput="syncSize('h', this.value)">
@@ -1532,8 +1555,7 @@
         <!-- hidden number inputs kept for JS compatibility -->
         <input type="hidden" id="patternW" value="80">
         <input type="hidden" id="patternH" value="120">
-        <div class="size-hint-row" id="sizeHintRow" style="margin-top:4px">80 × 120 stitches</div>
-        <div id="aidaRow" style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+<div id="aidaRow" style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <span style="font-size:12px;color:var(--warm-gray)" data-i18n="lbl_fabric">Fabric</span>
           <select id="aidaCount" onchange="updateSizeHint()" style="font-size:12px;padding:2px 6px;border:1px solid #d4cab8;border-radius:4px;background:#faf6f0;color:#2a2420;font-family:'Crimson Pro',Georgia,serif;cursor:pointer;">
             <option value="11">Aida 11ct</option>
@@ -1544,7 +1566,6 @@
             <option value="28linen">Linen 28ct</option>
             <option value="28even">Evenweave 28ct</option>
           </select>
-          <span id="aidaSizeResult" style="font-size:12px;color:var(--warm-gray)"></span>
         </div>
       </div>
 
@@ -1772,7 +1793,8 @@
   <div style="background:#f5f0e8;border-radius:14px;width:min(660px,95vw);max-height:88vh;display:flex;flex-direction:column;font-family:'Crimson Pro',Georgia,serif;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
     <div style="padding:20px 24px 16px;border-bottom:1px solid #e8e0d5;display:flex;align-items:center;gap:12px;">
       <span id="projectsModalTitle" style="font-size:20px;font-weight:700;color:#2a2420;font-family:'Playfair Display',serif;">🧵 Mis Proyectos</span>
-      <button onclick="closeProjectsModal()" style="margin-left:auto;background:none;border:none;font-size:22px;cursor:pointer;color:#8b7355;">×</button>
+      <div id="driveSessionInfo" style="margin-left:auto;display:flex;align-items:center;gap:10px;"></div>
+      <button onclick="closeProjectsModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#8b7355;">×</button>
     </div>
     <div id="projectsModalBody" style="flex:1;overflow-y:auto;padding:20px 24px;"></div>
     <div style="padding:14px 24px;border-top:1px solid #e8e0d5;display:flex;justify-content:flex-end;gap:8px;">
@@ -3527,7 +3549,15 @@ function saveProFlags() { localStorage.setItem(PRO_STORAGE_KEY, JSON.stringify({
 function unlockWithCode(code) { if ((code||'').trim().toUpperCase() === BETA_CODE) { hasCSPro = true; hasMiyukiPro = true; saveProFlags(); return true; } return false; }
 function isPro() { return hasCSPro || hasMiyukiPro; }
 function canUseBrand(b) { return b === 'dmc' || (hasCSPro && ['anchor','cosmo','madeira'].includes(b)); }
-document.addEventListener('DOMContentLoaded', () => { updateProBadge(); updateSizeHint(); });
+document.addEventListener('DOMContentLoaded', () => {
+  updateProBadge();
+  updateSizeHint();
+  // Initialize ratio from default slider values since lock starts active
+  const W = parseInt(document.getElementById('patternWSlider').value) || 80;
+  const H = parseInt(document.getElementById('patternHSlider').value) || 120;
+  patternRatio = H / W;
+  updateCmInputs(W, H);
+});
 
 function getGeometry() {
   return FORMAT_GEOMETRY[currentFormat] || FORMAT_GEOMETRY.crossstitch;
@@ -3728,12 +3758,14 @@ function selectFormat(fmt) {
   if (isMiyuki) {
     // Switch to Miyuki catalog
     currentBrand = 'miyuki';
+    delete BRAND_LAB['miyuki'];
     document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
     // Init Miyuki size hint
     setTimeout(updateMiyukiSizeHint, 50);
   } else {
     // Restore previous thread brand (default DMC)
     currentBrand = 'dmc';
+    delete BRAND_LAB['dmc'];
     const dmcBtn = document.querySelector('[data-brand="dmc"]');
     if (dmcBtn) {
       document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
@@ -3973,8 +4005,10 @@ function drawCrossStitch(ctx, x, y, cellW, cellH, hex, done) {
   const px = x * cellW;
   const py = y * cellH;
 
-  // Fabric background
-  ctx.fillStyle = '#f5f0e8';
+  // Fabric background — white for very light thread colors to avoid cream tinting
+  const [rBg, gBg, bBg] = hexToRgb(hex);
+  const yBg = (0.2126 * rBg + 0.7152 * gBg + 0.0722 * bBg) / 255;
+  ctx.fillStyle = yBg > 0.9 ? '#ffffff' : '#f5f0e8';
   ctx.fillRect(px, py, cellW, cellH);
 
   // Subtle fabric texture: faint grid holes at corners (zoom >= 8)
@@ -4981,8 +5015,15 @@ function closeProjectsModal() {
 }
 function renderProjectsModal() {
   const body = document.getElementById('projectsModalBody');
+  const sessionInfo = document.getElementById('driveSessionInfo');
+  if (sessionInfo) {
+    sessionInfo.innerHTML = driveToken && driveUser.name
+      ? '<span style="font-size:13px;color:#8b7355;">' + driveUser.name + '</span>'
+        + '<button onclick="signOutDrive()" style="background:none;border:1px solid #c8bfb0;border-radius:5px;padding:3px 10px;font-family:inherit;font-size:12px;color:#8b7355;cursor:pointer;">' + t('drive_signout') + '</button>'
+      : '';
+  }
   if (!driveToken) {
-    body.innerHTML = '<div style="text-align:center;padding:40px 24px"><div style="font-size:48px;margin-bottom:16px">☁️</div><p style="font-size:15px;color:#8b7355;margin-bottom:20px">Inicia sesión con Google para guardar y cargar tus proyectos desde cualquier dispositivo.</p><button onclick="requireDriveAuth(()=>renderProjectsModal())" style="display:inline-flex;align-items:center;gap:10px;background:white;border:1.5px solid #dadce0;border-radius:6px;padding:10px 20px;font-size:15px;cursor:pointer;font-family:inherit;color:#2a2420;"><svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>Entrar con Google</button></div>';
+    body.innerHTML = '<div style="text-align:center;padding:40px 24px"><div style="font-size:48px;margin-bottom:16px">☁️</div><p style="font-size:15px;color:#8b7355;margin-bottom:20px">'+t('drive_signin')+'</p><button onclick="requireDriveAuth(()=>renderProjectsModal())" style="display:inline-flex;align-items:center;gap:10px;background:white;border:1.5px solid #dadce0;border-radius:6px;padding:10px 20px;font-size:15px;cursor:pointer;font-family:inherit;color:#2a2420;"><svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>'+t('drive_signin_btn')+'</button></div>';
     return;
   }
   const overwriteOption = _currentProjectId ? '<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#8b7355;margin-bottom:8px;cursor:pointer"><input type="checkbox" id="overwriteCheck" checked> Sobrescribir proyecto actual</label>' : '';
@@ -5006,6 +5047,16 @@ function renderProjectsModal() {
       if (card) { await loadProjectFromDrive(card.dataset.fileId); }
     });
   }).catch(() => { const a=document.getElementById('projectsListArea'); if(a) a.innerHTML='<p style="color:#8b2635;text-align:center">Error cargando proyectos.</p>'; });
+}
+
+function signOutDrive() {
+  driveToken = null;
+  driveUser = {};
+  _currentProjectId = null;
+  _currentProjectName = '';
+  sessionStorage.removeItem('drive_token');
+  updateDriveBtn();
+  renderProjectsModal();
 }
 
 function updateDriveBtn() {
@@ -5304,10 +5355,10 @@ const TRANSLATIONS = {
     sec_mode: 'Mode',
     upload_title: 'Upload your image',
     upload_sub: 'JPG, PNG, WebP — any size',
-    lbl_width: 'Width in stitches',
+    lbl_width: 'Width',
     lbl_w: 'W', lbl_h: 'H',
-    lbl_width: 'Width in stitches',
-    lbl_height: 'Height in stitches',
+    lbl_width: 'Width',
+    lbl_height: 'Height',
     btn_view_simple: 'Simple',
     btn_view_realistic: 'Realistic',
     lbl_fabric: 'Fabric',
@@ -5443,6 +5494,8 @@ const TRANSLATIONS = {
     drive_overwrite: 'Overwrite current project',
     drive_overwritten: '✓ Project overwritten',
     drive_signin: 'Sign in with Google to save and load your projects from any device.',
+    drive_signin_btn: 'Sign in with Google',
+    drive_signout: 'Sign out',
     paywall_cs_features: 'Anchor, Cosmo, Madeira · Up to 400×600pt · 40 colors · PDF export · Brush editor · Progress mode · Drive projects',
     paywall_my_features: 'Brick + Peyote · All shapes · Unlimited size · PDF export · Brush editor · Progress mode · Drive projects',
     paywall_pack: 'Complete Pack',
@@ -5457,9 +5510,9 @@ const TRANSLATIONS = {
     sec_mode: 'Modo',
     upload_title: 'Sube tu imagen',
     upload_sub: 'JPG, PNG, WebP — cualquier tamaño',
-    lbl_width: 'Ancho en puntos',
+    lbl_width: 'Ancho',
     lbl_w: 'A', lbl_h: 'H',
-    lbl_height: 'Alto en puntos',
+    lbl_height: 'Alto',
     btn_view_simple: 'Simple',
     btn_view_realistic: 'Realista',
     lbl_fabric: 'Tela',
@@ -5594,6 +5647,8 @@ const TRANSLATIONS = {
     drive_overwrite: 'Sobrescribir proyecto actual',
     drive_overwritten: '✓ Proyecto sobrescrito',
     drive_signin: 'Inicia sesión con Google para guardar y cargar tus proyectos desde cualquier dispositivo.',
+    drive_signin_btn: 'Entrar con Google',
+    drive_signout: 'Cerrar sesión',
     paywall_cs_features: 'Anchor, Cosmo, Madeira · Hasta 400×600pt · 40 colores · PDF export · Editor pincel · Progress mode · Proyectos en Drive',
     paywall_my_features: 'Brick + Peyote · Todas las formas · Tamaño libre · PDF export · Editor pincel · Progress mode · Proyectos en Drive',
     paywall_pack: 'Pack Completo',
@@ -5608,9 +5663,9 @@ const TRANSLATIONS = {
     sec_mode: 'Modo',
     upload_title: 'Envie sua imagem',
     upload_sub: 'JPG, PNG, WebP — qualquer tamanho',
-    lbl_width: 'Largura em pontos',
+    lbl_width: 'Largura',
     lbl_w: 'L', lbl_h: 'A',
-    lbl_height: 'Altura em pontos',
+    lbl_height: 'Altura',
     btn_view_simple: 'Simple',
     btn_view_realistic: 'Realista',
     lbl_fabric: 'Tecido',
@@ -5745,6 +5800,8 @@ const TRANSLATIONS = {
     drive_overwrite: 'Sobrescrever projeto atual',
     drive_overwritten: '✓ Projeto sobrescrito',
     drive_signin: 'Entre com o Google para guardar e carregar seus projetos de qualquer dispositivo.',
+    drive_signin_btn: 'Entrar com o Google',
+    drive_signout: 'Sair',
     paywall_cs_features: 'Anchor, Cosmo, Madeira · Até 400×600pt · 40 cores · PDF export · Editor pincel · Modo progresso · Projetos no Drive',
     paywall_my_features: 'Brick + Peyote · Todas as formas · Tamanho livre · PDF export · Editor pincel · Modo progresso · Projetos no Drive',
     paywall_pack: 'Pack Completo',
@@ -5759,9 +5816,9 @@ const TRANSLATIONS = {
     sec_mode: 'Modus',
     upload_title: 'Bild hochladen',
     upload_sub: 'JPG, PNG, WebP — beliebige Größe',
-    lbl_width: 'Breite in Stichen',
+    lbl_width: 'Breite',
     lbl_w: 'B', lbl_h: 'H',
-    lbl_height: 'H\u00f6he in Stichen',
+    lbl_height: 'H\u00f6he',
     btn_view_simple: 'Einfach',
     btn_view_realistic: 'Realistisch',
     lbl_fabric: 'Stoff',
@@ -5896,6 +5953,8 @@ const TRANSLATIONS = {
     drive_overwrite: 'Aktuelles Projekt überschreiben',
     drive_overwritten: '✓ Projekt überschrieben',
     drive_signin: 'Mit Google anmelden, um Projekte zu speichern und von jedem Gerät abzurufen.',
+    drive_signin_btn: 'Mit Google anmelden',
+    drive_signout: 'Abmelden',
     paywall_cs_features: 'Anchor, Cosmo, Madeira · Bis 400×600pt · 40 Farben · PDF-Export · Pinseleditor · Fortschrittsmodus · Drive-Projekte',
     paywall_my_features: 'Brick + Peyote · Alle Formen · Unbegrenzte Größe · PDF-Export · Pinseleditor · Fortschrittsmodus · Drive-Projekte',
     paywall_pack: 'Komplett-Paket',
@@ -6045,10 +6104,15 @@ function initTableDelegation() {
 // PATTERN SIZE — W×H with ratio lock
 // ============================================================
 let ratioLocked = true;
-let patternRatio = null; // H/W ratio, set when image loads or from current values
+let patternRatio = null; // H/W ratio, captured on lock or when image loads
 
 function toggleRatioLock() {
   ratioLocked = !ratioLocked;
+  if (ratioLocked) {
+    const W = parseInt(document.getElementById('patternWSlider').value) || 80;
+    const H = parseInt(document.getElementById('patternHSlider').value) || 120;
+    patternRatio = H / W;
+  }
   const btn = document.getElementById('ratioLockBtn');
   btn.classList.toggle('locked', ratioLocked);
   btn.textContent = ratioLocked ? '🔒' : '🔓';
@@ -6057,31 +6121,35 @@ function toggleRatioLock() {
 
 const FABRIC_CT = { '11': 11, '14': 14, '16': 16, '18': 18, '28aida': 28, '28linen': 28, '28even': 28 };
 
+
 function updateSizeHint() {
-  const W = parseInt(document.getElementById('patternWSlider')?.value || 80);
-  const H = parseInt(document.getElementById('patternHSlider')?.value || 120);
+  const W = parseInt(document.getElementById('patternWSlider')?.value) || 80;
+  const H = parseInt(document.getElementById('patternHSlider')?.value) || 120;
   const sel = document.getElementById('aidaCount');
   const result = document.getElementById('aidaSizeResult');
   const aidaRow = document.getElementById('aidaRow');
-
+  const hint = document.getElementById('sizeHintRow');
   if (currentFormat === 'miyuki') {
     if (aidaRow) aidaRow.style.display = 'none';
+    if (hint) hint.textContent = W + ' × ' + H + ' beads';
     return;
   }
   if (aidaRow) aidaRow.style.display = 'flex';
-  if (!sel || !result) return;
-
-  const ct = FABRIC_CT[sel.value] || 14;
+  const ct = FABRIC_CT[sel?.value] || 14;
   const wCm = ((W / ct) * 2.54).toFixed(1);
   const hCm = ((H / ct) * 2.54).toFixed(1);
-  result.textContent = t('lbl_approx_size') + ': ≈ ' + wCm + ' × ' + hCm + ' cm';
+  if (result) result.textContent = t('lbl_approx_size') + ': ≈ ' + wCm + ' × ' + hCm + ' cm';
+  if (hint) hint.textContent = W + ' × ' + H + ' ' + t('unit_stitches') + '  ·  ≈ ' + wCm + ' × ' + hCm + ' cm';
+  const wCmEl = document.getElementById('patternWCm');
+  const hCmEl = document.getElementById('patternHCm');
+  if (wCmEl) wCmEl.value = wCm;
+  if (hCmEl) hCmEl.value = hCm;
 }
 
+
 function syncSize(changed, val) {
-  let W = parseInt(val);
-  let H = changed === 'h' ? W : null;
-  W = changed === 'w' ? W : parseInt(document.getElementById('patternWSlider').value) || 80;
-  H = changed === 'h' ? parseInt(val) : parseInt(document.getElementById('patternHSlider').value) || 120;
+  let W = changed === 'w' ? parseInt(val) : (parseInt(document.getElementById('patternWSlider').value) || 80);
+  let H = changed === 'h' ? parseInt(val) : (parseInt(document.getElementById('patternHSlider').value) || 120);
 
   if (ratioLocked && patternRatio) {
     if (changed === 'w') {
@@ -6093,24 +6161,23 @@ function syncSize(changed, val) {
     }
   }
 
-  document.getElementById('patternWVal').textContent = W;
-  document.getElementById('patternHVal').textContent = H;
+  document.getElementById('patternWVal').value = W;
+  document.getElementById('patternHVal').value = H;
   document.getElementById('patternW').value = W;
   document.getElementById('patternH').value = H;
   updateSizeHint();
+}
+
+function syncSizeCm(changed, cmVal) {
+  const ct = FABRIC_CT[document.getElementById('aidaCount')?.value] || 14;
+  const pt = Math.round((parseFloat(cmVal) / 2.54) * ct);
+  syncSize(changed, pt);
 }
 
 // Keep backward compat
 function onPatternSizeChange(changed) { syncSize(changed, changed === 'w' ?
   document.getElementById('patternWSlider').value :
   document.getElementById('patternHSlider').value); }
-
-function updateSizeHint() {
-  const W = parseInt(document.getElementById('patternW').value) || 80;
-  const H = parseInt(document.getElementById('patternH').value) || 120;
-  const hint = document.getElementById('sizeHintRow');
-  if (hint) hint.textContent = `${W} × ${H} stitches`;
-}
 
 // Set ratio from image when loaded
 function setRatioFromImage(img) {
@@ -6119,7 +6186,7 @@ function setRatioFromImage(img) {
   const H = Math.max(10, Math.min(600, Math.round(W * patternRatio)));
   document.getElementById('patternH').value = H;
   document.getElementById('patternHSlider').value = H;
-  document.getElementById('patternHVal').textContent = H;
+  document.getElementById('patternHVal').value = H;
   updateSizeHint();
 }
 
@@ -6155,6 +6222,7 @@ const SHAPE_PRESETS = {
 };
 
 function setMiyukiTechnique(tech) {
+  if (!hasMiyukiPro && tech !== 'loom') { showPaywall('La técnica Brick/Peyote requiere Miyuki PRO.'); return; }
   miyukiTechnique = tech;
   ['loom','brick','peyote'].forEach(t => {
     document.getElementById('tech' + t.charAt(0).toUpperCase() + t.slice(1))
@@ -6169,6 +6237,7 @@ function setMiyukiTechnique(tech) {
 }
 
 function setMiyukiShape(shape) {
+  if (!hasMiyukiPro && shape !== 'free') { showPaywall('Esta forma requiere Miyuki PRO.'); return; }
   miyukiShape = shape;
   ['free','earring','bracelet','necklace'].forEach(s => {
     document.getElementById('shape' + s.charAt(0).toUpperCase() + s.slice(1))
