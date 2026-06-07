@@ -4926,8 +4926,12 @@ function confirmSaveProject() {
   if (btn) { btn.disabled=true; btn.textContent=t('drive_saving'); }
   const overwriteChk = document.getElementById('overwriteCheck');
   const useExistingId = overwriteChk && overwriteChk.checked && _currentProjectId ? _currentProjectId : null;
-  driveSave(name, data, useExistingId).then(() => {
-  if (!useExistingId) _currentProjectId = null;
+  driveSave(name, data, useExistingId).then(res => {
+    res.clone().json().then(f => {
+      const fileId = useExistingId || f.id;
+      if (fileId && thumb) localStorage.setItem('snt_thumb_'+fileId, thumb);
+    }).catch(()=>{});
+    if (!useExistingId) _currentProjectId = null;
     showToast(t('drive_saved_ok'));
     closeProjectsModal();
   }).catch(() => {
@@ -5013,6 +5017,28 @@ async function loadProjectFromDrive(fileId) {
 function closeProjectsModal() {
   document.getElementById('projectsModal').style.display = 'none';
 }
+function _driveCardHover(card, info) {
+  let tt = document.getElementById('_driveTooltip');
+  if (!tt) {
+    tt = document.createElement('div');
+    tt.id = '_driveTooltip';
+    tt.style.cssText = 'position:fixed;z-index:9999;background:white;border:1.5px solid #e8e0d5;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:10px;pointer-events:none;width:200px;';
+    document.body.appendChild(tt);
+  }
+  tt.innerHTML = (info.thumb ? '<img src="'+info.thumb+'" style="width:100%;border-radius:5px;display:block;margin-bottom:6px;image-rendering:pixelated;">' : '') +
+    '<div style="font-size:12px;font-weight:600;color:#2a2420;margin-bottom:2px;">'+info.name+'</div>' +
+    '<div style="font-size:11px;color:#b0a090;">'+info.date+'</div>';
+  const r = card.getBoundingClientRect();
+  const left = r.right + 8 + 200 > window.innerWidth ? r.left - 208 : r.right + 8;
+  tt.style.left = left + 'px';
+  tt.style.top = Math.min(r.top, window.innerHeight - 220) + 'px';
+  tt.style.display = 'block';
+}
+function _driveCardHide() {
+  const tt = document.getElementById('_driveTooltip');
+  if (tt) tt.style.display = 'none';
+}
+
 function renderProjectsModal() {
   const body = document.getElementById('projectsModalBody');
   const sessionInfo = document.getElementById('driveSessionInfo');
@@ -5033,16 +5059,32 @@ function renderProjectsModal() {
     const area = document.getElementById('projectsListArea');
     if (!area) return;
     if (!files.length) { area.innerHTML = '<div style="text-align:center;padding:40px;color:#8b7355"><div style="font-size:40px;margin-bottom:12px">🧵</div><p>'+t('drive_no_projects')+'</p></div>'; return; }
+    const cardsInfo = files.map(f => {
+      const thumb = localStorage.getItem('snt_thumb_'+f.id) || '';
+      return { id: f.id, name: f.name.replace('.stitch',''), date: new Date(f.modifiedTime).toLocaleDateString(), thumb };
+    });
     area.innerHTML = '<div style="font-size:12px;font-weight:600;color:#8b7355;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">'+t('drive_saved_projects')+'</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">'+
-      files.map(f => '<div data-file-id="'+f.id+'" style="background:white;border:1.5px solid #e8e0d5;border-radius:8px;overflow:hidden;cursor:pointer;transition:all .18s;position:relative;" onmouseover="this.style.borderColor=\'#8b2635\'" onmouseout="this.style.borderColor=\'#e8e0d5\'">'+
-        '<div style="width:100%;aspect-ratio:1;background:#f0ebe3;display:flex;align-items:center;justify-content:center;font-size:32px;">🧵</div>'+
-        '<div style="padding:8px 10px;"><div style="font-size:12px;font-weight:600;color:#2a2420;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+f.name.replace('.stitch','')+'</div>'+
-        '<div style="font-size:11px;color:#8b7355;">'+new Date(f.modifiedTime).toLocaleDateString()+'</div></div>'+
-        '<button data-del-id="'+f.id+'" style="position:absolute;top:5px;right:5px;width:20px;height:20px;background:rgba(139,38,53,0.85);color:white;border:none;border-radius:50%;font-size:11px;cursor:pointer;display:none;align-items:center;justify-content:center;" onmouseover="this.style.display=\'flex\'" >×</button>'+
-        '</div>').join('')+'</div>';
+      cardsInfo.map(c =>
+        '<div data-file-id="'+c.id+'" style="background:white;border:1.5px solid #e8e0d5;border-radius:8px;overflow:hidden;cursor:pointer;transition:border-color .18s;position:relative;" onmouseover="this.style.borderColor=\'#8b2635\'" onmouseout="this.style.borderColor=\'#e8e0d5\'">'+
+        (c.thumb ? '<img src="'+c.thumb+'" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;image-rendering:pixelated;">' : '<div style="width:100%;aspect-ratio:1;background:#f0ebe3;display:flex;align-items:center;justify-content:center;font-size:32px;">🧵</div>')+
+        '<div style="padding:8px 10px;">'+
+          '<div style="font-size:12px;font-weight:600;color:#2a2420;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+c.name+'</div>'+
+          '<div style="font-size:11px;color:#8b7355;">'+c.date+'</div>'+
+        '</div>'+
+        '<button data-del-id="'+c.id+'" style="position:absolute;top:5px;right:5px;width:20px;height:20px;background:rgba(139,38,53,0.85);color:white;border:none;border-radius:50%;font-size:11px;cursor:pointer;display:none;align-items:center;justify-content:center;">×</button>'+
+        '</div>'
+      ).join('')+'</div>';
+    cardsInfo.forEach(c => {
+      const el = area.querySelector('[data-file-id="'+c.id+'"]');
+      if (el) {
+        const delBtn = el.querySelector('[data-del-id]');
+        el.addEventListener('mouseenter', () => { _driveCardHover(el, c); if (delBtn) delBtn.style.display = 'flex'; });
+        el.addEventListener('mouseleave', () => { _driveCardHide(); if (delBtn) delBtn.style.display = 'none'; });
+      }
+    });
     area.addEventListener('click', async e => {
       const del = e.target.closest('[data-del-id]');
-      if (del) { e.stopPropagation(); if(!confirm(t('drive_delete_confirm'))) return; await driveDelete(del.dataset.delId); renderProjectsModal(); return; }
+      if (del) { e.stopPropagation(); if(!confirm(t('drive_delete_confirm'))) return; localStorage.removeItem('snt_thumb_'+del.dataset.delId); await driveDelete(del.dataset.delId); renderProjectsModal(); return; }
       const card = e.target.closest('[data-file-id]');
       if (card) { await loadProjectFromDrive(card.dataset.fileId); }
     });
@@ -5079,7 +5121,7 @@ async function driveReq(url, opts={}) {
 }
 
 async function driveList() {
-  const res = await driveReq('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name,modifiedTime)&q=name+contains+%27.stitch%27&orderBy=modifiedTime+desc&pageSize=50');
+  const res = await driveReq('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name,modifiedTime,appProperties)&q=name+contains+%27.stitch%27&orderBy=modifiedTime+desc&pageSize=50');
   return (await res.json()).files || [];
 }
 
@@ -5089,8 +5131,8 @@ async function driveSave(name, data, existingId=null) {
   body.append('metadata', new Blob([JSON.stringify(meta)], {type:'application/json'}));
   body.append('file', new Blob([JSON.stringify(data)], {type:'application/json'}));
   const url = existingId
-    ? 'https://www.googleapis.com/upload/drive/v3/files/'+existingId+'?uploadType=multipart'
-    : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+    ? 'https://www.googleapis.com/upload/drive/v3/files/'+existingId+'?uploadType=multipart&fields=id'
+    : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id';
   return driveReq(url, {method: existingId?'PATCH':'POST', body});
 }
 
@@ -5472,6 +5514,8 @@ const TRANSLATIONS = {
     paywall_size: 'Pattern size exceeds the free limit (max 80pt wide).',
     paywall_colors: 'Free plan supports up to 15 colors.',
     paywall_miyuki_size: 'Free Miyuki patterns are limited to 20×20 beads.',
+    paywall_miyuki_tech: 'Brick/Peyote technique requires Miyuki PRO.',
+    paywall_miyuki_shape: 'This shape requires Miyuki PRO.',
     paywall_beta: 'Have a beta code?',
     paywall_apply: 'Apply',
     paywall_continue: 'Continue with free version',
@@ -5625,6 +5669,8 @@ const TRANSLATIONS = {
     paywall_size: 'El patrón supera el límite gratuito (máx. 80pt de ancho).',
     paywall_colors: 'El plan gratuito permite hasta 15 colores.',
     paywall_miyuki_size: 'Miyuki gratuito limitado a 20×20 cuentas.',
+    paywall_miyuki_tech: 'La técnica Brick/Peyote requiere Miyuki PRO.',
+    paywall_miyuki_shape: 'Esta forma requiere Miyuki PRO.',
     paywall_beta: '¿Tienes un código beta?',
     paywall_apply: 'Aplicar',
     paywall_continue: 'Continuar con versión gratuita',
@@ -5778,6 +5824,8 @@ const TRANSLATIONS = {
     paywall_size: 'O padrão excede o limite gratuito (máx. 80pt de largura).',
     paywall_colors: 'O plano gratuito suporta até 15 cores.',
     paywall_miyuki_size: 'Miyuki gratuito limitado a 20×20 contas.',
+    paywall_miyuki_tech: 'A técnica Brick/Peyote requer Miyuki PRO.',
+    paywall_miyuki_shape: 'Esta forma requer Miyuki PRO.',
     paywall_beta: 'Tem um código beta?',
     paywall_apply: 'Aplicar',
     paywall_continue: 'Continuar com versão gratuita',
@@ -5931,6 +5979,8 @@ const TRANSLATIONS = {
     paywall_size: 'Muster überschreitet das kostenlose Limit (max. 80pt Breite).',
     paywall_colors: 'Der kostenlose Plan unterstützt bis zu 15 Farben.',
     paywall_miyuki_size: 'Kostenloses Miyuki auf 20×20 Perlen begrenzt.',
+    paywall_miyuki_tech: 'Die Brick/Peyote-Technik erfordert Miyuki PRO.',
+    paywall_miyuki_shape: 'Diese Form erfordert Miyuki PRO.',
     paywall_beta: 'Haben Sie einen Beta-Code?',
     paywall_apply: 'Anwenden',
     paywall_continue: 'Mit kostenloser Version fortfahren',
@@ -6222,7 +6272,7 @@ const SHAPE_PRESETS = {
 };
 
 function setMiyukiTechnique(tech) {
-  if (!hasMiyukiPro && tech !== 'loom') { showPaywall('La técnica Brick/Peyote requiere Miyuki PRO.'); return; }
+  if (!hasMiyukiPro && tech !== 'loom') { showPaywall(t('paywall_miyuki_tech')); return; }
   miyukiTechnique = tech;
   ['loom','brick','peyote'].forEach(t => {
     document.getElementById('tech' + t.charAt(0).toUpperCase() + t.slice(1))
@@ -6237,7 +6287,7 @@ function setMiyukiTechnique(tech) {
 }
 
 function setMiyukiShape(shape) {
-  if (!hasMiyukiPro && shape !== 'free') { showPaywall('Esta forma requiere Miyuki PRO.'); return; }
+  if (!hasMiyukiPro && shape !== 'free') { showPaywall(t('paywall_miyuki_shape')); return; }
   miyukiShape = shape;
   ['free','earring','bracelet','necklace'].forEach(s => {
     document.getElementById('shape' + s.charAt(0).toUpperCase() + s.slice(1))
