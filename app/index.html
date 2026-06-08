@@ -1864,6 +1864,17 @@
   </div>
 </div>
 
+<!-- CONFIRM MODAL -->
+<div id="confirmModal" style="display:none;position:fixed;inset:0;background:rgba(42,36,32,0.8);z-index:2100;align-items:center;justify-content:center;">
+  <div style="background:#f5f0e8;border-radius:14px;width:min(380px,92vw);font-family:'Crimson Pro',Georgia,serif;padding:28px 28px 22px;text-align:center;">
+    <p id="confirmMsg" style="font-size:15px;color:#2a2420;margin:0 0 22px;line-height:1.5"></p>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button id="confirmOkBtn" style="background:#8b2635;color:white;border:none;border-radius:8px;padding:9px 22px;font-family:inherit;font-size:14px;cursor:pointer;font-weight:600"></button>
+      <button id="confirmCancelBtn" onclick="closeConfirmModal()" style="background:none;border:1.5px solid #c9b99a;color:#8b7355;border-radius:8px;padding:9px 22px;font-family:inherit;font-size:14px;cursor:pointer"></button>
+    </div>
+  </div>
+</div>
+
 <!-- CHANGE COLOR MODAL -->
 <div class="modal-overlay" id="changeColorModal" onclick="closeCCOnOverlay(event)">
   <div class="modal">
@@ -3556,7 +3567,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const W = parseInt(document.getElementById('patternWSlider').value) || 80;
   const H = parseInt(document.getElementById('patternHSlider').value) || 120;
   patternRatio = H / W;
-  updateCmInputs(W, H);
+
 });
 
 function getGeometry() {
@@ -4243,11 +4254,12 @@ function toggleProgressMode() {
 }
 
 function resetProgress() {
-  if (!confirm(t('confirm_reset_progress'))) return;
-  doneStitches.clear();
-  saveProgress();
-  updateProgressStats();
-  drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+  showConfirmModal(t('confirm_reset_progress'), () => {
+    doneStitches.clear();
+    saveProgress();
+    updateProgressStats();
+    drawPattern(currentPattern.grid, currentPattern.W, currentPattern.H, currentColors);
+  });
 }
 
 function updateProgressStats() {
@@ -5084,7 +5096,7 @@ function renderProjectsModal() {
     });
     area.addEventListener('click', async e => {
       const del = e.target.closest('[data-del-id]');
-      if (del) { e.stopPropagation(); if(!confirm(t('drive_delete_confirm'))) return; localStorage.removeItem('snt_thumb_'+del.dataset.delId); await driveDelete(del.dataset.delId); renderProjectsModal(); return; }
+      if (del) { e.stopPropagation(); showConfirmModal(t('drive_delete_confirm'), async () => { localStorage.removeItem('snt_thumb_'+del.dataset.delId); await driveDelete(del.dataset.delId); renderProjectsModal(); }); return; }
       const card = e.target.closest('[data-file-id]');
       if (card) { await loadProjectFromDrive(card.dataset.fileId); }
     });
@@ -5162,6 +5174,14 @@ function showPaywall(reason) {
   m.style.display='flex';
 }
 function closePaywall() { document.getElementById('paywallModal').style.display='none'; }
+function showConfirmModal(message, onConfirm) {
+  document.getElementById('confirmMsg').textContent = message;
+  document.getElementById('confirmOkBtn').textContent = t('confirm_ok');
+  document.getElementById('confirmCancelBtn').textContent = t('confirm_cancel');
+  document.getElementById('confirmModal').style.display = 'flex';
+  document.getElementById('confirmOkBtn').onclick = () => { closeConfirmModal(); onConfirm(); };
+}
+function closeConfirmModal() { document.getElementById('confirmModal').style.display = 'none'; }
 function submitBetaCode() { const input=document.getElementById('betaCodeInput'); if(unlockWithCode(input.value)) { closePaywall(); showToast(t('paywall_unlocked')); updateProBadge(); } else { input.style.outline='2px solid #8b2635'; setTimeout(()=>input.style.outline='',1200); } }
 function updateProBadge() { const b=document.getElementById('proBadge'); if(b) b.textContent=isPro()?'⭐ PRO':'FREE'; }
 function showToast(msg) {
@@ -5533,6 +5553,8 @@ const TRANSLATIONS = {
     drive_no_projects: 'No saved projects yet. Generate a pattern and save it!',
     drive_saved_projects: 'Saved projects',
     drive_delete_confirm: 'Delete this project?',
+    confirm_ok: 'Confirm',
+    confirm_cancel: 'Cancel',
     drive_save_current: 'Save current pattern',
     drive_name_placeholder: 'Project name…',
     drive_overwrite: 'Overwrite current project',
@@ -5688,6 +5710,8 @@ const TRANSLATIONS = {
     drive_no_projects: 'Sin proyectos guardados. ¡Genera un patrón y guárdalo!',
     drive_saved_projects: 'Proyectos guardados',
     drive_delete_confirm: '¿Eliminar este proyecto?',
+    confirm_ok: 'Confirmar',
+    confirm_cancel: 'Cancelar',
     drive_save_current: 'Guardar patrón actual',
     drive_name_placeholder: 'Nombre del proyecto…',
     drive_overwrite: 'Sobrescribir proyecto actual',
@@ -5843,6 +5867,8 @@ const TRANSLATIONS = {
     drive_no_projects: 'Sem projetos guardados. Gere um padrão e guarde!',
     drive_saved_projects: 'Projetos guardados',
     drive_delete_confirm: 'Excluir este projeto?',
+    confirm_ok: 'Confirmar',
+    confirm_cancel: 'Cancelar',
     drive_save_current: 'Guardar padrão atual',
     drive_name_placeholder: 'Nome do projeto…',
     drive_overwrite: 'Sobrescrever projeto atual',
@@ -5998,6 +6024,8 @@ const TRANSLATIONS = {
     drive_no_projects: 'Noch keine gespeicherten Projekte. Erstellen Sie ein Muster!',
     drive_saved_projects: 'Gespeicherte Projekte',
     drive_delete_confirm: 'Dieses Projekt löschen?',
+    confirm_ok: 'Bestätigen',
+    confirm_cancel: 'Abbrechen',
     drive_save_current: 'Aktuelles Muster speichern',
     drive_name_placeholder: 'Projektname…',
     drive_overwrite: 'Aktuelles Projekt überschreiben',
