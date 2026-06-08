@@ -1269,6 +1269,10 @@
   .modal-title span { color: var(--gold); font-style: italic; }
   .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--warm-gray); }
   .modal-close:hover { color: var(--thread-red); }
+  .pro-badge { display:inline-flex;align-items:center;font-size:9px;margin-left:4px;vertical-align:middle;cursor:pointer;position:relative;opacity:0.75;line-height:1; }
+  .pro-badge::after { content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#2a2420;color:#f5f0e8;font-size:11px;font-family:'Crimson Pro',Georgia,serif;white-space:nowrap;padding:5px 10px;border-radius:6px;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:3000; }
+  .pro-badge:hover { opacity:1; }
+  .pro-badge:hover::after { opacity:1; }
   .modal-search-bar { padding: 12px 24px; border-bottom: 1px solid var(--linen); display: flex; gap: 10px; align-items: center; flex-shrink: 0; flex-wrap: wrap; }
   .modal-search-bar input { flex: 1; min-width: 140px; padding: 8px 12px; border: 1.5px solid var(--grid-line); background: var(--cream); font-family: "Crimson Pro", serif; font-size: 15px; color: var(--charcoal); outline: none; }
   .modal-search-bar input:focus { border-color: var(--gold); }
@@ -1424,15 +1428,15 @@
             <span class="brand-count">454 colors</span>
           </button>
           <button class="brand-btn" data-brand="anchor" onclick="selectBrand(this)">
-            Anchor
+            Anchor<span class="pro-badge" data-pro-type="cs">🔒</span>
             <span class="brand-count">444 colors</span>
           </button>
           <button class="brand-btn" data-brand="cosmo" onclick="selectBrand(this)">
-            Cosmo
+            Cosmo<span class="pro-badge" data-pro-type="cs">🔒</span>
             <span class="brand-count">500 colors</span>
           </button>
           <button class="brand-btn" data-brand="madeira" onclick="selectBrand(this)">
-            Madeira
+            Madeira<span class="pro-badge" data-pro-type="cs">🔒</span>
             <span class="brand-count">381 colors</span>
           </button>
         </div>
@@ -1456,12 +1460,12 @@
               </button>
               <button class="tech-btn" id="techBrick" onclick="setMiyukiTechnique('brick')">
                 <span class="tech-icon">⧉</span>
-                Brick
+                Brick<span class="pro-badge" data-pro-type="miyuki">🔒</span>
                 <span class="tech-sub">Offset · earrings</span>
               </button>
               <button class="tech-btn" id="techPeyote" onclick="setMiyukiTechnique('peyote')">
                 <span class="tech-icon">⬡</span>
-                Peyote
+                Peyote<span class="pro-badge" data-pro-type="miyuki">🔒</span>
                 <span class="tech-sub">Staggered · tubes</span>
               </button>
             </div>
@@ -1475,15 +1479,15 @@
               </button>
               <button class="shape-btn" id="shapeEarring" onclick="setMiyukiShape('earring')">
                 <span class="shape-icon">🔻</span>
-                Earring
+                Earring<span class="pro-badge" data-pro-type="miyuki">🔒</span>
               </button>
               <button class="shape-btn" id="shapeBracelet" onclick="setMiyukiShape('bracelet')">
                 <span class="shape-icon">◯</span>
-                Bracelet
+                Bracelet<span class="pro-badge" data-pro-type="miyuki">🔒</span>
               </button>
               <button class="shape-btn" id="shapeNecklace" onclick="setMiyukiShape('necklace')">
                 <span class="shape-icon">⌒</span>
-                Necklace
+                Necklace<span class="pro-badge" data-pro-type="miyuki">🔒</span>
               </button>
             </div>
 
@@ -1639,7 +1643,7 @@
       <!-- My Thread Box -->
       <div class="panel-section" style="padding-top:0;border:none;margin-bottom:0;">
         <button class="thread-box-toggle" id="threadBoxToggle" onclick="openThreadBox()">
-          <span><span data-i18n="threadbox_btn">🧵 My Thread Box</span></span>
+          <span><span data-i18n="threadbox_btn">🧵 My Thread Box</span><span class="pro-badge" data-pro-type="cs">🔒</span></span>
           <span class="tb-badge" id="threadBoxBadge" style="display:none">0</span>
         </button>
       </div>
@@ -1668,9 +1672,9 @@
           <div class="toolbar-actions">
             <button class="btn-secondary" id="showGridBtn" onclick="toggleGrid()" style="display:none"><span data-i18n="btn_grid_on">Grid: ON</span></button>
             <button class="btn-secondary" id="realisticBtn" onclick="toggleRealisticView()" style="display:none;outline:2px solid var(--thread-red)">👁 <span>Realistic</span></button>
-            <button class="btn-edit-toggle" id="editToggleBtn" onclick="toggleEditMode()" style="display:none"><span data-i18n="btn_edit">Edit</span></button>
+            <button class="btn-edit-toggle" id="editToggleBtn" onclick="toggleEditMode()" style="display:none"><span data-i18n="btn_edit">Edit</span><span class="pro-badge" data-pro-type="format">🔒</span></button>
             <button class="btn-secondary" id="downloadBtn" onclick="downloadPattern()" style="display:none">↓ <span data-i18n="btn_png">PNG</span></button>
-            <button class="btn-secondary" id="pdfBtn" onclick="exportPDF()" style="display:none;border-color:var(--gold);color:var(--gold)">↓ <span data-i18n="btn_pdf">PDF Chart</span></button>
+            <button class="btn-secondary" id="pdfBtn" onclick="exportPDF()" style="display:none;border-color:var(--gold);color:var(--gold)">↓ <span data-i18n="btn_pdf">PDF Chart</span><span class="pro-badge" data-pro-type="format">🔒</span></button>
             <button class="btn-secondary" id="saveProjectBtn" onclick="openProjectsModal()" style="display:none;border-color:#4285f4;color:#4285f4">☁ <span data-i18n="drive_save_btn">Save</span></button>
           </div>
         </div>
@@ -1707,7 +1711,7 @@
       <div class="progress-mode-bar" id="progressModeBar">
         <label class="progress-toggle" onclick="toggleProgressMode()">
           <div class="toggle-switch" id="progressToggle"></div>
-          <span data-i18n="progress_mode">✅ Progress mode</span>
+          <span data-i18n="progress_mode">✅ Progress mode</span><span class="pro-badge" data-pro-type="format">🔒</span>
         </label>
         <div class="progress-stats" id="progressStats" style="display:none">
           <div class="pstat done"><strong id="pDone">0</strong> <span data-i18n="pstat_done">done</span></div>
@@ -5183,7 +5187,14 @@ function showConfirmModal(message, onConfirm) {
 }
 function closeConfirmModal() { document.getElementById('confirmModal').style.display = 'none'; }
 function submitBetaCode() { const input=document.getElementById('betaCodeInput'); if(unlockWithCode(input.value)) { closePaywall(); showToast(t('paywall_unlocked')); updateProBadge(); } else { input.style.outline='2px solid #8b2635'; setTimeout(()=>input.style.outline='',1200); } }
-function updateProBadge() { const b=document.getElementById('proBadge'); if(b) b.textContent=isPro()?'⭐ PRO':'FREE'; }
+function updateProBadge() {
+  const b = document.getElementById('proBadge');
+  if (b) b.textContent = isPro() ? '⭐ PRO' : 'FREE';
+  const tip = t('pro_badge_tip');
+  document.querySelectorAll('.pro-badge[data-pro-type="cs"]').forEach(el => { el.style.display = hasCSPro ? 'none' : ''; el.dataset.tip = tip; });
+  document.querySelectorAll('.pro-badge[data-pro-type="miyuki"]').forEach(el => { el.style.display = hasMiyukiPro ? 'none' : ''; el.dataset.tip = tip; });
+  document.querySelectorAll('.pro-badge[data-pro-type="format"]').forEach(el => { el.style.display = isPro() ? 'none' : ''; el.dataset.tip = tip; });
+}
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -5555,6 +5566,7 @@ const TRANSLATIONS = {
     drive_delete_confirm: 'Delete this project?',
     confirm_ok: 'Confirm',
     confirm_cancel: 'Cancel',
+    pro_badge_tip: '⭐ PRO feature — click to see plans',
     drive_save_current: 'Save current pattern',
     drive_name_placeholder: 'Project name…',
     drive_overwrite: 'Overwrite current project',
@@ -5712,6 +5724,7 @@ const TRANSLATIONS = {
     drive_delete_confirm: '¿Eliminar este proyecto?',
     confirm_ok: 'Confirmar',
     confirm_cancel: 'Cancelar',
+    pro_badge_tip: '⭐ Función PRO — click para ver planes',
     drive_save_current: 'Guardar patrón actual',
     drive_name_placeholder: 'Nombre del proyecto…',
     drive_overwrite: 'Sobrescribir proyecto actual',
@@ -5869,6 +5882,7 @@ const TRANSLATIONS = {
     drive_delete_confirm: 'Excluir este projeto?',
     confirm_ok: 'Confirmar',
     confirm_cancel: 'Cancelar',
+    pro_badge_tip: '⭐ Função PRO — clique para ver planos',
     drive_save_current: 'Guardar padrão atual',
     drive_name_placeholder: 'Nome do projeto…',
     drive_overwrite: 'Sobrescrever projeto atual',
@@ -6026,6 +6040,7 @@ const TRANSLATIONS = {
     drive_delete_confirm: 'Dieses Projekt löschen?',
     confirm_ok: 'Bestätigen',
     confirm_cancel: 'Abbrechen',
+    pro_badge_tip: '⭐ PRO-Funktion — klicken für Pläne',
     drive_save_current: 'Aktuelles Muster speichern',
     drive_name_placeholder: 'Projektname…',
     drive_overwrite: 'Aktuelles Projekt überschreiben',
