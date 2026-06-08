@@ -413,6 +413,7 @@
     color: var(--charcoal);
     cursor: pointer;
     transition: all 0.15s;
+    position: relative;
   }
 
   .btn-secondary:hover {
@@ -528,6 +529,7 @@
     color: #2a6496;
     cursor: pointer;
     transition: all 0.15s;
+    position: relative;
   }
   .btn-edit-toggle:hover, .btn-edit-toggle.active {
     background: #2a6496;
@@ -895,6 +897,7 @@
     text-align: center;
     transition: all 0.15s;
     line-height: 1.3;
+    position: relative;
   }
   .tech-btn:hover { border-color: var(--warm-gray); }
   .tech-btn.active { border-color: #196f3d; background: #f0faf4; color: #196f3d; font-weight: 500; }
@@ -922,6 +925,7 @@
     flex-direction: column;
     align-items: center;
     gap: 3px;
+    position: relative;
   }
   .shape-btn:hover { border-color: var(--warm-gray); }
   .shape-btn.active { border-color: #196f3d; background: #f0faf4; color: #196f3d; font-weight: 500; }
@@ -1255,7 +1259,7 @@
     background: transparent; font-family: "Crimson Pro", serif; font-size: 14px;
     color: var(--warm-gray); cursor: pointer; text-align: left;
     display: flex; justify-content: space-between; align-items: center;
-    transition: all 0.2s; margin-top: 10px;
+    transition: all 0.2s; margin-top: 10px; position: relative;
   }
   .thread-box-toggle:hover { border-color: var(--gold); color: var(--gold); }
   .thread-box-toggle.active { border-color: var(--gold); color: var(--gold); background: #fdf8ee; border-style: solid; }
@@ -1269,9 +1273,8 @@
   .modal-title span { color: var(--gold); font-style: italic; }
   .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--warm-gray); }
   .modal-close:hover { color: var(--thread-red); }
-  .pro-badge { display:inline-flex;align-items:center;font-size:9px;margin-left:4px;vertical-align:middle;cursor:pointer;position:relative;opacity:0.75;line-height:1; }
-  .pro-badge::after { content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#2a2420;color:#f5f0e8;font-size:11px;font-family:'Crimson Pro',Georgia,serif;white-space:nowrap;padding:5px 10px;border-radius:6px;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:3000; }
-  .pro-badge:hover { opacity:1; }
+  .pro-badge { position:absolute;top:-6px;right:-6px;background:#b8974a;color:white;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;cursor:pointer;line-height:1.4;z-index:10; }
+  .pro-badge::after { content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#2a2420;color:#f5f0e8;font-size:11px;font-family:'Crimson Pro',Georgia,serif;font-weight:400;white-space:nowrap;padding:5px 10px;border-radius:6px;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:3000; }
   .pro-badge:hover::after { opacity:1; }
   .modal-search-bar { padding: 12px 24px; border-bottom: 1px solid var(--linen); display: flex; gap: 10px; align-items: center; flex-shrink: 0; flex-wrap: wrap; }
   .modal-search-bar input { flex: 1; min-width: 140px; padding: 8px 12px; border: 1.5px solid var(--grid-line); background: var(--cream); font-family: "Crimson Pro", serif; font-size: 15px; color: var(--charcoal); outline: none; }
@@ -1519,7 +1522,7 @@
           <span data-i18n="sec_size">Pattern Size</span>
           <span style="flex:1;height:1px;background:var(--linen);align-self:center;"></span>
           <button class="lock-btn locked" id="ratioLockBtn" onclick="toggleRatioLock()"
-            title="Lock aspect ratio" style="margin-bottom:4px">PRO</button>
+            title="Lock aspect ratio" style="margin-bottom:4px">🔒</button>
         </div>
 
         <!-- W -->
