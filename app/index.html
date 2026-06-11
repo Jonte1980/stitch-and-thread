@@ -1291,6 +1291,11 @@
   .chip-name { font-size: 11px; color: var(--warm-gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .chip-check { margin-left: auto; width: 14px; height: 14px; border: 1.5px solid var(--grid-line); border-radius: 2px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; }
   .color-chip.selected .chip-check { background: var(--gold); border-color: var(--gold); color: white; }
+  .chip-qty-wrap { display: none; margin-top: 3px; align-items: center; gap: 4px; }
+  .color-chip.selected .chip-qty-wrap { display: flex; }
+  .chip-qty { width: 34px; font-size: 11px; text-align: center; border: 1px solid var(--gold); background: white; padding: 1px 2px; border-radius: 2px; -moz-appearance: textfield; }
+  .chip-qty::-webkit-inner-spin-button, .chip-qty::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .chip-qty-lbl { font-size: 10px; color: var(--warm-gray); }
   .modal-footer { padding: 14px 24px; border-top: 1px solid var(--linen); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 12px; }
   .btn-confirm { padding: 10px 24px; background: var(--gold); color: white; border: none; font-family: "Playfair Display", serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
   .btn-confirm:hover { background: #a8843a; }
@@ -5482,6 +5487,7 @@ const TRANSLATIONS = {
     tb_clear_all: 'Clear all',
     tb_hint: 'Pattern will use <em>only</em> your selected colors. Leave empty to use full DMC catalog.',
     tb_apply: 'Apply & Close',
+    tb_qty_lbl: 'skeins',
     pro_msg: 'PRO feature — coming soon!',
     toast_png: 'Pattern saved as PNG',
     brand_changed: 'Brand changed — thread box cleared',
@@ -5641,6 +5647,7 @@ const TRANSLATIONS = {
     tb_clear_all: 'Limpiar todo',
     tb_hint: 'El patrón usará <em>solo</em> tus colores seleccionados. Déjalo vacío para usar todo el catálogo DMC.',
     tb_apply: 'Aplicar y Cerrar',
+    tb_qty_lbl: 'madejas',
     pro_msg: 'Función PRO — ¡próximamente!',
     toast_png: 'Patrón guardado como PNG',
     brand_changed: 'Marca cambiada — caja de hilos reiniciada',
@@ -5799,6 +5806,7 @@ const TRANSLATIONS = {
     tb_clear_all: 'Limpar tudo',
     tb_hint: 'O padrão usará <em>apenas</em> suas cores selecionadas. Deixe vazio para usar o catálogo DMC completo.',
     tb_apply: 'Aplicar e Fechar',
+    tb_qty_lbl: 'meadas',
     pro_msg: 'Recurso PRO — em breve!',
     toast_png: 'Padrão salvo como PNG',
     brand_changed: 'Marca alterada — caixa de fios limpa',
@@ -5957,6 +5965,7 @@ const TRANSLATIONS = {
     tb_clear_all: 'Alle löschen',
     tb_hint: 'Das Muster verwendet <em>nur</em> Ihre ausgewählten Farben. Leer lassen für den vollständigen DMC-Katalog.',
     tb_apply: 'Anwenden & Schließen',
+    tb_qty_lbl: 'Stränge',
     pro_msg: 'PRO-Funktion — demnächst verfügbar!',
     toast_png: 'Muster als PNG gespeichert',
     brand_changed: 'Marke geändert — Garnbox geleert',
@@ -7050,11 +7059,17 @@ function renderChips() {
     chip.dataset.idx = idx;
     chip.onclick = () => toggleChip(idx, chip);
 
+    const qty = userStock[idx] || (selected ? 1 : 0);
+    if (selected && !userStock[idx]) userStock[idx] = 1;
     chip.innerHTML = `
       <div class="chip-swatch" style="background:${c.hex}"></div>
       <div class="chip-info">
         <div class="chip-code">DMC ${c.code}</div>
         <div class="chip-name">${c.name}</div>
+        <div class="chip-qty-wrap">
+          <input class="chip-qty" type="number" min="0" value="${qty || 1}" onclick="event.stopPropagation()" oninput="updateChipQty(${idx},this.value)">
+          <span class="chip-qty-lbl">${t('tb_qty_lbl')}</span>
+        </div>
       </div>
       <div class="chip-check">${selected ? '✓' : ''}</div>
     `;
@@ -7073,6 +7088,10 @@ function toggleChip(idx, chip) {
     myThreadBox.add(idx);
     chip.classList.add('selected');
     chip.querySelector('.chip-check').textContent = '✓';
+    if (!userStock[idx]) {
+      userStock[idx] = 1;
+      chip.querySelector('.chip-qty').value = 1;
+    }
   }
   updateSelectedCount();
 }
@@ -7083,6 +7102,10 @@ function selectAllVisible() {
     myThreadBox.add(idx);
     chip.classList.add('selected');
     chip.querySelector('.chip-check').textContent = '✓';
+    if (!userStock[idx]) {
+      userStock[idx] = 1;
+      chip.querySelector('.chip-qty').value = 1;
+    }
   });
   updateSelectedCount();
 }
@@ -7115,6 +7138,12 @@ function confirmThreadBox() {
   showToast(myThreadBox.size > 0
     ? t('toast_thread_set', {n: myThreadBox.size})
     : t('toast_thread_cleared'));
+}
+
+function updateChipQty(idx, val) {
+  const n = Math.max(0, parseInt(val) || 0);
+  if (n > 0) userStock[idx] = n;
+  else delete userStock[idx];
 }
 
 // ============================================================
