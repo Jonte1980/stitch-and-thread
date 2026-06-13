@@ -1341,6 +1341,7 @@
     border-left: 3px solid var(--thread-red);
     margin-bottom: 14px;
   }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -1450,68 +1451,78 @@
         <div id="miyukiBrandInfo" style="display:none">
           <div style="padding:8px 10px;background:var(--linen);border:1px solid var(--grid-line);font-size:13px;color:var(--warm-gray);margin-bottom:12px">
             🪡 <strong style="color:var(--charcoal)">Miyuki Delica DB-11</strong> &nbsp;·&nbsp;
-            <span style="font-size:11px">300 colors · ~1100 beads/tube</span>
+            <span style="font-size:11px" data-i18n="miyuki_info">300 colors · ~1100 beads/tube</span>
           </div>
 
           <!-- Miyuki Options -->
           <div class="miyuki-options visible" id="miyukiOptions">
 
             <!-- Technique -->
-            <div class="section-label" style="margin-bottom:10px">Technique</div>
+            <div class="section-label" style="margin-bottom:10px" data-i18n="sec_technique">Technique</div>
             <div class="miyuki-technique-grid">
               <button class="tech-btn active" id="techLoom" onclick="setMiyukiTechnique('loom')">
                 <span class="tech-icon">⊞</span>
                 Loom
-                <span class="tech-sub">Grid · bracelets</span>
+                <span class="tech-sub" data-i18n="tech_loom_sub">Grid · bracelets</span>
               </button>
               <button class="tech-btn" id="techBrick" onclick="setMiyukiTechnique('brick')">
                 <span class="tech-icon">⧉</span>
                 Brick<span class="pro-badge" data-pro-type="miyuki">PRO</span>
-                <span class="tech-sub">Offset · earrings</span>
+                <span class="tech-sub" data-i18n="tech_brick_sub">Offset · earrings</span>
               </button>
               <button class="tech-btn" id="techPeyote" onclick="setMiyukiTechnique('peyote')">
                 <span class="tech-icon">⬡</span>
                 Peyote<span class="pro-badge" data-pro-type="miyuki">PRO</span>
-                <span class="tech-sub">Staggered · tubes</span>
+                <span class="tech-sub" data-i18n="tech_peyote_sub">Staggered · tubes</span>
               </button>
             </div>
 
             <!-- Shape -->
-            <div class="section-label" style="margin-bottom:10px">Shape</div>
+            <div class="section-label" style="margin-bottom:10px" data-i18n="sec_shape">Shape</div>
             <div class="shape-grid">
               <button class="shape-btn active" id="shapeFree" onclick="setMiyukiShape('free')">
                 <span class="shape-icon">⬜</span>
-                Free
+                <span data-i18n="shape_free">Free</span>
               </button>
               <button class="shape-btn" id="shapeEarring" onclick="setMiyukiShape('earring')">
                 <span class="shape-icon">🔻</span>
-                Earring<span class="pro-badge" data-pro-type="miyuki">PRO</span>
+                <span data-i18n="shape_earring">Earring</span><span class="pro-badge" data-pro-type="miyuki">PRO</span>
               </button>
               <button class="shape-btn" id="shapeBracelet" onclick="setMiyukiShape('bracelet')">
                 <span class="shape-icon">◯</span>
-                Bracelet<span class="pro-badge" data-pro-type="miyuki">PRO</span>
+                <span data-i18n="shape_bracelet">Bracelet</span><span class="pro-badge" data-pro-type="miyuki">PRO</span>
               </button>
               <button class="shape-btn" id="shapeNecklace" onclick="setMiyukiShape('necklace')">
                 <span class="shape-icon">⌒</span>
-                Necklace<span class="pro-badge" data-pro-type="miyuki">PRO</span>
+                <span data-i18n="shape_necklace">Necklace</span><span class="pro-badge" data-pro-type="miyuki">PRO</span>
               </button>
             </div>
 
             <!-- Size -->
-            <div class="section-label" style="margin-bottom:8px">Size</div>
+            <div class="section-label" style="margin-bottom:8px" data-i18n="sec_miyuki_size">Size</div>
             <div class="size-unit-toggle">
-              <button class="unit-btn active" id="unitBeads" onclick="setSizeUnit('beads')">beads</button>
+              <button class="unit-btn active" id="unitBeads" onclick="setSizeUnit('beads')" data-i18n="unit_beads">beads</button>
               <button class="unit-btn" id="unitCm" onclick="setSizeUnit('cm')">cm</button>
             </div>
-            <div class="size-input-group">
-              <div class="size-field">
-                <label id="sizeWLabel">Width</label>
-                <input type="number" id="miyukiW" value="20" min="4" max="120" oninput="onMiyukiSizeChange()">
+            <div class="control-group">
+              <div class="control-label">
+                <span id="sizeWLabel" data-i18n="lbl_width">Width</span>
+                <div style="display:flex;align-items:center;gap:2px;margin-left:auto;">
+                  <input type="number" id="miyukiW" value="20" min="4" max="120" step="1" style="width:52px;border:1px solid #d4cab8;border-radius:4px;padding:2px 4px;font-family:inherit;font-size:13px;background:#faf6f0;text-align:center;color:#8b2635;font-weight:600;" oninput="syncMiyukiInput('w')" onclick="this.select()">
+                  <span id="miyukiWUnit" style="font-size:12px;color:var(--warm-gray)">beads</span>
+                </div>
               </div>
-              <div class="size-field">
-                <label id="sizeHLabel">Height</label>
-                <input type="number" id="miyukiH" value="30" min="4" max="200" oninput="onMiyukiSizeChange()">
+              <input type="range" id="miyukiWSlider" min="4" max="120" value="20" oninput="syncMiyukiSlider('w', this.value)">
+            </div>
+            <div class="control-group">
+              <div class="control-label">
+                <span id="sizeHLabel" data-i18n="lbl_height">Height</span>
+                <div style="display:flex;align-items:center;gap:2px;margin-left:auto;">
+                  <input type="number" id="miyukiH" value="30" min="4" max="200" step="1" style="width:52px;border:1px solid #d4cab8;border-radius:4px;padding:2px 4px;font-family:inherit;font-size:13px;background:#faf6f0;text-align:center;color:#8b2635;font-weight:600;" oninput="syncMiyukiInput('h')" onclick="this.select()">
+                  <span id="miyukiHUnit" style="font-size:12px;color:var(--warm-gray)">beads</span>
+                </div>
               </div>
+              <input type="range" id="miyukiHSlider" min="4" max="200" value="30" oninput="syncMiyukiSlider('h', this.value)">
             </div>
             <div class="size-hint" id="miyukiSizeHint">20 × 30 beads · ~3.2 × 5.7 cm</div>
 
@@ -1875,6 +1886,35 @@
 </div>
 
 <!-- CONFIRM MODAL -->
+<!-- PDF EXPORT PREVIEW MODAL -->
+<div id="pdfModal" style="display:none;position:fixed;inset:0;background:rgba(42,36,32,0.88);z-index:2100;align-items:center;justify-content:center;">
+  <div style="background:#f5f0e8;border-radius:14px;width:min(860px,97vw);max-height:95vh;display:flex;flex-direction:column;font-family:'Crimson Pro',Georgia,serif;overflow:hidden;">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #e0d8cc;flex-shrink:0">
+      <span style="font-size:16px;font-weight:700;color:#2a2420;flex:1" data-i18n="pdf_modal_title">Export PDF</span>
+      <div style="display:flex;border:1.5px solid #d4cab8;border-radius:8px;overflow:hidden">
+        <button id="pdfModeBtn_color" onclick="setPdfPreviewMode('color')" style="padding:6px 14px;border:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;background:#8b2635;color:white" data-i18n="pdf_color">Color</button>
+        <button id="pdfModeBtn_bw"    onclick="setPdfPreviewMode('bw')"    style="padding:6px 14px;border:none;border-left:1px solid #d4cab8;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;background:#f5f0e8;color:#8a7d70" data-i18n="pdf_bw">B&amp;W</button>
+        <button id="pdfModeBtn_both"  onclick="setPdfPreviewMode('both')"  style="padding:6px 14px;border:none;border-left:1px solid #d4cab8;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;background:#f5f0e8;color:#8a7d70" data-i18n="pdf_both">Both</button>
+      </div>
+      <button onclick="closePdfModal()" style="background:none;border:none;font-size:22px;color:#8a7d70;cursor:pointer;line-height:1;padding:0 2px">&times;</button>
+    </div>
+    <!-- Preview -->
+    <div style="position:relative;flex:1;min-height:0;background:#525050;">
+      <div id="pdfPreviewLoading" style="display:flex;align-items:center;justify-content:center;position:absolute;inset:0;z-index:2;color:#e8dfd0;font-size:14px;gap:10px">
+        <span style="display:inline-block;width:16px;height:16px;border:2px solid #b8974a;border-top-color:transparent;border-radius:50%;animation:spin 0.7s linear infinite"></span>
+        <span data-i18n="pdf_building">Building preview…</span>
+      </div>
+      <iframe id="pdfPreviewFrame" style="display:none;width:100%;height:100%;border:none;min-height:580px"></iframe>
+    </div>
+    <!-- Footer -->
+    <div style="display:flex;gap:10px;justify-content:flex-end;padding:12px 18px;border-top:1px solid #e0d8cc;flex-shrink:0">
+      <button onclick="closePdfModal()" style="background:none;border:1.5px solid #c9b99a;color:#8b7355;border-radius:8px;padding:8px 18px;font-family:inherit;font-size:14px;cursor:pointer" data-i18n="cc_cancel">Cancel</button>
+      <button onclick="downloadCurrentPdf()" style="background:#8b2635;color:white;border:none;border-radius:8px;padding:8px 22px;font-family:inherit;font-size:14px;cursor:pointer;font-weight:600" data-i18n="pdf_download">↓ Download PDF</button>
+    </div>
+  </div>
+</div>
+
 <div id="confirmModal" style="display:none;position:fixed;inset:0;background:rgba(42,36,32,0.8);z-index:2100;align-items:center;justify-content:center;">
   <div style="background:#f5f0e8;border-radius:14px;width:min(380px,92vw);font-family:'Crimson Pro',Georgia,serif;padding:28px 28px 22px;text-align:center;">
     <p id="confirmMsg" style="font-size:15px;color:#2a2420;margin:0 0 22px;line-height:1.5"></p>
@@ -3708,7 +3748,7 @@ function antiConfetti(grid, W, H, strength) {
 }
 
 // SYMBOLS for pattern display
-const SYMBOLS = ['·','×','○','◆','▲','★','♦','░','▪','◇','●','▸','♣','◉','▫','♠','╋','≡','∞','◘','±','※','♥','⊕','▓'];
+const SYMBOLS = ['+','x','*','#','@','%','&','=','!','?','>','<','~','^','$','/','\\','|','-','0','S','T','Z','V','W'];
 
 // ============================================================
 // STATE
@@ -5585,6 +5625,24 @@ const TRANSLATIONS = {
     paywall_my_features: 'Brick + Peyote · All shapes · Unlimited size · PDF export · Brush editor · Progress mode · Drive projects',
     paywall_pack: 'Complete Pack',
     paywall_savings: 'Cross-Stitch + Miyuki — save 5€',
+    pdf_modal_title: 'Export PDF',
+    pdf_modal_sub: 'Select which pages to include',
+    pdf_color: 'Color',
+    pdf_bw: 'B&W',
+    pdf_both: 'Both',
+    pdf_building: 'Building preview…',
+    pdf_download: '↓ Download PDF',
+    miyuki_info: '300 colors · ~1100 beads/tube',
+    sec_technique: 'Technique',
+    tech_loom_sub: 'Grid · bracelets',
+    tech_brick_sub: 'Offset · earrings',
+    tech_peyote_sub: 'Staggered · tubes',
+    sec_shape: 'Shape',
+    shape_free: 'Free',
+    shape_earring: 'Earring',
+    shape_bracelet: 'Bracelet',
+    shape_necklace: 'Necklace',
+    sec_miyuki_size: 'Size',
   },
   es: {
     tagline: 'Generador de Patrones de Punto de Cruz',
@@ -5744,6 +5802,24 @@ const TRANSLATIONS = {
     paywall_my_features: 'Brick + Peyote · Todas las formas · Tamaño libre · PDF export · Editor pincel · Progress mode · Proyectos en Drive',
     paywall_pack: 'Pack Completo',
     paywall_savings: 'Cross-Stitch + Miyuki — ahorras 5€',
+    pdf_modal_title: 'Exportar PDF',
+    pdf_modal_sub: 'Selecciona qué páginas incluir',
+    pdf_color: 'Color',
+    pdf_bw: 'B/N',
+    pdf_both: 'Ambos',
+    pdf_building: 'Generando vista previa…',
+    pdf_download: '↓ Descargar PDF',
+    miyuki_info: '300 colores · ~1100 cuentas/tubo',
+    sec_technique: 'Técnica',
+    tech_loom_sub: 'Cuadrícula · pulseras',
+    tech_brick_sub: 'Desfasado · pendientes',
+    tech_peyote_sub: 'Escalonado · tubos',
+    sec_shape: 'Forma',
+    shape_free: 'Libre',
+    shape_earring: 'Pendiente',
+    shape_bracelet: 'Pulsera',
+    shape_necklace: 'Collar',
+    sec_miyuki_size: 'Tamaño',
   },
   pt: {
     tagline: 'Gerador de Padrões de Ponto Cruz',
@@ -5903,6 +5979,24 @@ const TRANSLATIONS = {
     paywall_my_features: 'Brick + Peyote · Todas as formas · Tamanho livre · PDF export · Editor pincel · Modo progresso · Projetos no Drive',
     paywall_pack: 'Pack Completo',
     paywall_savings: 'Cross-Stitch + Miyuki — poupa 5€',
+    pdf_modal_title: 'Exportar PDF',
+    pdf_modal_sub: 'Selecione quais páginas incluir',
+    pdf_color: 'Color',
+    pdf_bw: 'P&B',
+    pdf_both: 'Ambos',
+    pdf_building: 'Gerando visualização…',
+    pdf_download: '↓ Baixar PDF',
+    miyuki_info: '300 cores · ~1100 contas/tubo',
+    sec_technique: 'Técnica',
+    tech_loom_sub: 'Grade · pulseiras',
+    tech_brick_sub: 'Desfasado · brincos',
+    tech_peyote_sub: 'Escalonado · tubos',
+    sec_shape: 'Forma',
+    shape_free: 'Livre',
+    shape_earring: 'Brinco',
+    shape_bracelet: 'Pulseira',
+    shape_necklace: 'Colar',
+    sec_miyuki_size: 'Tamanho',
   },
   de: {
     tagline: 'Kreuzstich-Muster-Generator',
@@ -6062,6 +6156,24 @@ const TRANSLATIONS = {
     paywall_my_features: 'Brick + Peyote · Alle Formen · Unbegrenzte Größe · PDF-Export · Pinseleditor · Fortschrittsmodus · Drive-Projekte',
     paywall_pack: 'Komplett-Paket',
     paywall_savings: 'Cross-Stitch + Miyuki — 5€ sparen',
+    pdf_modal_title: 'PDF exportieren',
+    pdf_modal_sub: 'Wähle welche Seiten enthalten sein sollen',
+    pdf_color: 'Farbe',
+    pdf_bw: 'S/W',
+    pdf_both: 'Beide',
+    pdf_building: 'Vorschau wird erstellt…',
+    pdf_download: '↓ PDF herunterladen',
+    miyuki_info: '300 Farben · ~1100 Perlen/Röhrchen',
+    sec_technique: 'Technik',
+    tech_loom_sub: 'Gitter · Armbänder',
+    tech_brick_sub: 'Versetzt · Ohrringe',
+    tech_peyote_sub: 'Gestaffelt · Röhren',
+    sec_shape: 'Form',
+    shape_free: 'Frei',
+    shape_earring: 'Ohrring',
+    shape_bracelet: 'Armband',
+    shape_necklace: 'Halskette',
+    sec_miyuki_size: 'Größe',
   }
 };
 
@@ -6130,6 +6242,13 @@ function applyTranslations() {
     const span = rb.querySelector('span');
     if (span) span.textContent = realisticView ? t('btn_view_realistic') : t('btn_view_simple');
   }
+
+  // Sync Miyuki dynamic unit spans and size hint
+  if (miyukiSizeUnit === 'beads') {
+    document.getElementById('miyukiWUnit').textContent = t('unit_beads');
+    document.getElementById('miyukiHUnit').textContent = t('unit_beads');
+  }
+  updateMiyukiSizeHint();
 }
 
 function setLang(lang) {
@@ -6355,6 +6474,8 @@ function setMiyukiShape(shape) {
     document.getElementById('miyukiW').value = (preset.w * DB11_W_MM / 10).toFixed(1);
     document.getElementById('miyukiH').value = (preset.h * DB11_H_MM / 10).toFixed(1);
   }
+  document.getElementById('miyukiWSlider').value = document.getElementById('miyukiW').value;
+  document.getElementById('miyukiHSlider').value = document.getElementById('miyukiH').value;
 
   // Auto-select best technique for each shape
   const bestTech = { free: 'loom', earring: 'brick', bracelet: 'loom', necklace: 'loom' };
@@ -6385,21 +6506,29 @@ function setSizeUnit(unit) {
   // Convert current values
   const wEl = document.getElementById('miyukiW');
   const hEl = document.getElementById('miyukiH');
+  const wSlider = document.getElementById('miyukiWSlider');
+  const hSlider = document.getElementById('miyukiHSlider');
   if (oldUnit === 'beads' && unit === 'cm') {
     wEl.value = (parseFloat(wEl.value) * DB11_W_MM / 10).toFixed(1);
     hEl.value = (parseFloat(hEl.value) * DB11_H_MM / 10).toFixed(1);
     wEl.step = '0.1'; hEl.step = '0.1';
     wEl.min = '0.5'; hEl.min = '0.5';
-    document.getElementById('sizeWLabel').textContent = 'Width (cm)';
-    document.getElementById('sizeHLabel').textContent = 'Height (cm)';
+    wSlider.min = '0.5'; wSlider.max = '19.2'; wSlider.step = '0.1';
+    hSlider.min = '0.5'; hSlider.max = '38.0'; hSlider.step = '0.1';
+    document.getElementById('miyukiWUnit').textContent = 'cm';
+    document.getElementById('miyukiHUnit').textContent = 'cm';
   } else if (oldUnit === 'cm' && unit === 'beads') {
     wEl.value = Math.round(parseFloat(wEl.value) * 10 / DB11_W_MM);
     hEl.value = Math.round(parseFloat(hEl.value) * 10 / DB11_H_MM);
     wEl.step = '1'; hEl.step = '1';
     wEl.min = '4'; hEl.min = '4';
-    document.getElementById('sizeWLabel').textContent = 'Width';
-    document.getElementById('sizeHLabel').textContent = 'Height';
+    wSlider.min = '4'; wSlider.max = '120'; wSlider.step = '1';
+    hSlider.min = '4'; hSlider.max = '200'; hSlider.step = '1';
+    document.getElementById('miyukiWUnit').textContent = t('unit_beads');
+    document.getElementById('miyukiHUnit').textContent = t('unit_beads');
   }
+  wSlider.value = wEl.value;
+  hSlider.value = hEl.value;
   updateMiyukiSizeHint();
 }
 
@@ -6415,6 +6544,17 @@ function getMiyukiBeadDimensions() {
     hBeads = Math.max(4, Math.round(hCm * 10 / DB11_H_MM));
   }
   return { w: wBeads, h: hBeads };
+}
+
+function syncMiyukiSlider(axis, value) {
+  document.getElementById(axis === 'w' ? 'miyukiW' : 'miyukiH').value = value;
+  onMiyukiSizeChange();
+}
+
+function syncMiyukiInput(axis) {
+  const val = document.getElementById(axis === 'w' ? 'miyukiW' : 'miyukiH').value;
+  document.getElementById(axis === 'w' ? 'miyukiWSlider' : 'miyukiHSlider').value = val;
+  onMiyukiSizeChange();
 }
 
 let _miyukiSizeTimer = null;
@@ -6435,7 +6575,7 @@ function updateMiyukiSizeHint() {
   const hCm = (h * DB11_H_MM / 10).toFixed(1);
   const techLabel = { loom: 'Loom', brick: 'Brick Stitch', peyote: 'Peyote' }[miyukiTechnique];
   document.getElementById('miyukiSizeHint').textContent =
-    `${w} × ${h} beads · ~${wCm} × ${hCm} cm · ${techLabel}`;
+    `${w} × ${h} ${t('unit_beads')} · ~${wCm} × ${hCm} cm · ${techLabel}`;
 }
 
 // Override width slider for Miyuki — use miyukiW/H instead
@@ -7149,12 +7289,63 @@ function updateChipQty(idx, val) {
 // ============================================================
 // PDF EXPORT — printable chart with grid, symbols, legend
 // ============================================================
-async function exportPDF() {
-  if (!currentPattern) return;
-  const np4 = currentFormat==='crossstitch'?!hasCSPro:!hasMiyukiPro; if(np4){showPaywall('El PDF requiere PRO.');return;}
+let _pdfPreviewMode = 'color';
+let _pdfPreviewUrl = null;
 
-  showToast('Building PDF chart…');
-  await new Promise(r => setTimeout(r, 60)); // let toast render
+function exportPDF() {
+  if (!currentPattern) return;
+  const np4 = currentFormat==='crossstitch'?!hasCSPro:!hasMiyukiPro;
+  if (np4) { showPaywall('El PDF requiere PRO.'); return; }
+  _pdfPreviewMode = 'color';
+  _setPdfModeButtons('color');
+  document.getElementById('pdfModal').style.display = 'flex';
+  _updatePdfPreview();
+}
+
+function _setPdfModeButtons(active) {
+  ['color','bw','both'].forEach(m => {
+    const btn = document.getElementById('pdfModeBtn_' + m);
+    if (!btn) return;
+    btn.style.background = m === active ? '#8b2635' : '#f5f0e8';
+    btn.style.color      = m === active ? 'white'   : '#8a7d70';
+  });
+}
+
+async function _updatePdfPreview() {
+  const loading = document.getElementById('pdfPreviewLoading');
+  const iframe  = document.getElementById('pdfPreviewFrame');
+  loading.style.display = 'flex';
+  iframe.style.display  = 'none';
+  await new Promise(r => setTimeout(r, 30));
+  if (_pdfPreviewUrl) { URL.revokeObjectURL(_pdfPreviewUrl); _pdfPreviewUrl = null; }
+  _pdfPreviewUrl = await _doExportPDF(_pdfPreviewMode, true);
+  iframe.src = _pdfPreviewUrl;
+  loading.style.display = 'none';
+  iframe.style.display  = 'block';
+}
+
+async function setPdfPreviewMode(mode) {
+  _pdfPreviewMode = mode;
+  _setPdfModeButtons(mode);
+  await _updatePdfPreview();
+}
+
+function downloadCurrentPdf() {
+  _doExportPDF(_pdfPreviewMode, false);
+}
+
+function closePdfModal() {
+  document.getElementById('pdfModal').style.display = 'none';
+  if (_pdfPreviewUrl) { URL.revokeObjectURL(_pdfPreviewUrl); _pdfPreviewUrl = null; }
+}
+
+async function _doExportPDF(mode, previewOnly = false) {
+  if (!currentPattern) return;
+
+  if (!previewOnly) {
+    showToast('Building PDF chart…');
+    await new Promise(r => setTimeout(r, 60));
+  }
 
   const { jsPDF } = window.jspdf;
   const { grid, W, H } = currentPattern;
@@ -7168,6 +7359,7 @@ async function exportPDF() {
   const margin = 12;
   const headerH = 18;
   const footerH = 8;
+  const legendStripH = 20; // mini-legend strip at bottom of each chart page
 
   // Color index map for symbols
   const sortedColorEntries = Object.entries(currentColors).sort((a,b)=>b[1]-a[1]);
@@ -7176,7 +7368,7 @@ async function exportPDF() {
 
   // How many stitches fit per page
   const printAreaW = pageW - margin*2;
-  const printAreaH = pageH - margin*2 - headerH - footerH;
+  const printAreaH = pageH - margin*2 - headerH - footerH - legendStripH;
 
   // Cell size in mm — aim for ~2.5mm minimum, scale down for large patterns
   const cellMM = Math.max(1.8, Math.min(3.5, Math.floor(printAreaW / W * 10) / 10));
@@ -7186,13 +7378,15 @@ async function exportPDF() {
   const pagesX = Math.ceil(W / chunkW);
   const pagesY = Math.ceil(H / chunkH);
   let pageNum = 0;
-  const totalPages = pagesX * pagesY + 1; // +1 for legend page
+  const colorPageCount = (mode === 'bw') ? 0 : pagesX * pagesY;
+  const bwPageCount    = (mode === 'color') ? 0 : pagesX * pagesY;
+  const totalPages = colorPageCount + 1 + bwPageCount; // color + legend + B&W
 
   // Build DMC color lookup by index
   // colorSymbolMap keys are string dmcIdx
 
-  // ---- CHART PAGES ----
-  for (let py = 0; py < pagesY; py++) {
+  // ---- CHART PAGES (color) ----
+  if (mode !== 'bw') for (let py = 0; py < pagesY; py++) {
     for (let px = 0; px < pagesX; px++) {
       if (pageNum > 0) doc.addPage();
       pageNum++;
@@ -7237,13 +7431,13 @@ async function exportPDF() {
           doc.rect(cx, cy, cellMM, cellMM, 'F');
 
           // Symbol (only if cell big enough)
-          if (cellMM >= 2.2) {
+          if (cellMM >= 1.8) {
             const luma = 0.299*r + 0.587*g + 0.114*b;
             doc.setTextColor(luma > 128 ? 60 : 220, luma > 128 ? 55 : 215, luma > 128 ? 50 : 210);
-            doc.setFontSize(cellMM * 1.8);
+            doc.setFontSize(cellMM * 2.4);
             doc.setFont('helvetica', 'normal');
             const sym = colorSymbolMap[String(dmcIdx)] || '·';
-            doc.text(sym, cx + cellMM/2, cy + cellMM * 0.72, { align: 'center' });
+            doc.text(sym, cx + cellMM/2, cy + cellMM * 0.78, { align: 'center' });
           }
         }
       }
@@ -7295,6 +7489,59 @@ async function exportPDF() {
         doc.text(label, originX - 1.5, y + 0.8, { align: 'right' });
       }
 
+      // --- MINI LEGEND ---
+      // Collect colors present in this chunk
+      const pageColorSet = new Set();
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          pageColorSet.add(String(grid[(startY + row) * W + (startX + col)]));
+        }
+      }
+      const pageColorEntries = sortedColorEntries.filter(([idx]) => pageColorSet.has(idx));
+
+      const stripY = originY + rows * cellMM + 3;
+      const swatchSz = 3;
+      const entryW = 18;
+      const entryH = 6;
+      const maxPerRow = Math.floor(printAreaW / entryW);
+
+      // Separator line
+      doc.setDrawColor(180, 170, 155);
+      doc.setLineWidth(0.3);
+      doc.line(margin, stripY - 1, pageW - margin, stripY - 1);
+
+      pageColorEntries.forEach(([idx], i) => {
+        const rowIdx = Math.floor(i / maxPerRow);
+        if (rowIdx >= 3) return; // max 3 rows
+        const colIdx = i % maxPerRow;
+        const ex = margin + colIdx * entryW;
+        const ey = stripY + rowIdx * entryH;
+
+        const dmcIdx = Number(idx);
+        const dmc = getEffectiveEntry(dmcIdx);
+        const [r, g, b] = hexToRgb(dmc.hex);
+        const effBrand = getEffectiveBrand(dmcIdx);
+
+        // Swatch
+        doc.setFillColor(r, g, b);
+        doc.rect(ex, ey, swatchSz, swatchSz, 'F');
+        doc.setDrawColor(150, 140, 130);
+        doc.setLineWidth(0.15);
+        doc.rect(ex, ey, swatchSz, swatchSz, 'S');
+
+        // Symbol in swatch
+        const luma = 0.299*r + 0.587*g + 0.114*b;
+        doc.setTextColor(luma > 128 ? 60 : 220, luma > 128 ? 55 : 215, luma > 128 ? 50 : 210);
+        doc.setFontSize(3.5);
+        doc.text(colorSymbolMap[idx] || '·', ex + swatchSz/2, ey + swatchSz * 0.75, { align: 'center' });
+
+        // Code
+        doc.setTextColor(43, 36, 32);
+        doc.setFontSize(5);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${effBrand.toUpperCase()} ${dmc.code}`, ex + swatchSz + 1.5, ey + 2.2);
+      });
+
       // --- FOOTER ---
       doc.setTextColor(150, 140, 130);
       doc.setFontSize(6);
@@ -7303,7 +7550,7 @@ async function exportPDF() {
   }
 
   // ---- LEGEND PAGE ----
-  doc.addPage();
+  if (pageNum > 0) doc.addPage();
   pageNum++;
 
   // Header
@@ -7386,7 +7633,158 @@ async function exportPDF() {
   doc.setFontSize(6);
   doc.text('Generated by Stitch & Thread · stitchandthread.app', pageW/2, pageH - margin + 2, { align: 'center' });
 
-  // Save
+  // ---- B&W SYMBOL PAGES ----
+  if (mode !== 'color') for (let py = 0; py < pagesY; py++) {
+    for (let px = 0; px < pagesX; px++) {
+      if (pageNum > 0) doc.addPage();
+      pageNum++;
+
+      const startX = px * chunkW;
+      const startY = py * chunkH;
+      const endX = Math.min(startX + chunkW, W);
+      const endY = Math.min(startY + chunkH, H);
+      const cols = endX - startX;
+      const rows = endY - startY;
+
+      const originX = margin;
+      const originY = margin + headerH;
+
+      // --- HEADER ---
+      doc.setFillColor(43, 36, 32);
+      doc.rect(margin, margin, pageW - margin*2, headerH - 2, 'F');
+      doc.setTextColor(245, 240, 232);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Stitch & Thread — B&W Template', margin + 4, margin + 7);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Section ${px+1}-${py+1}  |  Stitches ${startX+1}–${endX} × ${startY+1}–${endY}  |  Page ${pageNum}/${totalPages}`, margin + 4, margin + 13);
+      doc.text(`${W}×${H} stitches · ${Object.keys(currentColors).length} colors`, pageW - margin - 4, margin + 13, {align:'right'});
+
+      // --- DRAW CELLS (symbols only, white background) ---
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const gx = startX + col;
+          const gy = startY + row;
+          const dmcIdx = grid[gy * W + gx];
+          const cx = originX + col * cellMM;
+          const cy = originY + row * cellMM;
+
+          // White cell fill
+          doc.setFillColor(255, 255, 255);
+          doc.rect(cx, cy, cellMM, cellMM, 'F');
+
+          // Symbol in black
+          if (cellMM >= 1.8) {
+            doc.setTextColor(30, 30, 30);
+            doc.setFontSize(cellMM * 2.4);
+            doc.setFont('helvetica', 'normal');
+            const sym = colorSymbolMap[String(dmcIdx)] || '·';
+            doc.text(sym, cx + cellMM/2, cy + cellMM * 0.78, { align: 'center' });
+          }
+        }
+      }
+
+      // --- GRID LINES ---
+      doc.setDrawColor(180, 175, 165);
+      doc.setLineWidth(0.08);
+      for (let col = 0; col <= cols; col++) {
+        const x = originX + col * cellMM;
+        doc.line(x, originY, x, originY + rows * cellMM);
+      }
+      for (let row = 0; row <= rows; row++) {
+        const y = originY + row * cellMM;
+        doc.line(originX, y, originX + cols * cellMM, y);
+      }
+
+      // --- BOLD GRID every 10 ---
+      doc.setDrawColor(80, 70, 60);
+      doc.setLineWidth(0.3);
+      for (let col = 0; col <= cols; col++) {
+        if ((startX + col) % 10 === 0) {
+          const x = originX + col * cellMM;
+          doc.line(x, originY, x, originY + rows * cellMM);
+        }
+      }
+      for (let row = 0; row <= rows; row++) {
+        if ((startY + row) % 10 === 0) {
+          const y = originY + row * cellMM;
+          doc.line(originX, y, originX + cols * cellMM, y);
+        }
+      }
+
+      // --- AXIS NUMBERS every 10 ---
+      doc.setTextColor(100, 90, 80);
+      doc.setFontSize(5.5);
+      doc.setFont('helvetica', 'normal');
+      for (let col = 0; col <= cols; col += 10) {
+        if (col === 0 && startX === 0) continue;
+        const x = originX + col * cellMM;
+        doc.text(String(startX + col), x, originY - 1.5, { align: 'center' });
+      }
+      for (let row = 0; row <= rows; row += 10) {
+        if (row === 0 && startY === 0) continue;
+        const y = originY + row * cellMM;
+        doc.text(String(startY + row), originX - 1.5, y + 0.8, { align: 'right' });
+      }
+
+      // --- MINI LEGEND (B&W: outline swatch + symbol + code) ---
+      const pageColorSet = new Set();
+      for (let row = 0; row < rows; row++)
+        for (let col = 0; col < cols; col++)
+          pageColorSet.add(String(grid[(startY + row) * W + (startX + col)]));
+      const pageColorEntries = sortedColorEntries.filter(([idx]) => pageColorSet.has(idx));
+
+      const stripY = originY + rows * cellMM + 3;
+      const swatchSz = 3;
+      const entryW = 18;
+      const entryH = 6;
+      const maxPerRow = Math.floor(printAreaW / entryW);
+
+      doc.setDrawColor(180, 170, 155);
+      doc.setLineWidth(0.3);
+      doc.line(margin, stripY - 1, pageW - margin, stripY - 1);
+
+      pageColorEntries.forEach(([idx], i) => {
+        const rowIdx = Math.floor(i / maxPerRow);
+        if (rowIdx >= 3) return;
+        const colIdx = i % maxPerRow;
+        const ex = margin + colIdx * entryW;
+        const ey = stripY + rowIdx * entryH;
+
+        const dmcIdx = Number(idx);
+        const dmc = getEffectiveEntry(dmcIdx);
+        const effBrand = getEffectiveBrand(dmcIdx);
+
+        // Outline-only swatch
+        doc.setFillColor(255, 255, 255);
+        doc.rect(ex, ey, swatchSz, swatchSz, 'F');
+        doc.setDrawColor(80, 70, 60);
+        doc.setLineWidth(0.25);
+        doc.rect(ex, ey, swatchSz, swatchSz, 'S');
+
+        // Symbol in black
+        doc.setTextColor(30, 30, 30);
+        doc.setFontSize(3.5);
+        doc.text(colorSymbolMap[idx] || '·', ex + swatchSz/2, ey + swatchSz * 0.75, { align: 'center' });
+
+        // Code
+        doc.setTextColor(43, 36, 32);
+        doc.setFontSize(5);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${effBrand.toUpperCase()} ${dmc.code}`, ex + swatchSz + 1.5, ey + 2.2);
+      });
+
+      // --- FOOTER ---
+      doc.setTextColor(150, 140, 130);
+      doc.setFontSize(6);
+      doc.text('Generated by Stitch & Thread · stitchandthread.app', pageW/2, pageH - margin + 2, { align: 'center' });
+    }
+  }
+
+  if (previewOnly) {
+    return doc.output('bloburl');
+  }
   doc.save(`cross-stitch-pattern-${W}x${H}.pdf`);
   showToast(t('toast_pdf', {n: totalPages}));
 }
