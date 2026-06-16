@@ -7372,8 +7372,15 @@ async function _doExportPDF(mode, previewOnly = false) {
 
   // Cell size in mm — aim for ~2.5mm minimum, scale down for large patterns
   const cellMM = Math.max(1.8, Math.min(3.5, Math.floor(printAreaW / W * 10) / 10));
-  const chunkW = Math.floor(printAreaW / cellMM);   // stitches per page horizontally
-  const chunkH = Math.floor(printAreaH / cellMM);   // stitches per page vertically
+
+  // Miyuki brick/peyote stagger — mirrors drawMiyukiPattern()'s ox/oy offset logic.
+  // Peyote shifts cells horizontally (needs extra width), brick shifts vertically (needs extra height).
+  const isPeyotePDF = currentFormat === 'miyuki' && miyukiTechnique === 'peyote';
+  const isBrickPDF  = currentFormat === 'miyuki' && miyukiTechnique === 'brick';
+  const halfCellMM  = cellMM / 2;
+
+  const chunkW = Math.floor((printAreaW - (isPeyotePDF ? halfCellMM : 0)) / cellMM);   // stitches per page horizontally
+  const chunkH = Math.floor((printAreaH - (isBrickPDF ? halfCellMM : 0)) / cellMM);   // stitches per page vertically
 
   const pagesX = Math.ceil(W / chunkW);
   const pagesY = Math.ceil(H / chunkH);
@@ -7423,12 +7430,21 @@ async function _doExportPDF(mode, previewOnly = false) {
           const dmc = getBrandEntry(currentBrand, dmcIdx);
           const [r,g,b] = hexToRgb(dmc.hex);
 
-          const cx = originX + col * cellMM;
-          const cy = originY + row * cellMM;
+          // Brick/peyote stagger — parity uses global gx/gy so the offset stays
+          // continuous across page boundaries
+          let ox = 0, oy = 0;
+          if (isPeyotePDF) ox = (gy % 2 === 0) ? 0 : halfCellMM;
+          if (isBrickPDF)  oy = (gx % 2 === 0) ? halfCellMM : 0;
+
+          const cx = originX + col * cellMM + ox;
+          const cy = originY + row * cellMM + oy;
 
           // Fill cell
           doc.setFillColor(r, g, b);
           doc.rect(cx, cy, cellMM, cellMM, 'F');
+
+          // Peyote: per-cell border so the grid follows the brick stagger
+          if (isPeyotePDF) { doc.setDrawColor(180, 175, 165); doc.setLineWidth(0.08); doc.rect(cx, cy, cellMM, cellMM, 'S'); }
 
           // Symbol (only if cell big enough)
           if (cellMM >= 1.8) {
@@ -7442,31 +7458,35 @@ async function _doExportPDF(mode, previewOnly = false) {
         }
       }
 
-      // --- GRID LINES ---
-      doc.setDrawColor(180, 175, 165);
-      doc.setLineWidth(0.08);
-      for (let col = 0; col <= cols; col++) {
-        const x = originX + col * cellMM;
-        doc.line(x, originY, x, originY + rows * cellMM);
-      }
-      for (let row = 0; row <= rows; row++) {
-        const y = originY + row * cellMM;
-        doc.line(originX, y, originX + cols * cellMM, y);
-      }
-
-      // --- BOLD GRID every 10 ---
-      doc.setDrawColor(80, 70, 60);
-      doc.setLineWidth(0.3);
-      for (let col = 0; col <= cols; col++) {
-        if ((startX + col) % 10 === 0) {
+      // Peyote uses per-cell borders (drawn in the cell loop); continuous grid
+      // lines can't follow the brick stagger, so skip them for peyote.
+      if (!isPeyotePDF) {
+        // --- GRID LINES ---
+        doc.setDrawColor(180, 175, 165);
+        doc.setLineWidth(0.08);
+        for (let col = 0; col <= cols; col++) {
           const x = originX + col * cellMM;
           doc.line(x, originY, x, originY + rows * cellMM);
         }
-      }
-      for (let row = 0; row <= rows; row++) {
-        if ((startY + row) % 10 === 0) {
+        for (let row = 0; row <= rows; row++) {
           const y = originY + row * cellMM;
           doc.line(originX, y, originX + cols * cellMM, y);
+        }
+
+        // --- BOLD GRID every 10 ---
+        doc.setDrawColor(80, 70, 60);
+        doc.setLineWidth(0.3);
+        for (let col = 0; col <= cols; col++) {
+          if ((startX + col) % 10 === 0) {
+            const x = originX + col * cellMM;
+            doc.line(x, originY, x, originY + rows * cellMM);
+          }
+        }
+        for (let row = 0; row <= rows; row++) {
+          if ((startY + row) % 10 === 0) {
+            const y = originY + row * cellMM;
+            doc.line(originX, y, originX + cols * cellMM, y);
+          }
         }
       }
 
@@ -7667,12 +7687,20 @@ async function _doExportPDF(mode, previewOnly = false) {
           const gx = startX + col;
           const gy = startY + row;
           const dmcIdx = grid[gy * W + gx];
-          const cx = originX + col * cellMM;
-          const cy = originY + row * cellMM;
+
+          let ox = 0, oy = 0;
+          if (isPeyotePDF) ox = (gy % 2 === 0) ? 0 : halfCellMM;
+          if (isBrickPDF)  oy = (gx % 2 === 0) ? halfCellMM : 0;
+
+          const cx = originX + col * cellMM + ox;
+          const cy = originY + row * cellMM + oy;
 
           // White cell fill
           doc.setFillColor(255, 255, 255);
           doc.rect(cx, cy, cellMM, cellMM, 'F');
+
+          // Peyote: per-cell border so the grid follows the brick stagger
+          if (isPeyotePDF) { doc.setDrawColor(180, 175, 165); doc.setLineWidth(0.08); doc.rect(cx, cy, cellMM, cellMM, 'S'); }
 
           // Symbol in black
           if (cellMM >= 1.8) {
@@ -7685,31 +7713,35 @@ async function _doExportPDF(mode, previewOnly = false) {
         }
       }
 
-      // --- GRID LINES ---
-      doc.setDrawColor(180, 175, 165);
-      doc.setLineWidth(0.08);
-      for (let col = 0; col <= cols; col++) {
-        const x = originX + col * cellMM;
-        doc.line(x, originY, x, originY + rows * cellMM);
-      }
-      for (let row = 0; row <= rows; row++) {
-        const y = originY + row * cellMM;
-        doc.line(originX, y, originX + cols * cellMM, y);
-      }
-
-      // --- BOLD GRID every 10 ---
-      doc.setDrawColor(80, 70, 60);
-      doc.setLineWidth(0.3);
-      for (let col = 0; col <= cols; col++) {
-        if ((startX + col) % 10 === 0) {
+      // Peyote uses per-cell borders (drawn in the cell loop); continuous grid
+      // lines can't follow the brick stagger, so skip them for peyote.
+      if (!isPeyotePDF) {
+        // --- GRID LINES ---
+        doc.setDrawColor(180, 175, 165);
+        doc.setLineWidth(0.08);
+        for (let col = 0; col <= cols; col++) {
           const x = originX + col * cellMM;
           doc.line(x, originY, x, originY + rows * cellMM);
         }
-      }
-      for (let row = 0; row <= rows; row++) {
-        if ((startY + row) % 10 === 0) {
+        for (let row = 0; row <= rows; row++) {
           const y = originY + row * cellMM;
           doc.line(originX, y, originX + cols * cellMM, y);
+        }
+
+        // --- BOLD GRID every 10 ---
+        doc.setDrawColor(80, 70, 60);
+        doc.setLineWidth(0.3);
+        for (let col = 0; col <= cols; col++) {
+          if ((startX + col) % 10 === 0) {
+            const x = originX + col * cellMM;
+            doc.line(x, originY, x, originY + rows * cellMM);
+          }
+        }
+        for (let row = 0; row <= rows; row++) {
+          if ((startY + row) % 10 === 0) {
+            const y = originY + row * cellMM;
+            doc.line(originX, y, originX + cols * cellMM, y);
+          }
         }
       }
 
